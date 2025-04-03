@@ -7,6 +7,8 @@ import config from '../src/config/config';
 const options = config().testDatabase;
 export const testDataSource = new DataSource(options);
 
+console.log('testDataSourceOptions', options);
+
 @Module({
   imports: [TypeOrmModule.forRoot(options)],
 })
