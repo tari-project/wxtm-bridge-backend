@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+  app:
+    build:
+      context: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    environment:
+      ENVIRONMENT: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: postgres
+    command: 'npm run start:dev'
+
+  tests-runner:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    environment:
+      ENVIRONMENT: test
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: postgres
+    command: npm run test
