@@ -1,8 +1,10 @@
 import { DataSource, ObjectLiteral } from 'typeorm';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import config from '../src/config/config';
+import { IConfig } from '../src/config/config.interface';
 
 const options = config().testDatabase;
 export const testDataSource = new DataSource(options);
@@ -10,7 +12,15 @@ export const testDataSource = new DataSource(options);
 console.log('testDataSourceOptions', options);
 
 @Module({
-  imports: [TypeOrmModule.forRoot(options)],
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService<IConfig, true>) => {
+        return config.get('testDatabase');
+      },
+      inject: [ConfigService],
+    }),
+  ],
 })
 export class TestDatabaseModule {}
 

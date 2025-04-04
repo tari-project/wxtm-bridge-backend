@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import config from '../config/config';
-
-const options = config().database;
-const dataSource = new DataSource(options);
+import { IConfig } from '../config/config.interface';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(options)],
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService<IConfig, true>) => {
+        return config.get('database');
+      },
+      inject: [ConfigService],
+    }),
+  ],
 })
 export class DatabaseModule {}
-
-export default dataSource;

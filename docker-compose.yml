@@ -1,8 +1,17 @@
 services:
-  postgres:
+  db:
     image: postgres
     ports:
       - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+  test-db:
+    image: postgres
+    ports:
+      - 5434:5435
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -16,10 +25,10 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - postgres
+      - db
     environment:
       ENVIRONMENT: development
-      DATABASE_HOST: postgres
+      DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
@@ -32,11 +41,11 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - postgres
+      - test-db
     environment:
       ENVIRONMENT: test
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
+      DATABASE_HOST: test-db
+      DATABASE_PORT: 5435
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: postgres

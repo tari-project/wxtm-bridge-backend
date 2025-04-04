@@ -16,7 +16,7 @@
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "typeorm": "typeorm --dataSource dist/database/database.module.js",
+    "typeorm": "typeorm --dataSource dist/database/database.data-source.js",
     "migrations:run": "npm run build && npm run typeorm migration:run -t false",
     "migrations:generate": "npm run build && npm run typeorm migration:generate",
     "main": "docker exec -it wxtm-bridge-backend-app-1 bash",
