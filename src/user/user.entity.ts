@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity({
-  name: 'user',
+  name: 'users',
 })
 export class UserEntity {
   @PrimaryGeneratedColumn()
