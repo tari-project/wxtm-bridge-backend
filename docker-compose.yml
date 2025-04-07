@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: postgres:17.4
     ports:
       - 5433:5432
     environment:
@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: postgres
 
   test-db:
-    image: postgres
+    image: postgres:17.4
     ports:
       - 5434:5435
     environment:
@@ -20,6 +20,7 @@ services:
   app:
     build:
       context: .
+    user: node
     ports:
       - 3000:3000
     volumes:
