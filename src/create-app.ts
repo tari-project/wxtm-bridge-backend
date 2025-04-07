@@ -12,12 +12,5 @@ export async function createApp() {
   setMiddlewares(app);
   configureSwagger(app);
 
-  return { app };
-}
-
-export async function createExpressApp() {
-  const { app } = await createApp();
-  await app.init();
-
-  return app.getHttpAdapter().getInstance();
+  return app;
 }
