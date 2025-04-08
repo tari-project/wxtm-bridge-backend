@@ -1,6 +1,6 @@
 DEV_ARTIFACTS_BUCKET_NAME=artifacts.wxtm-bridge
 DEV_REGION=us-east-1
-DEV_ARTIFACTS_S3_PREFIX=dev/wxtm-bridge-dev
+DEV_ARTIFACTS_S3_PREFIX=dev/wxtm-bridge
 
 
 out/ts: $(shell git ls-files "./src/*.[jt]s" --full-name)
