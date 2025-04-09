@@ -28,7 +28,7 @@ services:
     depends_on:
       - db
     environment:
-      ENVIRONMENT: development
+      ENVIRONMENT: local
       DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres

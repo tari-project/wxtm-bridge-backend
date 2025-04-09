@@ -13,8 +13,7 @@ wxtm-bridge-backend.zip: out/ts
 	zip $@ -r out/app/*.js node_modules/swagger-ui-dist node_modules/app-root-path
 
 wxtm-bridge-migrations.zip: out/ts
-	zip $@ -r out/migrations/*.js dist/src/migrations node_modules/app-root-path
-
+	zip $@ -r out/migrations/*.js dist/migrations node_modules/app-root-path
 
 upload-artifact-dev: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip
 	for artifact in $^; do \

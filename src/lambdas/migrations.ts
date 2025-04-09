@@ -32,6 +32,7 @@ export const runMigrations = async (event: CodeDeployHookEvent) => {
     await dataSource.runMigrations({
       transaction: 'all',
     });
+
     status = LifecycleEventStatus.SUCCEEDED;
     console.log('Finished running migrations');
   } catch (error) {

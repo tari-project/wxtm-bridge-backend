@@ -4,11 +4,11 @@ export enum Enviroment {
   DEVELOPMENT = 'development',
   PRODUCTION = 'production',
   TEST = 'test',
-  STAGING = 'staging',
+  LOCAL = 'local',
 }
 
 export interface IConfig {
-  enviroment: 'development' | 'production' | 'test' | 'staging';
+  enviroment: Enviroment;
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;
 }

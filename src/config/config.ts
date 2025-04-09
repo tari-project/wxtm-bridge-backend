@@ -1,8 +1,9 @@
+import { entities } from './config.entities';
 import { IConfig } from './config.interface';
 import { Enviroment } from './config.interface';
 
 export default (): IConfig => ({
-  enviroment: (process.env.NODE_ENV as Enviroment) || 'test',
+  enviroment: (process.env.ENVIRONMENT as Enviroment) || Enviroment.LOCAL,
   database: {
     type: 'postgres',
     host: process.env.DATABASE_HOST,
@@ -10,9 +11,13 @@ export default (): IConfig => ({
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-    entities: ['dist/**/*.entity{.ts,.js}'],
+    entities,
     migrations: ['dist/migrations/*.js'],
     synchronize: false,
+    ssl:
+      (process.env.ENVIRONMENT as Enviroment) === Enviroment.LOCAL
+        ? false
+        : true,
   },
   testDatabase: {
     type: 'postgres',
@@ -21,7 +26,6 @@ export default (): IConfig => ({
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-    entities: ['src/**/*.entity.ts'],
     migrations: ['src/migrations/*.ts'],
     synchronize: true,
   },
