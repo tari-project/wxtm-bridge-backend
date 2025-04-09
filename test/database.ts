@@ -9,8 +9,6 @@ import { IConfig } from '../src/config/config.interface';
 const options = config().testDatabase;
 export const testDataSource = new DataSource(options);
 
-console.log('testDataSourceOptions', options);
-
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
