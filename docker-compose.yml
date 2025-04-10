@@ -22,7 +22,7 @@ services:
       context: .
     user: node
     ports:
-      - 3000:3000
+      - 3001:3000
     volumes:
       - .:/app
     depends_on:
