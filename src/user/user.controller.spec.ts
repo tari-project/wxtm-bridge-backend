@@ -47,16 +47,14 @@ describe('UserController', () => {
 
   describe('GET /users', () => {
     it('creates user if not exists', async () => {
-      await factory.create<UserEntity>('UserEntity', {
-        auth0Id: 'google-oauth2|1234567890',
-      });
+      await factory.createMany<UserEntity>('UserEntity', 2);
 
       const { body } = await request(app.getHttpServer())
         .get('/user')
         .set('Content-Type', 'application/json')
         .expect(200);
 
-      console.log(body);
+      expect(body).toHaveLength(2);
     });
   });
 });
