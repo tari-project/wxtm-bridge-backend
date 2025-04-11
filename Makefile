@@ -5,6 +5,7 @@ DEV_ARTIFACTS_S3_PREFIX=dev/wxtm-bridge
 
 out/ts: $(shell git ls-files "./src/*.[jt]s" --full-name)
 	rm -r -f dist && \
+	rm -f wxtm-bridge-backend.zip wxtm-bridge-migrations.zip && \
 	npm run build && \
 	npm run esbuild && \
 	touch out/ts

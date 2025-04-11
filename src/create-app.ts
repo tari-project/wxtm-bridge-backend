@@ -11,6 +11,7 @@ export async function createApp() {
 
   setMiddlewares(app);
   configureSwagger(app);
+  app.enableCors();
 
   return app;
 }
