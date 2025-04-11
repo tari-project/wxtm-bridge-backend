@@ -30,4 +30,8 @@ export default (): IConfig => ({
     migrations: ['src/migrations/*.ts'],
     synchronize: true,
   },
+  auth0: {
+    domain: process.env.AUTH0_DOMAIN || '',
+    audience: process.env.AUTH0_AUDIENCE || '',
+  },
 });
