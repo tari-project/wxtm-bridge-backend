@@ -1,17 +1,22 @@
 import { Controller } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Crud, CrudController } from '@dataui/crud';
 
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
+import { AdminGuard } from '../auth/auth.admin.guard';
 
 @Crud({
   model: { type: UserEntity },
   routes: {
-    only: ['getOneBase', 'getManyBase'],
+    only: ['getManyBase'],
+    getManyBase: {
+      decorators: [AdminGuard({ description: 'Get users' })],
+    },
   },
 })
 @ApiTags('user')
+@ApiBearerAuth()
 @Controller('user')
 export class UserController implements CrudController<UserEntity> {
   constructor(public service: UserService) {}

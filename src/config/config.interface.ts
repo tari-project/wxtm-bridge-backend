@@ -7,8 +7,14 @@ export enum Enviroment {
   LOCAL = 'local',
 }
 
+export interface IAuth0 {
+  domain: string;
+  audience: string;
+}
+
 export interface IConfig {
   enviroment: Enviroment;
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;
+  auth0: IAuth0;
 }

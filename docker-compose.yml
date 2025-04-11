@@ -34,6 +34,8 @@ services:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: postgres
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
     command: 'npm run start:dev'
 
   tests-runner:
@@ -50,4 +52,6 @@ services:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: postgres
+      AUTH0_DOMAIN: auth0_domain
+      AUTH0_AUDIENCE: auth0_audience
     command: npm run test

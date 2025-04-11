@@ -16,6 +16,9 @@ export class UserEntity {
   @Column({ unique: true })
   auth0Id: string;
 
+  @Column({ default: false })
+  isAdmin: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
