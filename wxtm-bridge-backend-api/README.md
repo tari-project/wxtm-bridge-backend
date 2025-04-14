@@ -1,0 +1,25 @@
+### To update package
+
+1. **Start Nest application**
+
+   ```sh
+   docker compose up app
+   ```
+
+2. **Generate package from root directory**
+
+   ```sh
+   npm run api:generate
+   ```
+
+3. **Change directory**
+
+   ```sh
+   cd wxtm-bridge-backend-api
+   ```
+
+4. **Bump version, build, and publish package**
+
+   ```sh
+   npm run release
+   ```

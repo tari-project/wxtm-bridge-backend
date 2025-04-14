@@ -1,0 +1,23 @@
+{
+  "name": "@tari-project/wxtm-bridge-backend-api",
+  "version": "0.1.3",
+  "description": "",
+  "main": "./api/index.js",
+  "types": "./api/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "release": "npm version patch && npm run build && npm publish"
+  },
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tari-project/wxtm-bridge-backend"
+  },
+  "publishConfig": {
+    "registry": "https://github.com/tari-project"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  }
+}

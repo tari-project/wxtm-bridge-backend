@@ -10,8 +10,8 @@ export async function createApp() {
   });
 
   setMiddlewares(app);
-  configureSwagger(app);
+  const { swaggerDocument } = configureSwagger(app);
   app.enableCors();
 
-  return app;
+  return { app, swaggerDocument };
 }
