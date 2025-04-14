@@ -110,4 +110,67 @@ describe('UserController', () => {
       });
     });
   });
+
+  describe('GET /user/me', () => {
+    it('returns current user info for an authenticated user', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get('/user/me')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        isAdmin: false,
+      });
+    });
+
+    it('returns admin status for an admin user', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get('/user/me')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        isAdmin: true,
+      });
+    });
+
+    it('creates a new user record when making first request', async () => {
+      await clearDatabase();
+      const users = await getRepository(UserEntity).find();
+      expect(users).toHaveLength(0);
+
+      const newUserToken = getAccessToken('new-auth0-id');
+
+      const { body } = await request(app.getHttpServer())
+        .get('/user/me')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${newUserToken}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        isAdmin: false,
+      });
+
+      const usersAfter = await getRepository(UserEntity).find();
+      expect(usersAfter).toHaveLength(1);
+      expect(usersAfter[0]).toMatchObject({
+        isAdmin: false,
+        auth0Id: 'new-auth0-id',
+      });
+    });
+
+    it('returns 401 for unauthenticated request', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get('/user/me')
+        .set('Content-Type', 'application/json')
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+  });
 });
