@@ -16,3 +16,5 @@ out
 swagger.json
 
 wxtm-bridge-backend-api/api/**
+
+.npmrc
