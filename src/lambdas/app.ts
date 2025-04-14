@@ -12,7 +12,7 @@ export const app = async (
 ) => {
   context.callbackWaitsForEmptyEventLoop = false;
   if (!appServer) {
-    const nestApp = await createApp();
+    const { app: nestApp } = await createApp();
     await nestApp.init();
     const app = await nestApp.getHttpAdapter().getInstance();
 

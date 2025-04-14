@@ -9,7 +9,7 @@ import { AdminGuard } from '../auth/auth.admin.guard';
 @Crud({
   model: { type: UserEntity },
   routes: {
-    only: ['getManyBase'],
+    only: ['getManyBase', 'getOneBase'],
     getManyBase: {
       decorators: [AdminGuard({ description: 'Get users' })],
     },

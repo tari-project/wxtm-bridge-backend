@@ -12,3 +12,7 @@ out
 
 .env
 .env.*
+
+swagger.json
+
+wxtm-bridge-backend-api/api/**

@@ -4,11 +4,12 @@ import {
   SwaggerModule,
   DocumentBuilder,
   SwaggerDocumentOptions,
+  OpenAPIObject,
 } from '@nestjs/swagger';
 
 export const configureSwagger = (
   app: INestApplication<NestExpressApplication>,
-) => {
+): { swaggerDocument: OpenAPIObject } => {
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('WXTM-Bridge API')
@@ -24,4 +25,6 @@ export const configureSwagger = (
   const document = SwaggerModule.createDocument(app, config, swaggerOptions);
 
   SwaggerModule.setup('api', app, document);
+
+  return { swaggerDocument: document };
 };
