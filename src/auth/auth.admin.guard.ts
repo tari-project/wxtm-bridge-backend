@@ -24,6 +24,9 @@ export class AdminJwtStrategy extends PassportStrategy(
       infer: true,
     });
 
+    console.log('domain_xxx', domain);
+    console.log('audience_xxx', audience);
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: auth0Keys.publicKey,

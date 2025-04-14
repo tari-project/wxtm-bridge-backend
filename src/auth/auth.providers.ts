@@ -14,13 +14,21 @@ export const Auth0KeysProvider = {
       infer: true,
     });
 
+    console.log('domain_qqq', domain);
+
     const client = new JwksClient({
       jwksUri: `https://${domain}/.well-known/jwks.json`,
       cache: true,
     });
 
+    console.log('client_qqq', client);
+
     const keys = await client.getSigningKeys();
+
+    console.log('keys_qqq', keys);
     const publicKey = keys[0].getPublicKey();
+
+    console.log('publicKey_qqq', publicKey);
 
     return { publicKey };
   },
