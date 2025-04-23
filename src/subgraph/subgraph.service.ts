@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EventBridgeEvent } from 'aws-lambda';
 
 import { UserEntity } from '../user/user.entity';
 
@@ -11,9 +12,11 @@ export class SubgraphService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async onEventReceived(): Promise<UserEntity[]> {
+  async onEventReceived(
+    event: EventBridgeEvent<any, any>,
+  ): Promise<UserEntity[]> {
     //TODO delete all implemetation
-    console.log('lambda is running', new Date());
+    console.log('SubgraphService.onEventReceived', { event });
 
     const users = await this.userRepository.find();
     console.log('users', users);
