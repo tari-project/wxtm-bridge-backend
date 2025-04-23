@@ -1,5 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { EventBridgeEvent } from 'aws-lambda';
 
 import config from '../config/config';
 import {
@@ -44,7 +45,9 @@ describe('SubgraphService tests', () => {
   describe('onEventReceived', () => {
     it('happy path', async () => {
       const user = await factory.create<UserEntity>(UserEntity.name);
-      const result = await service.onEventReceived();
+      const result = await service.onEventReceived(
+        {} as unknown as EventBridgeEvent<any, any>,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(user.id);
