@@ -16,8 +16,8 @@ export class WrapTokenTransactionEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
   @Generated('uuid')
+  @Column({ unique: true })
   paymentId: string;
 
   @Column()
