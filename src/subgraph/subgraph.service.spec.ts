@@ -7,11 +7,13 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
+  getRepository,
 } from '../../test/database';
 import { Factory, getFactory } from '../../test/factory/factory';
 import { SubgraphModule } from './subgraph.module';
 import { SubgraphService } from './subgraph.service';
 import { UserEntity } from '../user/user.entity';
+import { TokensUnwrappedEntity } from '../subgraph/tokens-unwrapped.entity';
 
 describe('SubgraphService tests', () => {
   let module: TestingModule;
@@ -44,13 +46,19 @@ describe('SubgraphService tests', () => {
 
   describe('onEventReceived', () => {
     it('happy path', async () => {
-      const user = await factory.create<UserEntity>(UserEntity.name);
+      // const token = await factory.create<TokensUnwrappedEntity>(
+      //   TokensUnwrappedEntity.name,
+      // );
+
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toEqual(user.id);
+      const tokens = await getRepository(TokensUnwrappedEntity).find();
+      console.log('Available Tokens: ', tokens);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toEqual(tokens[0].id);
     });
   });
 });
