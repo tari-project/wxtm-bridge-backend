@@ -7,13 +7,14 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
-  getRepository,
 } from '../../test/database';
 import { Factory, getFactory } from '../../test/factory/factory';
 import { SubgraphModule } from './subgraph.module';
 import { SubgraphService } from './subgraph.service';
 import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from '../subgraph/tokens-unwrapped.entity';
+import { SubgraphClientService } from './subgraph-client.service';
+import { SubgraphClientServiceMock } from '../../test/mocks/subgraph-client.mock';
 
 describe('SubgraphService tests', () => {
   let module: TestingModule;
@@ -27,7 +28,10 @@ describe('SubgraphService tests', () => {
         TestDatabaseModule,
         SubgraphModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(SubgraphClientService)
+      .useValue(SubgraphClientServiceMock)
+      .compile();
 
     service = module.get(SubgraphService);
 
@@ -45,20 +49,62 @@ describe('SubgraphService tests', () => {
   });
 
   describe('onEventReceived', () => {
-    it('happy path', async () => {
-      // const token = await factory.create<TokensUnwrappedEntity>(
-      //   TokensUnwrappedEntity.name,
-      // );
+    it('should handle empty tokens list', async () => {
+      // Mock empty result
+      SubgraphClientServiceMock.getTokensUnwrapped.mockResolvedValue([]);
 
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
-      const tokens = await getRepository(TokensUnwrappedEntity).find();
-      console.log('Available Tokens: ', tokens);
+      expect(result).toHaveLength(0);
+      expect(SubgraphClientServiceMock.getTokensUnwrapped).toHaveBeenCalled();
+    });
+
+    it('should save and read recorded tokens unwrap events', async () => {
+      const mockTokensUnwrapped = [
+        {
+          id: 'token1',
+          from: '0xuser1',
+          targetTariAddress: 'tariAddress1',
+          amount: '1000000000000000000',
+          blockNumber: '12345678',
+          blockTimestamp: '1618282828',
+          transactionHash: '0xhash1',
+        },
+        {
+          id: 'token2',
+          from: '0xuser2',
+          targetTariAddress: 'tariAddress2',
+          amount: '2000000000000000000',
+          blockNumber: '12345679',
+          blockTimestamp: '1618282829',
+          transactionHash: '0xhash2',
+        },
+      ];
+
+      // Set the mock to return prepared data
+      SubgraphClientServiceMock.getTokensUnwrapped.mockResolvedValue(
+        mockTokensUnwrapped,
+      );
+
+      const result = await service.onEventReceived(
+        {} as unknown as EventBridgeEvent<any, any>,
+      );
+
+      // Assert that the mock was called
+      expect(SubgraphClientServiceMock.getTokensUnwrapped).toHaveBeenCalled();
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toEqual(tokens[0].id);
+      expect(result[0].id).toEqual('token1');
+      expect(result[1].id).toEqual('token2');
+
+      // Test that the tokens were actually saved
+      const savedTokens = await module
+        .get('TokensUnwrappedEntityRepository')
+        .find();
+      expect(savedTokens).toHaveLength(2);
+      expect(savedTokens[0].id).toEqual('token1');
     });
   });
 });
