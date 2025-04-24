@@ -8,6 +8,7 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
+  getRepository,
 } from '../../test/database';
 import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Auth0Keys } from '../auth/auth.providers';
@@ -17,6 +18,8 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { WrapTokenTransactionModule } from './wrap-token-transaction.module';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
+import { CreateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
+import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -125,6 +128,95 @@ describe('WrapTokenTransactionController', () => {
         statusCode: 401,
         message: 'Unauthorized',
       });
+    });
+  });
+
+  describe('POST /wrap-token-transactions', () => {
+    it('creates a new transaction and returns the DTO', async () => {
+      const dto: CreateWrapTokenTransactionDTO = {
+        from: 'tari_address_123',
+        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        tokenAmount: '1000',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .post('/wrap-token-transactions')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(201);
+
+      const [transaction] = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          from: dto.from,
+          to: dto.to,
+          tokenAmount: dto.tokenAmount,
+          status: WrapTokenTransactionStatus.CREATED,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        }),
+      );
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions/tokens-sent/:id', () => {
+    it('updates transaction status to TOKENS_SENT for admin', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.CREATED,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/tokens-sent/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .expect(200);
+
+      expect(body).toEqual({
+        success: true,
+      });
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.status).toBe(
+        WrapTokenTransactionStatus.TOKENS_SENT,
+      );
+    });
+
+    it('returns 400 when transaction status is not CREATED', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.TOKENS_SENT,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/tokens-sent/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .expect(400);
+
+      expect(body).toEqual({
+        statusCode: 400,
+        message: 'Transaction status is incorrect',
+        error: 'Bad Request',
+      });
+
+      const unchangedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(unchangedTransaction?.status).toBe(
+        WrapTokenTransactionStatus.TOKENS_SENT,
+      );
     });
   });
 });
