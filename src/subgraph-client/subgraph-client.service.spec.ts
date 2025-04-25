@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import * as graphqlRequest from 'graphql-request';
 import config from '../config/config';
 import { SubgraphClientService } from './subgraph-client.service';
-import { IConfig } from '../config/config.interface';
 
 jest.mock('graphql-request', () => ({
-  // gql: jest.fn((...args) => args[0]), // => below is changing array into string
   gql: jest.fn((strings: TemplateStringsArray, ...values: any[]) =>
     strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), ''),
   ),
@@ -16,7 +14,6 @@ jest.mock('graphql-request', () => ({
 describe('SubgraphClientService', () => {
   let service: SubgraphClientService;
   let module: TestingModule;
-  let configService: ConfigService<IConfig, true>;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -25,7 +22,6 @@ describe('SubgraphClientService', () => {
     }).compile();
 
     service = module.get<SubgraphClientService>(SubgraphClientService);
-    configService = module.get<ConfigService<IConfig, true>>(ConfigService);
   });
 
   beforeEach(async () => {
