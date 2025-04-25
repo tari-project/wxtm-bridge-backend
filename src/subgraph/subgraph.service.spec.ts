@@ -8,7 +8,6 @@ import {
   initializeDatabase,
   clearDatabase,
 } from '../../test/database';
-import { Factory, getFactory } from '../../test/factory/factory';
 import { SubgraphModule } from './subgraph.module';
 import { SubgraphService } from './subgraph.service';
 import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
@@ -17,7 +16,6 @@ import { SubgraphClientServiceMock } from '../../test/mocks/subgraph-client.mock
 describe('SubgraphService tests', () => {
   let module: TestingModule;
   let service: SubgraphService;
-  let _factory: Factory;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -34,7 +32,6 @@ describe('SubgraphService tests', () => {
     service = module.get(SubgraphService);
 
     await initializeDatabase();
-    _factory = await getFactory();
   });
 
   beforeEach(async () => {
