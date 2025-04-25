@@ -11,9 +11,7 @@ import {
 import { Factory, getFactory } from '../../test/factory/factory';
 import { SubgraphModule } from './subgraph.module';
 import { SubgraphService } from './subgraph.service';
-import { UserEntity } from '../user/user.entity';
-import { TokensUnwrappedEntity } from '../subgraph/tokens-unwrapped.entity';
-import { SubgraphClientService } from './subgraph-client.service';
+import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 import { SubgraphClientServiceMock } from '../../test/mocks/subgraph-client.mock';
 
 describe('SubgraphService tests', () => {
@@ -64,21 +62,21 @@ describe('SubgraphService tests', () => {
     it('should save and read recorded tokens unwrap events', async () => {
       const mockTokensUnwrapped = [
         {
-          id: 'token1',
+          id: 1,
           from: '0xuser1',
           targetTariAddress: 'tariAddress1',
           amount: '1000000000000000000',
-          blockNumber: '12345678',
-          blockTimestamp: '1618282828',
+          blockNumber: 12345678,
+          blockTimestamp: new Date(),
           transactionHash: '0xhash1',
         },
         {
-          id: 'token2',
+          id: 2,
           from: '0xuser2',
           targetTariAddress: 'tariAddress2',
           amount: '2000000000000000000',
-          blockNumber: '12345679',
-          blockTimestamp: '1618282829',
+          blockNumber: 12345679,
+          blockTimestamp: new Date(),
           transactionHash: '0xhash2',
         },
       ];
@@ -96,15 +94,15 @@ describe('SubgraphService tests', () => {
       expect(SubgraphClientServiceMock.getTokensUnwrapped).toHaveBeenCalled();
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toEqual('token1');
-      expect(result[1].id).toEqual('token2');
+      expect(result[0].id).toEqual(1);
+      expect(result[1].id).toEqual(2);
 
       // Test that the tokens were actually saved
       const savedTokens = await module
         .get('TokensUnwrappedEntityRepository')
         .find();
       expect(savedTokens).toHaveLength(2);
-      expect(savedTokens[0].id).toEqual('token1');
+      expect(savedTokens[0].id).toEqual(1);
     });
   });
 });
