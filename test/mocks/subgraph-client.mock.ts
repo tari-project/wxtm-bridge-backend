@@ -1,4 +1,4 @@
-import { SubgraphClientService } from '../../src/subgraph/subgraph-client.service';
+import { SubgraphClientService } from '../../src/subgraph-client/subgraph-client.service';
 
 type SubgraphClientServiceMock = {
   [method in keyof SubgraphClientService]: jest.Mock;
