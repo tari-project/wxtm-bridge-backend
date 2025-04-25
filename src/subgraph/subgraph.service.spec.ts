@@ -17,7 +17,7 @@ import { SubgraphClientServiceMock } from '../../test/mocks/subgraph-client.mock
 describe('SubgraphService tests', () => {
   let module: TestingModule;
   let service: SubgraphService;
-  let factory: Factory;
+  let _factory: Factory;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -34,7 +34,7 @@ describe('SubgraphService tests', () => {
     service = module.get(SubgraphService);
 
     await initializeDatabase();
-    factory = await getFactory();
+    _factory = await getFactory();
   });
 
   beforeEach(async () => {

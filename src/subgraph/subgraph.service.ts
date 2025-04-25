@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { EventBridgeEvent } from 'aws-lambda';
 import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 
-import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 
 @Injectable()
@@ -16,7 +15,7 @@ export class SubgraphService {
   ) {}
 
   async onEventReceived(
-    event: EventBridgeEvent<any, any>,
+    _event: EventBridgeEvent<any, any>,
   ): Promise<TokensUnwrappedEntity[]> {
     const tokensUnwrapped =
       await this.subgraphClientService.getTokensUnwrapped();

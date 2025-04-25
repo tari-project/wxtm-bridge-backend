@@ -49,7 +49,7 @@ export const getFactory = async (): Promise<Factory> => {
       ),
       blockTimestamp: factory.sequence(
         'TokensUnwrappedEntity.blockTimestamp',
-        (n) => new Date(),
+        (_n) => new Date(),
       ),
       transactionHash: factory.sequence(
         'TokensUnwrappedEntity.transactionHash',
