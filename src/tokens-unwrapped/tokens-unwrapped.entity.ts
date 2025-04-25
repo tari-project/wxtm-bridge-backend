@@ -1,15 +1,18 @@
 import {
   Column,
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('tokens_unwrapped')
 export class TokensUnwrappedEntity {
-  @PrimaryColumn({ type: 'integer' })
+  @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'integer' })
+  subgraphId: number;
 
   @Column()
   from: string;
@@ -20,13 +23,13 @@ export class TokensUnwrappedEntity {
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   amount: string;
 
-  @Column({ unique: true })
+  @Column()
   blockNumber: number;
 
   @Column()
   blockTimestamp: Date;
 
-  @Column()
+  @Column({ unique: true })
   transactionHash: string;
 
   @CreateDateColumn()

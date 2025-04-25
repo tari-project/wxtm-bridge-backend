@@ -37,7 +37,7 @@ describe('SubgraphClientService', () => {
     const mockResponse = {
       tokensUnwrappeds: [
         {
-          id: 1,
+          id: 6,
           from: '0xuser1',
           targetTariAddress: 'tariAddress1',
           amount: '1000000000000000000',
@@ -51,7 +51,7 @@ describe('SubgraphClientService', () => {
     (graphqlRequest.request as jest.Mock).mockResolvedValueOnce(mockResponse);
 
     // Get the actual URL from config
-    const subgraphUrl = configService.get('subgraph', { infer: true }).url;
+    const subgraphUrl = config().subgraph.url;
 
     const result = await service.getTokensUnwrapped();
 
@@ -61,7 +61,7 @@ describe('SubgraphClientService', () => {
     );
     expect(result).toEqual([
       {
-        id: 1,
+        subgraphId: 6,
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',

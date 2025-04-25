@@ -16,7 +16,7 @@ export class SubgraphService {
 
   async onEventReceived(
     _event: EventBridgeEvent<any, any>,
-  ): Promise<TokensUnwrappedEntity[]> {
+  ): Promise<Partial<TokensUnwrappedEntity>[]> {
     const tokensUnwrapped =
       await this.subgraphClientService.getTokensUnwrapped();
 

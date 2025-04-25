@@ -13,7 +13,7 @@ export class SubgraphClientService {
     this.subgraphUrl = this.configService.get('subgraph', { infer: true }).url;
   }
 
-  async getTokensUnwrapped(): Promise<TokensUnwrappedEntity[]> {
+  async getTokensUnwrapped(): Promise<Partial<TokensUnwrappedEntity>[]> {
     const query = gql`
       {
         tokensUnwrappeds(
@@ -32,29 +32,19 @@ export class SubgraphClientService {
       }
     `;
 
-    try {
-      const data = await request<TokensUnwrappedsResponse>(
-        this.subgraphUrl,
-        query,
-      );
+    const data = await request<TokensUnwrappedsResponse>(
+      this.subgraphUrl,
+      query,
+    );
 
-      return data.tokensUnwrappeds.map((token) => {
-        const entity = new TokensUnwrappedEntity();
-        entity.id = parseInt(token.id);
-        entity.from = token.from;
-        entity.targetTariAddress = token.targetTariAddress;
-        entity.amount = token.amount;
-        entity.blockNumber = parseInt(token.blockNumber);
-        entity.blockTimestamp = new Date(parseInt(token.blockTimestamp) * 1000);
-        entity.transactionHash = token.transactionHash;
-        return entity;
-      });
-    } catch (error) {
-      console.error(
-        'Failed to fetch tokens unwrapped event from subgraph:',
-        error,
-      );
-      throw error;
-    }
+    return data.tokensUnwrappeds.map((token) => ({
+      subgraphId: parseInt(token.id),
+      from: token.from,
+      targetTariAddress: token.targetTariAddress,
+      amount: token.amount,
+      blockNumber: parseInt(token.blockNumber),
+      blockTimestamp: new Date(parseInt(token.blockTimestamp) * 1000),
+      transactionHash: token.transactionHash,
+    }));
   }
 }

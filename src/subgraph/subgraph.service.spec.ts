@@ -7,11 +7,13 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
+  getRepository,
 } from '../../test/database';
 import { SubgraphModule } from './subgraph.module';
 import { SubgraphService } from './subgraph.service';
 import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 import { SubgraphClientServiceMock } from '../../test/mocks/subgraph-client.mock';
+import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 
 describe('SubgraphService tests', () => {
   let module: TestingModule;
@@ -59,22 +61,24 @@ describe('SubgraphService tests', () => {
     it('should save and read recorded tokens unwrap events', async () => {
       const mockTokensUnwrapped = [
         {
-          id: 1,
-          from: '0xuser1',
-          targetTariAddress: 'tariAddress1',
-          amount: '1000000000000000000',
-          blockNumber: 12345678,
+          subgraphId: 1,
+          from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
+          targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla939666',
+          amount: '20000000000000000',
+          blockNumber: 8172949,
           blockTimestamp: new Date(),
-          transactionHash: '0xhash1',
+          transactionHash:
+            '0x349722eabb3e135b18882cecdc2c86f177332c4cb0503c27eb910b4a32d27a0d',
         },
         {
-          id: 2,
-          from: '0xuser2',
-          targetTariAddress: 'tariAddress2',
-          amount: '2000000000000000000',
-          blockNumber: 12345679,
+          subgraphId: 2,
+          from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
+          targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla9392BC',
+          amount: '10000000000000000',
+          blockNumber: 8172930,
           blockTimestamp: new Date(),
-          transactionHash: '0xhash2',
+          transactionHash:
+            '0xe888b651962001cd8ba6f64be6c9bd1569df63f961cda1f6e4ea0c7cbb145f5c',
         },
       ];
 
@@ -91,15 +95,14 @@ describe('SubgraphService tests', () => {
       expect(SubgraphClientServiceMock.getTokensUnwrapped).toHaveBeenCalled();
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toEqual(1);
-      expect(result[1].id).toEqual(2);
+      expect(result[0].subgraphId).toEqual(1);
+      expect(result[1].subgraphId).toEqual(2);
 
       // Test that the tokens were actually saved
-      const savedTokens = await module
-        .get('TokensUnwrappedEntityRepository')
-        .find();
-      expect(savedTokens).toHaveLength(2);
-      expect(savedTokens[0].id).toEqual(1);
+      const data = await getRepository(TokensUnwrappedEntity).find();
+
+      expect(data).toHaveLength(2);
+      expect(data[0].subgraphId).toEqual(1);
     });
   });
 });
