@@ -2,25 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventBridgeEvent } from 'aws-lambda';
+import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 
-import { UserEntity } from '../user/user.entity';
+import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 
 @Injectable()
 export class SubgraphService {
   constructor(
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    @InjectRepository(TokensUnwrappedEntity)
+    private tokensUnwrappedRepository: Repository<TokensUnwrappedEntity>,
+    private subgraphClientService: SubgraphClientService,
   ) {}
 
   async onEventReceived(
-    event: EventBridgeEvent<any, any>,
-  ): Promise<UserEntity[]> {
-    //TODO delete all implemetation
-    console.log('SubgraphService.onEventReceived', { event });
+    _event: EventBridgeEvent<any, any>,
+  ): Promise<Partial<TokensUnwrappedEntity>[]> {
+    const tokensUnwrapped =
+      await this.subgraphClientService.getTokensUnwrapped();
 
-    const users = await this.userRepository.find();
-    console.log('users', users);
+    console.log('Subgraph Tokens: ', tokensUnwrapped);
 
-    return users;
+    const savedTokens =
+      await this.tokensUnwrappedRepository.save(tokensUnwrapped);
+    console.log('Saved Tokens: ', savedTokens);
+
+    return tokensUnwrapped;
   }
 }

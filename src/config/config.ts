@@ -34,4 +34,7 @@ export default (): IConfig => ({
     domain: process.env.AUTH0_DOMAIN || '',
     audience: process.env.AUTH0_AUDIENCE || '',
   },
+  subgraph: {
+    url: process.env.SUBGRAPH_URL || '',
+  },
 });

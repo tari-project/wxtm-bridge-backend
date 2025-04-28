@@ -12,9 +12,14 @@ export interface IAuth0 {
   audience: string;
 }
 
+export interface ISubgraph {
+  url: string;
+}
+
 export interface IConfig {
   enviroment: Enviroment;
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;
   auth0: IAuth0;
+  subgraph: ISubgraph;
 }
