@@ -18,7 +18,10 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { WrapTokenTransactionModule } from './wrap-token-transaction.module';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
-import { CreateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
+import {
+  CreateWrapTokenTransactionDTO,
+  UpdateWrapTokenTransactionDTO,
+} from './wrap-token-transaction.dto';
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 
 describe('WrapTokenTransactionController', () => {
@@ -217,6 +220,82 @@ describe('WrapTokenTransactionController', () => {
       expect(unchangedTransaction?.status).toBe(
         WrapTokenTransactionStatus.TOKENS_SENT,
       );
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions/:id', () => {
+    it('successfully updates tokenAmount and status', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        tokenAmount: '2000',
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          tokenAmount: dto.tokenAmount,
+          status: dto.status,
+        }),
+      );
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.tokenAmount).toBe(dto.tokenAmount);
+      expect(updatedTransaction?.status).toBe(dto.status);
+    });
+
+    it('fails if the transaction status: TOKENS_RECEIVED', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        },
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        tokenAmount: '2000',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: 'Transaction status is incorrect',
+        statusCode: 400,
+      });
+    });
+
+    it('returns 401 for a regular user', async () => {
+      const transactionId = 1;
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transactionId}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
     });
   });
 });
