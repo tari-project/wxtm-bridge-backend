@@ -95,4 +95,35 @@ describe('TokensUnwrappedController', () => {
       });
     });
   });
+
+  describe('GET /tokens-unwrapped/:id', () => {
+    it('returns a specific unwrapped token transaction for the admin', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/tokens-unwrapped/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toHaveProperty('id', transaction.id);
+    });
+
+    it('returns 401 for a regular user', async () => {
+      const transactionId = 2;
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/tokens-unwrapped/${transactionId}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+  });
 });
