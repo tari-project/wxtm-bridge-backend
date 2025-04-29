@@ -55,6 +55,10 @@ export const getFactory = async (): Promise<Factory> => {
         'TokensUnwrappedEntity.transactionHash',
         (n) => `0xhash${n}`,
       ),
+      subgraphId: factory.sequence(
+        'TokensUnwrappedEntity.subgraphId',
+        (n) => n,
+      ),
     });
 
     factoryCached = factory;
