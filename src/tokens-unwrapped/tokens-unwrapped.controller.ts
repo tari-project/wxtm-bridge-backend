@@ -9,10 +9,15 @@ import { TokensUnwrappedService } from './tokens-unwrapped.service';
 @Crud({
   model: { type: TokensUnwrappedEntity },
   routes: {
-    only: ['getManyBase'],
+    only: ['getManyBase', 'getOneBase'],
     getManyBase: {
       decorators: [
         AdminGuard({ description: 'Returns unwrapped tokens transactions' }),
+      ],
+    },
+    getOneBase: {
+      decorators: [
+        AdminGuard({ description: 'Returns unwrapped tokens transaction' }),
       ],
     },
   },
