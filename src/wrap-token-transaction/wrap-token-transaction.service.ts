@@ -36,8 +36,8 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
     }
 
     if (
-      (transaction.safeNonce || transaction.safeNonce) &&
-      (dto.safeNonce || dto.safeNonce)
+      (transaction.safeNonce || transaction.safeTxHash) &&
+      (dto.safeNonce || dto.safeTxHash)
     ) {
       throw new BadRequestException(
         ExceptionsMessages.TRANSACTION_NONCE_EXISTS,
