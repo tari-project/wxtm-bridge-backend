@@ -28,18 +28,36 @@ describe('SubgraphClientService', () => {
     jest.clearAllMocks();
   });
 
-  it('should retrieve tokens unwrapped data', async () => {
+  it('should retrieve push notifications data', async () => {
     const blockTimestampSeconds = Math.floor(Date.now() / 1000);
+
+    // Mock the decoded data for the ethers AbiCoder
+    const mockDecodedData = [
+      [
+        ['0xuser1', 'tariAddress1'], // tuple(address,string)
+        { toString: () => '1000000000000000000' }, // uint256 amount
+      ],
+    ];
+
+    // Mock for ethers.utils.AbiCoder
+    jest
+      .spyOn(require('ethers').utils.AbiCoder.prototype, 'decode')
+      .mockReturnValue(mockDecodedData);
+
+    // Mock GraphQL response for push notifications
     const mockResponse = {
-      tokensUnwrappeds: [
+      pushNotifications: [
         {
-          id: 6,
-          from: '0xuser1',
-          targetTariAddress: 'tariAddress1',
-          amount: '1000000000000000000',
-          blockNumber: 12345678,
-          blockTimestamp: blockTimestampSeconds.toString(),
+          id: '1',
+          signature: 'TokensUnwrapped',
+          contract: '0xcontract1',
+          timestamp: blockTimestampSeconds.toString(),
+          blockHash: '0xblockhash1',
+          blockNumber: '12345678',
           transactionHash: '0xhash1',
+          logIndex: '0',
+          seqNumber: '42',
+          transactionData: '0xabcdef1234567890',
         },
       ],
     };
@@ -49,21 +67,29 @@ describe('SubgraphClientService', () => {
     // Get the actual URL from config
     const subgraphUrl = config().subgraph.url;
 
-    const result = await service.getTokensUnwrapped();
+    const result = await service.getPushNotifications(10); // Last record was id 10
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       subgraphUrl,
-      expect.stringContaining('tokensUnwrappeds'),
+      expect.stringContaining('pushNotifications'),
     );
+
+    // Verify the query contains the correct filtering
+    expect(graphqlRequest.request).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('seqNumber_gt: 10'),
+    );
+
     expect(result).toEqual([
       {
-        subgraphId: 6,
+        subgraphId: 42,
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',
         blockNumber: 12345678,
         blockTimestamp: new Date(blockTimestampSeconds * 1000),
         transactionHash: '0xhash1',
+        seqNumber: 42,
       },
     ]);
   });
