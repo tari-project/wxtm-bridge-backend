@@ -38,6 +38,7 @@
     "@vendia/serverless-express": "^4.3.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "ethers": "^5.7.1",
     "jwks-rsa": "^3.1.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.8.0",
