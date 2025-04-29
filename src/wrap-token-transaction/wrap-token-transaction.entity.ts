@@ -36,6 +36,12 @@ export class WrapTokenTransactionEntity {
   })
   status: WrapTokenTransactionStatus;
 
+  @Column({ nullable: true })
+  safeTxHash?: string;
+
+  @Column({ nullable: true })
+  safeNonce?: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -257,7 +257,7 @@ describe('WrapTokenTransactionController', () => {
       expect(updatedTransaction?.status).toBe(dto.status);
     });
 
-    it('fails if the transaction status: TOKENS_RECEIVED', async () => {
+    it('fails if updating tokenAmount when status is TOKENS_RECEIVED', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         {
@@ -281,6 +281,88 @@ describe('WrapTokenTransactionController', () => {
         message: 'Transaction status is incorrect',
         statusCode: 400,
       });
+    });
+
+    it('fails if changing status from TOKENS_RECEIVED to another status', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        },
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        status: WrapTokenTransactionStatus.TOKENS_SENT,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: 'Transaction status is incorrect',
+        statusCode: 400,
+      });
+    });
+
+    it('fails if trying to update safeNonce when it already exists', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          safeNonce: 123,
+        },
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        safeNonce: 456,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: 'Transaction nonce already exists',
+        statusCode: 400,
+      });
+    });
+
+    it('successfully updates safeNonce when it does not exist', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        safeNonce: 123,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          safeNonce: dto.safeNonce,
+        }),
+      );
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.safeNonce).toBe(dto.safeNonce);
     });
 
     it('returns 401 for a regular user', async () => {
