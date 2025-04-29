@@ -2,6 +2,7 @@ import {
   IsEnum,
   IsEthereumAddress,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -33,4 +34,12 @@ export class UpdateWrapTokenTransactionDTO
   @IsOptional()
   @IsEnum(WrapTokenTransactionStatus)
   status?: WrapTokenTransactionStatus;
+
+  @IsOptional()
+  @IsString()
+  safeTxHash?: string;
+
+  @IsOptional()
+  @IsNumber()
+  safeNonce?: number;
 }

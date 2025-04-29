@@ -25,9 +25,22 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
   ): Promise<WrapTokenTransactionEntity> {
     const transaction = await super.getOne(req);
 
-    if (transaction.status === WrapTokenTransactionStatus.TOKENS_RECEIVED) {
+    if (
+      transaction.status === WrapTokenTransactionStatus.TOKENS_RECEIVED &&
+      (dto.status !== WrapTokenTransactionStatus.TOKENS_RECEIVED ||
+        dto.tokenAmount)
+    ) {
       throw new BadRequestException(
         ExceptionsMessages.TRANSACTION_STATUS_INCORRECT,
+      );
+    }
+
+    if (
+      (transaction.safeNonce || transaction.safeTxHash) &&
+      (dto.safeNonce || dto.safeTxHash)
+    ) {
+      throw new BadRequestException(
+        ExceptionsMessages.TRANSACTION_NONCE_EXISTS,
       );
     }
 
