@@ -34,6 +34,10 @@ export const getFactory = async (): Promise<Factory> => {
     );
 
     factory.define(TokensUnwrappedEntity.name, TokensUnwrappedEntity, {
+      subgraphId: factory.sequence(
+        'TokensUnwrappedEntity.subgraphId',
+        (n) => n,
+      ),
       from: factory.sequence('TokensUnwrappedEntity.from', (n) => `0x${n}`),
       targetTariAddress: factory.sequence(
         'TokensUnwrappedEntity.targetTariAddress',
@@ -54,10 +58,6 @@ export const getFactory = async (): Promise<Factory> => {
       transactionHash: factory.sequence(
         'TokensUnwrappedEntity.transactionHash',
         (n) => `0xhash${n}`,
-      ),
-      subgraphId: factory.sequence(
-        'TokensUnwrappedEntity.subgraphId',
-        (n) => n,
       ),
     });
 

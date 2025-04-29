@@ -66,7 +66,6 @@ export class SubgraphClientService {
         blockNumber: parseInt(event.blockNumber),
         blockTimestamp: new Date(parseInt(event.timestamp) * 1000),
         transactionHash: event.transactionHash,
-        seqNumber: parseInt(event.seqNumber),
       };
     });
   }

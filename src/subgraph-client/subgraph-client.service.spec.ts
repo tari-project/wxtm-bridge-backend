@@ -32,7 +32,6 @@ describe('SubgraphClientService', () => {
   it('should retrieve push notifications data', async () => {
     const blockTimestampSeconds = Math.floor(Date.now() / 1000);
 
-    // Mock the decoded data for the ethers AbiCoder
     const mockDecodedData = [
       [
         ['0xuser1', 'tariAddress1'], // tuple(address,string)
@@ -40,12 +39,10 @@ describe('SubgraphClientService', () => {
       ],
     ];
 
-    // Mock for ethers.utils.AbiCoder
     jest
       .spyOn(ethers.utils.AbiCoder.prototype, 'decode')
       .mockReturnValue(mockDecodedData);
 
-    // Mock GraphQL response for push notifications
     const mockResponse = {
       pushNotifications: [
         {
@@ -65,17 +62,15 @@ describe('SubgraphClientService', () => {
 
     (graphqlRequest.request as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    // Get the actual URL from config
     const subgraphUrl = config().subgraph.url;
 
-    const result = await service.getPushNotifications(10); // Last record was id 10
+    const result = await service.getPushNotifications(10);
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       subgraphUrl,
       expect.stringContaining('pushNotifications'),
     );
 
-    // Verify the query contains the correct filtering
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       expect.any(String),
       expect.stringContaining('seqNumber_gt: 10'),
@@ -90,7 +85,6 @@ describe('SubgraphClientService', () => {
         blockNumber: 12345678,
         blockTimestamp: new Date(blockTimestampSeconds * 1000),
         transactionHash: '0xhash1',
-        seqNumber: 42,
       },
     ]);
   });
