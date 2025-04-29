@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
 import * as graphqlRequest from 'graphql-request';
 import config from '../config/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
 import { SubgraphClientService } from './subgraph-client.service';
+import { ethers } from 'ethers';
 
 jest.mock('graphql-request', () => ({
   gql: jest.fn((strings: TemplateStringsArray, ...values: any[]) =>
@@ -41,7 +42,7 @@ describe('SubgraphClientService', () => {
 
     // Mock for ethers.utils.AbiCoder
     jest
-      .spyOn(require('ethers').utils.AbiCoder.prototype, 'decode')
+      .spyOn(ethers.utils.AbiCoder.prototype, 'decode')
       .mockReturnValue(mockDecodedData);
 
     // Mock GraphQL response for push notifications
