@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
 import * as graphqlRequest from 'graphql-request';
 import config from '../config/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
 import { SubgraphClientService } from './subgraph-client.service';
+import { ethers } from 'ethers';
 
 jest.mock('graphql-request', () => ({
   gql: jest.fn((strings: TemplateStringsArray, ...values: any[]) =>
@@ -28,36 +29,56 @@ describe('SubgraphClientService', () => {
     jest.clearAllMocks();
   });
 
-  it('should retrieve tokens unwrapped data', async () => {
+  it('should retrieve push notifications data', async () => {
     const blockTimestampSeconds = Math.floor(Date.now() / 1000);
+
+    const mockDecodedData = [
+      [
+        ['0xuser1', 'tariAddress1'], // tuple(address,string)
+        { toString: () => '1000000000000000000' }, // uint256 amount
+      ],
+    ];
+
+    jest
+      .spyOn(ethers.utils.AbiCoder.prototype, 'decode')
+      .mockReturnValue(mockDecodedData);
+
     const mockResponse = {
-      tokensUnwrappeds: [
+      pushNotifications: [
         {
-          id: 6,
-          from: '0xuser1',
-          targetTariAddress: 'tariAddress1',
-          amount: '1000000000000000000',
-          blockNumber: 12345678,
-          blockTimestamp: blockTimestampSeconds.toString(),
+          id: '1',
+          signature: 'TokensUnwrapped',
+          contract: '0xcontract1',
+          timestamp: blockTimestampSeconds.toString(),
+          blockHash: '0xblockhash1',
+          blockNumber: '12345678',
           transactionHash: '0xhash1',
+          logIndex: '0',
+          seqNumber: '42',
+          transactionData: '0xabcdef1234567890',
         },
       ],
     };
 
     (graphqlRequest.request as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    // Get the actual URL from config
     const subgraphUrl = config().subgraph.url;
 
-    const result = await service.getTokensUnwrapped();
+    const result = await service.getPushNotifications(10);
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       subgraphUrl,
-      expect.stringContaining('tokensUnwrappeds'),
+      expect.stringContaining('pushNotifications'),
     );
+
+    expect(graphqlRequest.request).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('seqNumber_gt: 10'),
+    );
+
     expect(result).toEqual([
       {
-        subgraphId: 6,
+        subgraphId: 42,
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',

@@ -17,14 +17,23 @@ export class SubgraphService {
   async onEventReceived(
     _event: EventBridgeEvent<any, any>,
   ): Promise<Partial<TokensUnwrappedEntity>[]> {
-    const tokensUnwrapped =
-      await this.subgraphClientService.getTokensUnwrapped();
+    const lastRecord = await this.tokensUnwrappedRepository.find({
+      order: { subgraphId: 'DESC' },
+      take: 1,
+    });
 
-    console.log('Subgraph Tokens: ', tokensUnwrapped);
+    const lastSubgraphId = lastRecord[0]?.subgraphId ?? 0;
+
+    console.log('Processing subgraphTokenId: ', lastSubgraphId);
+
+    const tokensUnwrapped =
+      await this.subgraphClientService.getPushNotifications(lastSubgraphId);
+
+    console.log('Saving new events: ', tokensUnwrapped);
 
     const savedTokens =
       await this.tokensUnwrappedRepository.save(tokensUnwrapped);
-    console.log('Saved Tokens: ', savedTokens);
+    console.log('Saved events: ', savedTokens);
 
     return tokensUnwrapped;
   }
