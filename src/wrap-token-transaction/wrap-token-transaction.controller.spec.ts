@@ -261,7 +261,7 @@ describe('WrapTokenTransactionController', () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         {
-          status: WrapTokenTransactionStatus.SAFE_TRANSCTION_CREATED,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
         },
       );
 
@@ -357,7 +357,7 @@ describe('WrapTokenTransactionController', () => {
           id: transaction.id,
           safeNonce: dto.safeNonce,
           safeTxHash: dto.safeTxHash,
-          status: WrapTokenTransactionStatus.SAFE_TRANSCTION_CREATED,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
         }),
       );
 
@@ -368,7 +368,7 @@ describe('WrapTokenTransactionController', () => {
       expect(updatedTransaction?.safeNonce).toBe(dto.safeNonce);
       expect(updatedTransaction?.safeTxHash).toBe(dto.safeTxHash);
       expect(updatedTransaction?.status).toBe(
-        WrapTokenTransactionStatus.SAFE_TRANSCTION_CREATED,
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
       );
     });
 

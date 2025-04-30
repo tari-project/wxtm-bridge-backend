@@ -26,7 +26,7 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
     const transaction = await super.getOne(req);
 
     if (
-      transaction.status === WrapTokenTransactionStatus.SAFE_TRANSCTION_CREATED
+      transaction.status === WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED
     ) {
       throw new BadRequestException(
         ExceptionsMessages.TRANSACTION_STATUS_INCORRECT,
@@ -43,7 +43,7 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
     }
 
     if (dto.safeNonce && dto.safeTxHash) {
-      dto.status = WrapTokenTransactionStatus.SAFE_TRANSCTION_CREATED;
+      dto.status = WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED;
     }
 
     return super.updateOne(req, dto);
