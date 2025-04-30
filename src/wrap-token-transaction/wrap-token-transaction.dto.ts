@@ -1,7 +1,5 @@
 import {
   IsEnum,
-  IsEthereumAddress,
-  IsNotEmpty,
   IsNumber,
   IsNumberString,
   IsOptional,
@@ -9,20 +7,6 @@ import {
 } from 'class-validator';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
-
-export class CreateWrapTokenTransactionDTO {
-  @IsNotEmpty()
-  @IsString()
-  from: string;
-
-  @IsNotEmpty()
-  @IsEthereumAddress()
-  to: string;
-
-  @IsNotEmpty()
-  @IsNumberString()
-  tokenAmount: string;
-}
 
 export class UpdateWrapTokenTransactionDTO
   implements Partial<WrapTokenTransactionEntity>
