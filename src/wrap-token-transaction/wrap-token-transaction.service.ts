@@ -7,7 +7,6 @@ import { CrudRequest } from '@dataui/crud';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 import { ExceptionsMessages } from '../consts/exceptions-messages';
-import { SuccessDTO } from '../dto/success.dto';
 import { UpdateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
 
 @Injectable()
@@ -47,36 +46,5 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
     }
 
     return super.updateOne(req, dto);
-  }
-
-  private async resolveTransactionById(
-    id: string,
-  ): Promise<WrapTokenTransactionEntity> {
-    const transaction = await this.repo.findOne({ where: { id: Number(id) } });
-
-    if (!transaction) {
-      throw new BadRequestException(ExceptionsMessages.TRANSACTION_NOT_FOUND);
-    }
-
-    return transaction;
-  }
-
-  async updateToTokensSent(id: string): Promise<SuccessDTO> {
-    const transaction = await this.resolveTransactionById(id);
-
-    if (transaction.status !== WrapTokenTransactionStatus.CREATED) {
-      throw new BadRequestException(
-        ExceptionsMessages.TRANSACTION_STATUS_INCORRECT,
-      );
-    }
-
-    await this.repo.save({
-      ...transaction,
-      status: WrapTokenTransactionStatus.TOKENS_SENT,
-    });
-
-    return {
-      success: true,
-    };
   }
 }
