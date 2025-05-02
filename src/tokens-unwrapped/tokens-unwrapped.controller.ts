@@ -5,11 +5,15 @@ import { Crud, CrudController } from '@dataui/crud';
 import { AdminGuard } from '../auth/auth.admin.guard';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
 import { TokensUnwrappedService } from './tokens-unwrapped.service';
+import { UpdateTokensUnwrappedDTO } from './tokens-unwrapped.dto';
 
 @Crud({
   model: { type: TokensUnwrappedEntity },
+  dto: {
+    update: UpdateTokensUnwrappedDTO,
+  },
   routes: {
-    only: ['getManyBase', 'getOneBase'],
+    only: ['getManyBase', 'getOneBase', 'updateOneBase'],
     getManyBase: {
       decorators: [
         AdminGuard({ description: 'Returns unwrapped tokens transactions' }),
@@ -18,6 +22,11 @@ import { TokensUnwrappedService } from './tokens-unwrapped.service';
     getOneBase: {
       decorators: [
         AdminGuard({ description: 'Returns unwrapped tokens transaction' }),
+      ],
+    },
+    updateOneBase: {
+      decorators: [
+        AdminGuard({ description: 'Updates unwrapped tokens transaction' }),
       ],
     },
   },
