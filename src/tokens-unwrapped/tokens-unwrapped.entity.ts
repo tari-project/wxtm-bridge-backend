@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
+
 @Entity('tokens_unwrapped')
 export class TokensUnwrappedEntity {
   @PrimaryGeneratedColumn()
@@ -31,6 +33,13 @@ export class TokensUnwrappedEntity {
 
   @Column({ unique: true })
   transactionHash: string;
+
+  @Column({
+    type: 'enum',
+    enum: TokensUnwrappedStatus,
+    default: TokensUnwrappedStatus.TOKENS_BURNED,
+  })
+  status: TokensUnwrappedStatus;
 
   @CreateDateColumn()
   createdAt: Date;
