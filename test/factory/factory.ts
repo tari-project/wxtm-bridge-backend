@@ -30,6 +30,15 @@ export const getFactory = async (): Promise<Factory> => {
           'WrapTokenTransactionEntity.tokenAmount',
           (n) => `${n}`,
         ),
+        feePercentageBps: 25,
+        feeAmount: factory.sequence(
+          'WrapTokenTransactionEntity.feeAmount',
+          (n) => `${n}`,
+        ),
+        amountAfterFee: factory.sequence(
+          'WrapTokenTransactionEntity.amountAfterFee',
+          (n) => `${n}`,
+        ),
       },
     );
 

@@ -154,6 +154,9 @@ describe('WrapTokenTransactionController', () => {
           id: transaction.id,
           tokenAmount: dto.tokenAmount,
           status: dto.status,
+          feePercentageBps: 25,
+          feeAmount: '5',
+          amountAfterFee: '1995',
         }),
       );
 
@@ -162,6 +165,47 @@ describe('WrapTokenTransactionController', () => {
       ).findOne({ where: { id: transaction.id } });
 
       expect(updatedTransaction?.tokenAmount).toBe(dto.tokenAmount);
+      expect(updatedTransaction?.feeAmount).toBe('5');
+      expect(updatedTransaction?.amountAfterFee).toBe('1995');
+      expect(updatedTransaction?.status).toBe(dto.status);
+    });
+
+    it('successfully updates status', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+
+      const dto: UpdateWrapTokenTransactionDTO = {
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          tokenAmount: transaction.tokenAmount,
+          status: dto.status,
+          feePercentageBps: 25,
+          feeAmount: transaction.feeAmount,
+          amountAfterFee: transaction.amountAfterFee,
+        }),
+      );
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.tokenAmount).toBe(transaction.tokenAmount);
+      expect(updatedTransaction?.feeAmount).toBe(transaction.feeAmount);
+      expect(updatedTransaction?.amountAfterFee).toBe(
+        transaction.amountAfterFee,
+      );
       expect(updatedTransaction?.status).toBe(dto.status);
     });
 

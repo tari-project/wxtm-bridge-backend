@@ -8,12 +8,14 @@ import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 import { ExceptionsMessages } from '../consts/exceptions-messages';
 import { UpdateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
+import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 
 @Injectable()
 export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
+    private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {
     super(repo);
   }
@@ -45,6 +47,22 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
       dto.status = WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED;
     }
 
-    return super.updateOne(req, dto);
+    let updateData: Partial<WrapTokenTransactionEntity> = dto;
+
+    if (dto.tokenAmount) {
+      const { amountAfterFee, feeAmount, feePercentageBps } =
+        this.wrapTokenFeesService.calculateFee({
+          tokenAmount: dto.tokenAmount,
+        });
+
+      updateData = {
+        ...dto,
+        amountAfterFee,
+        feeAmount,
+        feePercentageBps,
+      };
+    }
+
+    return super.updateOne(req, updateData);
   }
 }
