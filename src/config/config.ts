@@ -37,4 +37,7 @@ export default (): IConfig => ({
   subgraph: {
     url: process.env.SUBGRAPH_URL || '',
   },
+  fees: {
+    wrapTokenFeePercentageBps: 0.25 * 100, // 0.25% in basis points
+  },
 });
