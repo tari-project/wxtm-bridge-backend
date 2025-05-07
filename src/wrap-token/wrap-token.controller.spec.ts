@@ -53,7 +53,7 @@ describe('WrapTokenController', () => {
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
         to: '0xD34dB33F000000000000000000000000DeAdBeEf',
-        tokenAmount: '1000',
+        tokenAmount: '1000000',
       };
 
       const { body } = await request(app.getHttpServer())
@@ -77,6 +77,9 @@ describe('WrapTokenController', () => {
           tokenAmount: dto.tokenAmount,
           status: WrapTokenTransactionStatus.CREATED,
           paymentId: body.paymentId,
+          feePercentageBps: 25,
+          feeAmount: '2500',
+          amountAfterFee: '997500',
         }),
       );
     });

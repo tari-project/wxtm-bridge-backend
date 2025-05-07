@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { WrapTokenTransactionModule } from './wrap-token-transaction/wrap-token-transaction.module';
 import { TokensUnwrappedModule } from './tokens-unwrapped/tokens-unwrapped.module';
 import { WrapTokenModule } from './wrap-token/wrap-token.module';
+import { WrapTokenFeesModule } from './wrap-token-fees/wrap-token-fees.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WrapTokenModule } from './wrap-token/wrap-token.module';
     WrapTokenModule,
     WrapTokenTransactionModule,
     TokensUnwrappedModule,
+    WrapTokenFeesModule,
   ],
 })
 export class AppModule {}

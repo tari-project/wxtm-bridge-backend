@@ -10,19 +10,29 @@ import {
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 
 @Injectable()
 export class WrapTokenService {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
+    private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {}
 
   async createWrapTokenTransaction(
     dto: CreateWrapTokenReqDTO,
   ): Promise<CreateWrapTokenRespDTO> {
+    const { amountAfterFee, feeAmount, feePercentageBps } =
+      this.wrapTokenFeesService.calculateFee({
+        tokenAmount: dto.tokenAmount,
+      });
+
     const { paymentId } = await this.wrapTokenTransactionRepository.save({
       ...dto,
+      feePercentageBps,
+      feeAmount,
+      amountAfterFee,
     });
 
     return {
