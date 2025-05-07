@@ -16,10 +16,15 @@ export interface ISubgraph {
   url: string;
 }
 
+export interface IFees {
+  wrapTokenFeePercentageBps: number;
+}
+
 export interface IConfig {
   enviroment: Enviroment;
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;
   auth0: IAuth0;
   subgraph: ISubgraph;
+  fees: IFees;
 }
