@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import SafeApiKit from '@safe-global/api-kit';
 
 import { SafeApiService } from './safe-api.service';
-import { TestController } from './tokens-unwrapped.controller';
 import { IConfig } from '../config/config.interface';
 
 @Module({
@@ -22,6 +21,5 @@ import { IConfig } from '../config/config.interface';
     },
   ],
   exports: [SafeApiService],
-  controllers: [TestController],
 })
 export class SafeApiModule {}
