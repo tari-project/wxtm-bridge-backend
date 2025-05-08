@@ -40,4 +40,7 @@ export default (): IConfig => ({
   fees: {
     wrapTokenFeePercentageBps: 0.25 * 100, // 0.25% in basis points
   },
+  blockchain: {
+    chainId: BigInt(process.env.CHAIN_ID || 1),
+  },
 });

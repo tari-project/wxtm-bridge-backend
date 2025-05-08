@@ -20,6 +20,10 @@ export interface IFees {
   wrapTokenFeePercentageBps: number;
 }
 
+export interface IBlockchain {
+  chainId: bigint;
+}
+
 export interface IConfig {
   enviroment: Enviroment;
   database: DataSourceOptions;
@@ -27,4 +31,5 @@ export interface IConfig {
   auth0: IAuth0;
   subgraph: ISubgraph;
   fees: IFees;
+  blockchain: IBlockchain;
 }
