@@ -154,9 +154,9 @@ describe('WrapTokenTransactionController', () => {
           id: transaction.id,
           tokenAmount: dto.tokenAmount,
           status: dto.status,
-          feePercentageBps: 25,
-          feeAmount: '5',
-          amountAfterFee: '1995',
+          feePercentageBps: 30,
+          feeAmount: '6',
+          amountAfterFee: '1994',
         }),
       );
 
@@ -165,8 +165,8 @@ describe('WrapTokenTransactionController', () => {
       ).findOne({ where: { id: transaction.id } });
 
       expect(updatedTransaction?.tokenAmount).toBe(dto.tokenAmount);
-      expect(updatedTransaction?.feeAmount).toBe('5');
-      expect(updatedTransaction?.amountAfterFee).toBe('1995');
+      expect(updatedTransaction?.feeAmount).toBe('6');
+      expect(updatedTransaction?.amountAfterFee).toBe('1994');
       expect(updatedTransaction?.status).toBe(dto.status);
     });
 

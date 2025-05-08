@@ -77,9 +77,9 @@ describe('WrapTokenController', () => {
           tokenAmount: dto.tokenAmount,
           status: WrapTokenTransactionStatus.CREATED,
           paymentId: body.paymentId,
-          feePercentageBps: 25,
-          feeAmount: '2500',
-          amountAfterFee: '997500',
+          feePercentageBps: 30,
+          feeAmount: '3000',
+          amountAfterFee: '997000',
         }),
       );
     });
