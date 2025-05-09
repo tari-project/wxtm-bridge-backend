@@ -5,6 +5,8 @@ import {
   IsString,
 } from 'class-validator';
 
+import { IsMinMaxNumberString } from '../decorators/is-min-max-number-string';
+
 export class CreateWrapTokenReqDTO {
   @IsNotEmpty()
   @IsString()
@@ -16,6 +18,7 @@ export class CreateWrapTokenReqDTO {
 
   @IsNotEmpty()
   @IsNumberString()
+  @IsMinMaxNumberString({ min: '1000000000', max: '1000000000000000' })
   tokenAmount: string;
 }
 

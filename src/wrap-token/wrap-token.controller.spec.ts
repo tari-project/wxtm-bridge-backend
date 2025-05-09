@@ -2,6 +2,7 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { utils } from 'ethers';
 
 import config from '../config/config';
 import {
@@ -53,7 +54,7 @@ describe('WrapTokenController', () => {
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
         to: '0xD34dB33F000000000000000000000000DeAdBeEf',
-        tokenAmount: '1000000',
+        tokenAmount: '1000000000',
       };
 
       const { body } = await request(app.getHttpServer())
@@ -78,10 +79,40 @@ describe('WrapTokenController', () => {
           status: WrapTokenTransactionStatus.CREATED,
           paymentId: body.paymentId,
           feePercentageBps: 30,
-          feeAmount: '3000',
-          amountAfterFee: '997000',
+          feeAmount: '3000000',
+          amountAfterFee: '997000000',
         }),
       );
+    });
+
+    it.each([
+      { amount: '999', description: 'amount less than 1000' },
+      {
+        amount: '1000000001',
+        description: 'amount greater than 1000 000 000',
+      },
+    ])('returns 400 when $description', async ({ amount }) => {
+      const tokenAmount = utils.parseUnits(amount, 6).toString();
+
+      const dto: CreateWrapTokenReqDTO = {
+        from: 'tari_address_123',
+        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        tokenAmount,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .post('/wrap-token')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: [
+          'tokenAmount must be a numeric string greater than  1000000000 and less than 1000000000000000',
+        ],
+        statusCode: 400,
+      });
     });
   });
 
