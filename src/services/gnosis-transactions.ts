@@ -19,7 +19,7 @@ const proposeMintViaSafe = async () => {
   const data = iface.encodeFunctionData('mint', [kmsAddress, amountToMint]);
 
   const safeTransactionData: MetaTransactionData = {
-    to: '0xcBe79AB990E0Ab45Cb9148db7d434477E49b7374',
+    to: process.env.WXTM_PROXY_ADDRESS || '',
     value: '0',
     data,
     operation: OperationType.Call,
@@ -30,7 +30,7 @@ const proposeMintViaSafe = async () => {
   const safe = await Safe.init({
     provider: providerUrl,
     signer: kmsAddress,
-    safeAddress: '0x45300Eac308F4F03fc79f2E95EBDf368E812972F',
+    safeAddress: process.env.SAFE_ADDRESS || '',
   });
 
   const safeTx = await safe.createTransaction({
@@ -61,7 +61,7 @@ const proposeMintViaSafe = async () => {
   try {
     console.log('Proposing transaction to Safe...');
     await safeApiKit.proposeTransaction({
-      safeAddress: '0x45300Eac308F4F03fc79f2E95EBDf368E812972F',
+      safeAddress: process.env.SAFE_ADDRESS || '',
       safeTransactionData: safeTx.data,
       safeTxHash,
       senderAddress: kmsAddress,
