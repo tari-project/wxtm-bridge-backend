@@ -29,7 +29,7 @@ const proposeMintViaSafe = async () => {
 
   const safe = await Safe.init({
     provider: providerUrl,
-    signer: kmsAddress,
+    signer: kmsAddress, // We need it to satisfy execute (for multiple signers we need to reinitialize with proper adresses)
     safeAddress: process.env.SAFE_ADDRESS || '',
   });
 
