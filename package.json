@@ -24,6 +24,7 @@
     "api:generate": "ts-node generate-api.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.808.0",
     "@dataui/crud": "^5.3.0",
     "@dataui/crud-typeorm": "^5.3.0",
     "@graphql-codegen/typescript-graphql-request": "^6.2.0",
@@ -34,7 +35,9 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/typeorm": "^10.0.2",
+    "@rumblefishdev/eth-signer-kms": "^3.1.0",
     "@safe-global/api-kit": "^3.0.1",
+    "@safe-global/protocol-kit": "^6.0.4",
     "@types/uuid": "^10.0.0",
     "@vendia/serverless-express": "^4.3.4",
     "class-transformer": "^0.5.1",
@@ -51,6 +54,7 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
+    "@safe-global/types-kit": "^2.0.1",
     "@types/aws-lambda": "^8.10.75",
     "@types/express": "^4.17.17",
     "@types/factory-girl": "^5.0.12",
