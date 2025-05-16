@@ -10,6 +10,7 @@ import { TokensUnwrappedModule } from './tokens-unwrapped/tokens-unwrapped.modul
 import { WrapTokenModule } from './wrap-token/wrap-token.module';
 import { WrapTokenFeesModule } from './wrap-token-fees/wrap-token-fees.module';
 import { SafeApiModule } from './safe-api/safe-api.module';
+import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m/wrap-token-transaction-m2m.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SafeApiModule } from './safe-api/safe-api.module';
     AuthModule,
     WrapTokenModule,
     WrapTokenTransactionModule,
+    WrapTokenTransactionM2MModule,
     TokensUnwrappedModule,
     WrapTokenFeesModule,
     SafeApiModule,

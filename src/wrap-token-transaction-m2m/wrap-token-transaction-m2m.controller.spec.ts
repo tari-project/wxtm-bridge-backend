@@ -1,0 +1,189 @@
+import request from 'supertest';
+import { ConfigModule } from '@nestjs/config';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { v4 as uuidV4 } from 'uuid';
+
+import config from '../config/config';
+import {
+  TestDatabaseModule,
+  initializeDatabase,
+  clearDatabase,
+  getRepository,
+} from '../../test/database';
+import { setMiddlewares } from '../helpers/setMiddlewares';
+import { getAccessToken } from '../../test/utils/getAccessToken';
+import { Factory, getFactory } from '../../test/factory/factory';
+import { UserEntity } from '../user/user.entity';
+import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m.module';
+import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
+import { TokensReceivedRequestDTO } from './wrap-token-transaction-m2m.dto';
+import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+
+describe('WrapTokenTransactionController', () => {
+  let app: INestApplication;
+  let factory: Factory;
+  let adminAccessToken: string;
+  let admin: UserEntity;
+
+  beforeAll(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({ load: [config], isGlobal: true }),
+        TestDatabaseModule,
+        WrapTokenTransactionM2MModule,
+      ],
+    }).compile();
+
+    app = module.createNestApplication({ bodyParser: true });
+    setMiddlewares(app);
+    await app.init();
+
+    await initializeDatabase();
+    factory = await getFactory();
+  });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    await clearDatabase();
+
+    admin = await factory.create<UserEntity>(UserEntity.name, {
+      isAdmin: true,
+    });
+    adminAccessToken = getAccessToken(admin.auth0Id);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe('GET /wrap-token-transactions-m2m', () => {
+    it('returns all transactions', async () => {
+      await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        3,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .expect(200);
+
+      expect(body).toHaveLength(3);
+    });
+  });
+
+  describe('GET /wrap-token-transactions-m2m/:id', () => {
+    it('returns a specific transaction for the admin', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/wrap-token-transactions-m2m/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toHaveProperty('id', transaction.id);
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
+    it('should update transactions status to TOKENS_RECEIVED', async () => {
+      const [tx_created, tx_token_sent, tx_with_tari_tx_id, tx_other_uuid] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          4,
+          [
+            { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
+            {
+              status: WrapTokenTransactionStatus.TOKENS_SENT,
+              tokenAmount: '1000',
+            },
+            {
+              status: WrapTokenTransactionStatus.TOKENS_SENT,
+              tokenAmount: '1000',
+              tariTxId: '1',
+            },
+            { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
+          ],
+        );
+
+      const dto: TokensReceivedRequestDTO = {
+        tokenTransactions: [
+          {
+            paymentId: tx_created.paymentId,
+            txId: '1',
+            amount: '1',
+            timestamp: '1747209840',
+          },
+          {
+            paymentId: tx_token_sent.paymentId,
+            txId: '2',
+            amount: '2',
+            timestamp: '1747209840',
+          },
+          {
+            paymentId: tx_with_tari_tx_id.paymentId,
+            txId: '3',
+            amount: '3',
+            timestamp: '1747209840',
+          },
+          {
+            paymentId: uuidV4(),
+            txId: '4',
+            amount: '4',
+            timestamp: '1747209840',
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/tokens-received')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(4);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_created.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariTxId: '1',
+            tokenAmount: '1',
+            tariTxTimestamp: 1747209840,
+          }),
+          expect.objectContaining({
+            id: tx_token_sent.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariTxId: '2',
+            tokenAmount: '2',
+            tariTxTimestamp: 1747209840,
+          }),
+          expect.objectContaining({
+            id: tx_with_tari_tx_id.id,
+            status: WrapTokenTransactionStatus.TOKENS_SENT,
+            tariTxId: '1',
+            tokenAmount: '1000',
+            tariTxTimestamp: null,
+          }),
+          expect.objectContaining({
+            id: tx_other_uuid.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tariTxId: null,
+            tokenAmount: '1000',
+            tariTxTimestamp: null,
+          }),
+        ]),
+      );
+    });
+  });
+});

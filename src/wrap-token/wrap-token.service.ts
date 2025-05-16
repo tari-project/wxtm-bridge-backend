@@ -20,16 +20,21 @@ export class WrapTokenService {
     private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {}
 
-  async createWrapTokenTransaction(
-    dto: CreateWrapTokenReqDTO,
-  ): Promise<CreateWrapTokenRespDTO> {
+  async createWrapTokenTransaction({
+    from,
+    to,
+    tokenAmount,
+  }: CreateWrapTokenReqDTO): Promise<CreateWrapTokenRespDTO> {
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({
-        tokenAmount: dto.tokenAmount,
+        tokenAmount,
       });
 
     const { paymentId } = await this.wrapTokenTransactionRepository.save({
-      ...dto,
+      from,
+      to,
+      tokenAmount,
+      userProvidedTokenAmount: tokenAmount,
       feePercentageBps,
       feeAmount,
       amountAfterFee,

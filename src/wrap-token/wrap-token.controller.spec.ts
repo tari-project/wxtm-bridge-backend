@@ -76,6 +76,7 @@ describe('WrapTokenController', () => {
           from: dto.from,
           to: dto.to,
           tokenAmount: dto.tokenAmount,
+          userProvidedTokenAmount: dto.tokenAmount,
           status: WrapTokenTransactionStatus.CREATED,
           paymentId: body.paymentId,
           feePercentageBps: 30,
