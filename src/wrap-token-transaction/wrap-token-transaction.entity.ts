@@ -29,6 +29,9 @@ export class WrapTokenTransactionEntity {
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   tokenAmount: string;
 
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  userProvidedTokenAmount: string;
+
   @Column()
   feePercentageBps: number;
 
@@ -50,6 +53,12 @@ export class WrapTokenTransactionEntity {
 
   @Column({ nullable: true })
   safeNonce?: number;
+
+  @Column({ nullable: true })
+  tariTxId?: string;
+
+  @Column({ nullable: true })
+  tariTxTimestamp?: number;
 
   @CreateDateColumn()
   createdAt: Date;
