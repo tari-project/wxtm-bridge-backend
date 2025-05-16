@@ -21,7 +21,7 @@
     "migrations:run": "npm run typeorm migration:run -t false",
     "migrations:generate": "npm run typeorm migration:generate",
     "main": "docker exec -it wxtm-bridge-backend-app-1 bash",
-    "api:generate": "ts-node generate-api.ts"
+    "api:generate": "ts-node generate-api.ts && ts-node generate-api-node.ts"
   },
   "dependencies": {
     "@dataui/crud": "^5.3.0",
@@ -75,6 +75,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "node-fetch": "^3.3.2",
+    "@types/node-fetch": "^2.6.12"
   }
 }
