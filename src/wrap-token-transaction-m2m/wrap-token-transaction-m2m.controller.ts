@@ -7,6 +7,7 @@ import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token
 import {
   TokensReceivedRequestDTO,
   TransactionProposedRequestDTO,
+  ErrorUpdateRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 
@@ -46,5 +47,10 @@ export class WrapTokenTransactionM2MController
     @Body() dto: TransactionProposedRequestDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTransactionProposed(dto);
+  }
+
+  @Patch('set-error')
+  setCurrentError(@Body() dto: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
+    return this.service.setCurrentError(dto);
   }
 }

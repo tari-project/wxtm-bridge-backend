@@ -7,6 +7,7 @@ import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token
 import {
   TokensReceivedRequestDTO,
   TransactionProposedRequestDTO,
+  ErrorUpdateRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
@@ -21,9 +22,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToTokensReceived({
-    tokenTransactions,
+    wallelTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of tokenTransactions) {
+    for (const transaction of wallelTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -51,9 +52,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToTransactionProposed({
-    transactions,
+    wallelTransactions,
   }: TransactionProposedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of transactions) {
+    for (const transaction of wallelTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -62,6 +63,25 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         },
         {
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        },
+      );
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  async setCurrentError({
+    wallelTransactions,
+  }: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
+    for (const transaction of wallelTransactions) {
+      await this.repo.update(
+        {
+          paymentId: transaction.paymentId,
+        },
+        {
+          error: transaction.error,
         },
       );
     }

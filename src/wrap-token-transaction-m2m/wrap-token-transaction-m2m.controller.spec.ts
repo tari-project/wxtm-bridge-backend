@@ -20,6 +20,7 @@ import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token
 import {
   TokensReceivedRequestDTO,
   TransactionProposedRequestDTO,
+  ErrorUpdateRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 
@@ -114,7 +115,7 @@ describe('WrapTokenTransactionController', () => {
         );
 
       const dto: TokensReceivedRequestDTO = {
-        tokenTransactions: [
+        wallelTransactions: [
           {
             paymentId: tx_created.paymentId,
             txId: '1',
@@ -213,7 +214,7 @@ describe('WrapTokenTransactionController', () => {
         );
 
       const dto: TransactionProposedRequestDTO = {
-        transactions: [
+        wallelTransactions: [
           {
             paymentId: tx_received.paymentId,
           },
@@ -252,6 +253,54 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_no_tari_tx_id.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          }),
+        ]),
+      );
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/set-error', () => {
+    it('should update error field for transactions', async () => {
+      const [tx1, tx2] = await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        2,
+      );
+
+      const dto: ErrorUpdateRequestDTO = {
+        wallelTransactions: [
+          {
+            paymentId: tx1.paymentId,
+            error: { code: 'ERR_1', message: 'Test error 1' },
+          },
+          {
+            paymentId: tx2.paymentId,
+            error: { code: 'ERR_2', message: 'Test error 2' },
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/set-error')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx1.id,
+            error: { code: 'ERR_1', message: 'Test error 1' },
+          }),
+          expect.objectContaining({
+            id: tx2.id,
+            error: { code: 'ERR_2', message: 'Test error 2' },
           }),
         ]),
       );
