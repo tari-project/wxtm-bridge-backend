@@ -7,6 +7,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    networks:
+      - shared-wxtm-network
 
   test-db:
     image: postgres:17.4
@@ -17,7 +19,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
 
-  app:
+  wxtm-backend:
     build:
       context: .
     user: node
@@ -38,6 +40,8 @@ services:
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
       CHAIN_ID: 11155111
     command: 'npm run start:dev'
+    networks:
+      - shared-wxtm-network
 
   tests-runner:
     build:
@@ -57,3 +61,7 @@ services:
       AUTH0_AUDIENCE: auth0_audience
       CHAIN_ID: 11155111
     command: npm run test
+
+networks:
+  shared-wxtm-network:
+    external: true
