@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class TokenTransactionDTO {
+export class WalletTransactionDTO {
   @IsNumberString()
   @IsNotEmpty()
   txId: string;
@@ -30,8 +30,8 @@ export class TokensReceivedRequestDTO {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => TokenTransactionDTO)
-  tokenTransactions: TokenTransactionDTO[];
+  @Type(() => WalletTransactionDTO)
+  wallelTransactions: WalletTransactionDTO[];
 }
 
 export class TransactionProposedDTO {
@@ -45,5 +45,22 @@ export class TransactionProposedRequestDTO {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TransactionProposedDTO)
-  transactions: TransactionProposedDTO[];
+  wallelTransactions: TransactionProposedDTO[];
+}
+
+export class ErrorUpdateDTO {
+  @IsUUID()
+  @IsNotEmpty()
+  paymentId: string;
+
+  @IsNotEmpty()
+  error: Record<string, string>;
+}
+
+export class ErrorUpdateRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ErrorUpdateDTO)
+  wallelTransactions: ErrorUpdateDTO[];
 }

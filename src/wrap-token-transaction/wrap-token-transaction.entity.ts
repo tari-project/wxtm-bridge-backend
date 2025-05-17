@@ -48,6 +48,9 @@ export class WrapTokenTransactionEntity {
   })
   status: WrapTokenTransactionStatus;
 
+  @Column({ type: 'jsonb', nullable: true })
+  error?: Record<string, string>;
+
   @Column({ nullable: true })
   safeTxHash?: string;
 
