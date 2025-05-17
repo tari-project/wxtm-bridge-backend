@@ -33,3 +33,17 @@ export class TokensReceivedRequestDTO {
   @Type(() => TokenTransactionDTO)
   tokenTransactions: TokenTransactionDTO[];
 }
+
+export class TransactionProposedDTO {
+  @IsUUID()
+  @IsNotEmpty()
+  paymentId: string;
+}
+
+export class TransactionProposedRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TransactionProposedDTO)
+  transactions: TransactionProposedDTO[];
+}

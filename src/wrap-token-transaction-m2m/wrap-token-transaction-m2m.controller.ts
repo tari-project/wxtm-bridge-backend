@@ -4,7 +4,10 @@ import { Crud, CrudController } from '@dataui/crud';
 
 import { WrapTokenTransactionM2MService } from './wrap-token-transaction-m2m.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
-import { TokensReceivedRequestDTO } from './wrap-token-transaction-m2m.dto';
+import {
+  TokensReceivedRequestDTO,
+  TransactionProposedRequestDTO,
+} from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 
 @Crud({
@@ -32,9 +35,16 @@ export class WrapTokenTransactionM2MController
   constructor(public service: WrapTokenTransactionM2MService) {}
 
   @Patch('tokens-received')
-  async updateToTokensReceived(
+  updateToTokensReceived(
     @Body() dto: TokensReceivedRequestDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTokensReceived(dto);
+  }
+
+  @Patch('transaction-proposed')
+  updateToTransactionProposed(
+    @Body() dto: TransactionProposedRequestDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToTransactionProposed(dto);
   }
 }
