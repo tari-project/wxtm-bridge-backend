@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
-import { TokensReceivedRequestDTO } from './wrap-token-transaction-m2m.dto';
+import {
+  TokensReceivedRequestDTO,
+  TransactionProposedRequestDTO,
+} from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
 
@@ -38,6 +41,27 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           tariTxTimestamp: transaction.timestamp
             ? Number(transaction.timestamp)
             : undefined,
+        },
+      );
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  async updateToTransactionProposed({
+    transactions,
+  }: TransactionProposedRequestDTO): Promise<SuccessDTO> {
+    for (const transaction of transactions) {
+      await this.repo.update(
+        {
+          paymentId: transaction.paymentId,
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          tariTxId: Not(IsNull()),
+        },
+        {
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
         },
       );
     }

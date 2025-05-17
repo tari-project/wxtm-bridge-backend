@@ -17,7 +17,10 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m.module';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
-import { TokensReceivedRequestDTO } from './wrap-token-transaction-m2m.dto';
+import {
+  TokensReceivedRequestDTO,
+  TransactionProposedRequestDTO,
+} from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 
 describe('WrapTokenTransactionController', () => {
@@ -181,6 +184,74 @@ describe('WrapTokenTransactionController', () => {
             tariTxId: null,
             tokenAmount: '1000',
             tariTxTimestamp: null,
+          }),
+        ]),
+      );
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/transaction-proposed', () => {
+    it('should update transactions status to SAFE_TRANSACTION_CREATED', async () => {
+      const [tx_received, tx_other_status, tx_no_tari_tx_id] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+              tariTxId: '123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariTxId: '123',
+            },
+            {
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+              tariTxId: undefined,
+            },
+          ],
+        );
+
+      const dto: TransactionProposedRequestDTO = {
+        transactions: [
+          {
+            paymentId: tx_received.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_tari_tx_id.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-proposed')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_received.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+          }),
+          expect.objectContaining({
+            id: tx_no_tari_tx_id.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           }),
         ]),
       );
