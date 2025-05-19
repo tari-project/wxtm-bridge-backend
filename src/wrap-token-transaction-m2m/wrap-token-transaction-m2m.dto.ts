@@ -2,8 +2,10 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsOptional,
+  IsString,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
@@ -38,6 +40,14 @@ export class TransactionProposedDTO {
   @IsUUID()
   @IsNotEmpty()
   paymentId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  safeTxHash: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  safeNonce: number;
 }
 
 export class TransactionProposedRequestDTO {
