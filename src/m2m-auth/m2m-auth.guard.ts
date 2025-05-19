@@ -21,11 +21,9 @@ export class M2MAuthStrategy extends PassportStrategy(
   }
 
   async validate(request: Request): Promise<boolean> {
-    // Extract the token from the Authorization header
     const authHeader = request.headers.authorization;
     const stateMachineAuth = request.headers['state-machine-auth'] as string;
 
-    // Check if the auth header starts with "Bearer "
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7); // Remove 'Bearer ' prefix
       if (token && token === this.authToken) {
@@ -33,12 +31,10 @@ export class M2MAuthStrategy extends PassportStrategy(
       }
     }
 
-    // Also check the state-machine-auth header
     if (stateMachineAuth && stateMachineAuth === this.authToken) {
       return true;
     }
 
-    // If we reach here, authentication failed
     return false;
   }
 }
