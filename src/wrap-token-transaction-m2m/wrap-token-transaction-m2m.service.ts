@@ -25,10 +25,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToTokensReceived({
-    wallelTransactions,
+    walletTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
-      const { amountAfterFee, feeAmount, feePercentageBps } =
+    for (const transaction of walletTransactions) {
+      const { amountAfterFee, feeAmount } =
         this.wrapTokenFeesService.calculateFee({
           tokenAmount: transaction.amount,
         });
@@ -48,7 +48,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           tokenAmount: transaction.amount,
           amountAfterFee,
           feeAmount,
-          feePercentageBps,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           tariTxTimestamp: transaction.timestamp
             ? Number(transaction.timestamp)
@@ -63,9 +62,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToCreatingTransaction({
-    wallelTransactions,
+    walletTransactions,
   }: CreatingTransactionRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -84,9 +83,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToTransactionCreated({
-    wallelTransactions,
+    walletTransactions,
   }: TransactionCreatedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -107,9 +106,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async setCurrentError({
-    wallelTransactions,
+    walletTransactions,
   }: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
