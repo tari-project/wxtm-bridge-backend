@@ -36,7 +36,21 @@ export class TokensReceivedRequestDTO {
   wallelTransactions: WalletTransactionDTO[];
 }
 
-export class TransactionProposedDTO {
+export class CreatingTransactionDTO {
+  @IsUUID()
+  @IsNotEmpty()
+  paymentId: string;
+}
+
+export class CreatingTransactionRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreatingTransactionDTO)
+  wallelTransactions: CreatingTransactionDTO[];
+}
+
+export class TransactionCreatedDTO {
   @IsUUID()
   @IsNotEmpty()
   paymentId: string;
@@ -50,12 +64,12 @@ export class TransactionProposedDTO {
   safeNonce: number;
 }
 
-export class TransactionProposedRequestDTO {
+export class TransactionCreatedRequestDTO {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => TransactionProposedDTO)
-  wallelTransactions: TransactionProposedDTO[];
+  @Type(() => TransactionCreatedDTO)
+  wallelTransactions: TransactionCreatedDTO[];
 }
 
 export class ErrorUpdateDTO {

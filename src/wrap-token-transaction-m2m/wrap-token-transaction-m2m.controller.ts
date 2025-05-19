@@ -6,8 +6,9 @@ import { WrapTokenTransactionM2MService } from './wrap-token-transaction-m2m.ser
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
   TokensReceivedRequestDTO,
-  TransactionProposedRequestDTO,
   ErrorUpdateRequestDTO,
+  TransactionCreatedRequestDTO,
+  CreatingTransactionRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
@@ -50,14 +51,24 @@ export class WrapTokenTransactionM2MController
     return this.service.updateToTokensReceived(dto);
   }
 
-  @Patch('transaction-proposed')
+  @Patch('creating-transaction')
   @M2MAuthGuard({
-    description: 'Update transaction proposed status with M2M authentication',
+    description: 'Update to creating transaction status',
   })
-  updateToTransactionProposed(
-    @Body() dto: TransactionProposedRequestDTO,
+  updateToCreatingTransaction(
+    @Body() dto: CreatingTransactionRequestDTO,
   ): Promise<SuccessDTO> {
-    return this.service.updateToTransactionProposed(dto);
+    return this.service.updateToCreatingTransaction(dto);
+  }
+
+  @Patch('transaction-created')
+  @M2MAuthGuard({
+    description: 'Update to transaction created status',
+  })
+  updateToTransactionCreated(
+    @Body() dto: TransactionCreatedRequestDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToTransactionCreated(dto);
   }
 
   @Patch('set-error')
