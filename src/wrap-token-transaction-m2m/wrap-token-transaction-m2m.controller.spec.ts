@@ -457,10 +457,12 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx1.id,
             error: { code: 'ERR_1', message: 'Test error 1' },
+            status: WrapTokenTransactionStatus.UNPROCESSABLE,
           }),
           expect.objectContaining({
             id: tx2.id,
             error: { code: 'ERR_2', message: 'Test error 2' },
+            status: WrapTokenTransactionStatus.UNPROCESSABLE,
           }),
         ]),
       );
