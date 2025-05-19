@@ -62,6 +62,9 @@ export class WrapTokenTransactionM2MController
   }
 
   @Patch('transaction-created')
+  @M2MAuthGuard({
+    description: 'Update to transaction created status',
+  })
   updateToTransactionCreated(
     @Body() dto: TransactionCreatedRequestDTO,
   ): Promise<SuccessDTO> {

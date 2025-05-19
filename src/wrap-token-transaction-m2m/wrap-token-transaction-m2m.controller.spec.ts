@@ -27,11 +27,9 @@ import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
   let factory: Factory;
-  let m2mToken: string;
+  const m2mToken = 'test-m2m-auth-token';
 
   beforeAll(async () => {
-    m2mToken = 'test-m2m-auth-token';
-
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [config], isGlobal: true }),
@@ -229,6 +227,17 @@ describe('WrapTokenTransactionController', () => {
         ]),
       );
     });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/tokens-received')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
   });
 
   describe('PATCH /wrap-token-transactions-m2m/creating-transaction', () => {
@@ -303,6 +312,17 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/creating-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
     });
   });
 
@@ -385,6 +405,17 @@ describe('WrapTokenTransactionController', () => {
         ]),
       );
     });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-created')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
   });
 
   describe('PATCH /wrap-token-transactions-m2m/set-error', () => {
@@ -434,5 +465,16 @@ describe('WrapTokenTransactionController', () => {
         ]),
       );
     });
+  });
+
+  it('should not be accessible with an incorrect token', async () => {
+    const { body } = await request(app.getHttpServer())
+      .patch('/wrap-token-transactions-m2m/set-error')
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer incorect-token`)
+      .send({})
+      .expect(401);
+
+    expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
   });
 });
