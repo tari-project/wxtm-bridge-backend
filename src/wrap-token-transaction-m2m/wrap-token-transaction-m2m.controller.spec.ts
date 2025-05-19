@@ -217,12 +217,18 @@ describe('WrapTokenTransactionController', () => {
         wallelTransactions: [
           {
             paymentId: tx_received.paymentId,
+            safeTxHash: 'tx_1_hash',
+            safeNonce: 1,
           },
           {
             paymentId: tx_other_status.paymentId,
+            safeTxHash: 'tx_2_hash',
+            safeNonce: 2,
           },
           {
             paymentId: tx_no_tari_tx_id.paymentId,
+            safeTxHash: 'tx_3_hash',
+            safeNonce: 3,
           },
         ],
       };
@@ -245,14 +251,20 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_received.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            safeTxHash: 'tx_1_hash',
+            safeNonce: 1,
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
+            safeTxHash: null,
+            safeNonce: null,
           }),
           expect.objectContaining({
             id: tx_no_tari_tx_id.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            safeTxHash: null,
+            safeNonce: null,
           }),
         ]),
       );
