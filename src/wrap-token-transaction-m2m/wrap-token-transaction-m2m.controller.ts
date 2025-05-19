@@ -10,6 +10,7 @@ import {
   ErrorUpdateRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
+import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
 
 @Crud({
   model: { type: WrapTokenTransactionEntity },
@@ -17,12 +18,16 @@ import { SuccessDTO } from '../dto/success.dto';
     only: ['getManyBase', 'getOneBase'],
     getManyBase: {
       decorators: [
-        //TODO Add m2m guard
+        M2MAuthGuard({
+          description: 'This endpoint is protected by M2M authentication',
+        }),
       ],
     },
     getOneBase: {
       decorators: [
-        //TODO Add m2m guard
+        M2MAuthGuard({
+          description: 'This endpoint is protected by M2M authentication',
+        }),
       ],
     },
   },
@@ -36,6 +41,9 @@ export class WrapTokenTransactionM2MController
   constructor(public service: WrapTokenTransactionM2MService) {}
 
   @Patch('tokens-received')
+  @M2MAuthGuard({
+    description: 'Update tokens received status with M2M authentication',
+  })
   updateToTokensReceived(
     @Body() dto: TokensReceivedRequestDTO,
   ): Promise<SuccessDTO> {
@@ -43,6 +51,9 @@ export class WrapTokenTransactionM2MController
   }
 
   @Patch('transaction-proposed')
+  @M2MAuthGuard({
+    description: 'Update transaction proposed status with M2M authentication',
+  })
   updateToTransactionProposed(
     @Body() dto: TransactionProposedRequestDTO,
   ): Promise<SuccessDTO> {
@@ -50,6 +61,9 @@ export class WrapTokenTransactionM2MController
   }
 
   @Patch('set-error')
+  @M2MAuthGuard({
+    description: 'Set error status with M2M authentication',
+  })
   setCurrentError(@Body() dto: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
     return this.service.setCurrentError(dto);
   }
