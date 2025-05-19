@@ -28,8 +28,6 @@ import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
   let factory: Factory;
-  let adminAccessToken: string;
-  let admin: UserEntity;
   let m2mToken: string;
 
   beforeAll(async () => {
@@ -55,11 +53,6 @@ describe('WrapTokenTransactionController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     await clearDatabase();
-
-    admin = await factory.create<UserEntity>(UserEntity.name, {
-      isAdmin: true,
-    });
-    adminAccessToken = getAccessToken(admin.auth0Id);
   });
 
   afterAll(async () => {
