@@ -12,12 +12,14 @@ import {
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
+import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
+    private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {
     super(repo);
   }
@@ -26,6 +28,11 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     wallelTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
     for (const transaction of wallelTransactions) {
+      const { amountAfterFee, feeAmount, feePercentageBps } =
+        this.wrapTokenFeesService.calculateFee({
+          tokenAmount: transaction.amount,
+        });
+
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -39,6 +46,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           tariTxId: transaction.txId,
           tokenAmount: transaction.amount,
+          amountAfterFee,
+          feeAmount,
+          feePercentageBps,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           tariTxTimestamp: transaction.timestamp
             ? Number(transaction.timestamp)
