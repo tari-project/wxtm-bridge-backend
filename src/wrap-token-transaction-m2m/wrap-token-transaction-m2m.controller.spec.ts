@@ -23,18 +23,23 @@ import {
   ErrorUpdateRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
   let factory: Factory;
   let adminAccessToken: string;
   let admin: UserEntity;
+  let m2mToken: string;
 
   beforeAll(async () => {
+    m2mToken = 'test-m2m-auth-token';
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [config], isGlobal: true }),
         TestDatabaseModule,
+        M2MAuthModule.register({ authToken: m2mToken }),
         WrapTokenTransactionM2MModule,
       ],
     }).compile();
@@ -62,7 +67,22 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('GET /wrap-token-transactions-m2m', () => {
-    it('returns all transactions', async () => {
+    it('returns 401 without M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .expect(401);
+    });
+
+    it('returns 401 with invalid M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer invalid-token')
+        .expect(401);
+    });
+
+    it('returns all transactions with valid M2M auth token', async () => {
       await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         3,
@@ -71,6 +91,22 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .get('/wrap-token-transactions-m2m')
         .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .expect(200);
+
+      expect(body).toHaveLength(3);
+    });
+
+    it('accepts M2M token in state-machine-auth header', async () => {
+      await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        3,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .set('state-machine-auth', m2mToken)
         .expect(200);
 
       expect(body).toHaveLength(3);
@@ -78,6 +114,17 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('GET /wrap-token-transactions-m2m/:id', () => {
+    it('returns 401 without M2M auth token', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+
+      await request(app.getHttpServer())
+        .get(`/wrap-token-transactions-m2m/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .expect(401);
+    });
+
     it('returns a specific transaction for the admin', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
@@ -86,7 +133,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .get(`/wrap-token-transactions-m2m/${transaction.id}`)
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .set('Authorization', `Bearer ${m2mToken}`)
         .expect(200);
 
       expect(body).toHaveProperty('id', transaction.id);
@@ -146,6 +193,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/tokens-received')
         .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
         .expect(200);
 
@@ -230,6 +278,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/transaction-proposed')
         .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
         .expect(200);
 
@@ -282,6 +331,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/set-error')
         .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
         .expect(200);
 
