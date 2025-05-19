@@ -12,6 +12,10 @@ export interface IAuth0 {
   audience: string;
 }
 
+export interface IM2MAuth {
+  token: string;
+}
+
 export interface ISubgraph {
   url: string;
 }
@@ -29,6 +33,7 @@ export interface IConfig {
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;
   auth0: IAuth0;
+  m2mAuth: IM2MAuth;
   subgraph: ISubgraph;
   fees: IFees;
   blockchain: IBlockchain;

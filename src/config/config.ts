@@ -34,6 +34,9 @@ export default (): IConfig => ({
     domain: process.env.AUTH0_DOMAIN || '',
     audience: process.env.AUTH0_AUDIENCE || '',
   },
+  m2mAuth: {
+    token: process.env.M2M_AUTH_TOKEN || '',
+  },
   subgraph: {
     url: process.env.SUBGRAPH_URL || '',
   },
