@@ -33,7 +33,7 @@ export class TokensReceivedRequestDTO {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => WalletTransactionDTO)
-  wallelTransactions: WalletTransactionDTO[];
+  walletTransactions: WalletTransactionDTO[];
 }
 
 export class CreatingTransactionDTO {
@@ -47,7 +47,7 @@ export class CreatingTransactionRequestDTO {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreatingTransactionDTO)
-  wallelTransactions: CreatingTransactionDTO[];
+  walletTransactions: CreatingTransactionDTO[];
 }
 
 export class TransactionCreatedDTO {
@@ -69,7 +69,7 @@ export class TransactionCreatedRequestDTO {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TransactionCreatedDTO)
-  wallelTransactions: TransactionCreatedDTO[];
+  walletTransactions: TransactionCreatedDTO[];
 }
 
 export class ErrorUpdateDTO {
@@ -86,5 +86,5 @@ export class ErrorUpdateRequestDTO {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ErrorUpdateDTO)
-  wallelTransactions: ErrorUpdateDTO[];
+  walletTransactions: ErrorUpdateDTO[];
 }

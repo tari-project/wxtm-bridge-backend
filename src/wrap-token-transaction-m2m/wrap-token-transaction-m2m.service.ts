@@ -12,20 +12,27 @@ import {
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
+import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
+    private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {
     super(repo);
   }
 
   async updateToTokensReceived({
-    wallelTransactions,
+    walletTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
+      const { amountAfterFee, feeAmount } =
+        this.wrapTokenFeesService.calculateFee({
+          tokenAmount: transaction.amount,
+        });
+
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -39,6 +46,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           tariTxId: transaction.txId,
           tokenAmount: transaction.amount,
+          amountAfterFee,
+          feeAmount,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           tariTxTimestamp: transaction.timestamp
             ? Number(transaction.timestamp)
@@ -53,9 +62,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToCreatingTransaction({
-    wallelTransactions,
+    walletTransactions,
   }: CreatingTransactionRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -74,9 +83,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async updateToTransactionCreated({
-    wallelTransactions,
+    walletTransactions,
   }: TransactionCreatedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
@@ -97,9 +106,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   }
 
   async setCurrentError({
-    wallelTransactions,
+    walletTransactions,
   }: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of wallelTransactions) {
+    for (const transaction of walletTransactions) {
       await this.repo.update(
         {
           paymentId: transaction.paymentId,

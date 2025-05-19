@@ -131,7 +131,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
-    it('should update transactions status to TOKENS_RECEIVED', async () => {
+    it('should update transactions status to TOKENS_RECEIVED and calculate fees', async () => {
       const [tx_created, tx_token_sent, tx_with_tari_tx_id, tx_other_uuid] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -152,29 +152,29 @@ describe('WrapTokenTransactionController', () => {
         );
 
       const dto: TokensReceivedRequestDTO = {
-        wallelTransactions: [
+        walletTransactions: [
           {
             paymentId: tx_created.paymentId,
             txId: '1',
-            amount: '1',
+            amount: '1000',
             timestamp: '1747209840',
           },
           {
             paymentId: tx_token_sent.paymentId,
             txId: '2',
-            amount: '2',
+            amount: '2000',
             timestamp: '1747209840',
           },
           {
             paymentId: tx_with_tari_tx_id.paymentId,
             txId: '3',
-            amount: '3',
+            amount: '3000',
             timestamp: '1747209840',
           },
           {
             paymentId: uuidV4(),
             txId: '4',
-            amount: '4',
+            amount: '4000',
             timestamp: '1747209840',
           },
         ],
@@ -200,15 +200,19 @@ describe('WrapTokenTransactionController', () => {
             id: tx_created.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariTxId: '1',
-            tokenAmount: '1',
+            tokenAmount: '1000',
             tariTxTimestamp: 1747209840,
+            amountAfterFee: '997',
+            feeAmount: '3',
           }),
           expect.objectContaining({
             id: tx_token_sent.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariTxId: '2',
-            tokenAmount: '2',
+            tokenAmount: '2000',
             tariTxTimestamp: 1747209840,
+            amountAfterFee: '1994',
+            feeAmount: '6',
           }),
           expect.objectContaining({
             id: tx_with_tari_tx_id.id,
@@ -263,7 +267,7 @@ describe('WrapTokenTransactionController', () => {
         );
 
       const dto: CreatingTransactionRequestDTO = {
-        wallelTransactions: [
+        walletTransactions: [
           {
             paymentId: tx_received.paymentId,
           },
@@ -349,7 +353,7 @@ describe('WrapTokenTransactionController', () => {
         );
 
       const dto: TransactionCreatedRequestDTO = {
-        wallelTransactions: [
+        walletTransactions: [
           {
             paymentId: tx_received.paymentId,
             safeTxHash: 'tx_1_hash',
@@ -426,7 +430,7 @@ describe('WrapTokenTransactionController', () => {
       );
 
       const dto: ErrorUpdateRequestDTO = {
-        wallelTransactions: [
+        walletTransactions: [
           {
             paymentId: tx1.paymentId,
             error: { code: 'ERR_1', message: 'Test error 1' },
