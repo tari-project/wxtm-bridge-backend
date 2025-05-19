@@ -11,6 +11,7 @@ import { WrapTokenModule } from './wrap-token/wrap-token.module';
 import { WrapTokenFeesModule } from './wrap-token-fees/wrap-token-fees.module';
 import { SafeApiModule } from './safe-api/safe-api.module';
 import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m/wrap-token-transaction-m2m.module';
+import { M2MAuthModule } from './m2m-auth/m2m-auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m/wrap
       isGlobal: true,
       load: [config],
     }),
+    M2MAuthModule.forRoot(),
     DatabaseModule,
     UserModule,
     AuthModule,
