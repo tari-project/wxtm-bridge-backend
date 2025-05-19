@@ -17,8 +17,9 @@ import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m.modu
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
   TokensReceivedRequestDTO,
-  TransactionProposedRequestDTO,
   ErrorUpdateRequestDTO,
+  CreatingTransactionRequestDTO,
+  TransactionCreatedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
@@ -230,8 +231,8 @@ describe('WrapTokenTransactionController', () => {
     });
   });
 
-  describe('PATCH /wrap-token-transactions-m2m/transaction-proposed', () => {
-    it('should update transactions status to SAFE_TRANSACTION_CREATED', async () => {
+  describe('PATCH /wrap-token-transactions-m2m/creating-transaction', () => {
+    it('should update transactions status to SAFE_TRANSACTION_CREATING', async () => {
       const [tx_received, tx_other_status, tx_no_tari_tx_id] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -252,7 +253,82 @@ describe('WrapTokenTransactionController', () => {
           ],
         );
 
-      const dto: TransactionProposedRequestDTO = {
+      const dto: CreatingTransactionRequestDTO = {
+        wallelTransactions: [
+          {
+            paymentId: tx_received.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_tari_tx_id.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/creating-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_received.id,
+            status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+            safeTxHash: null,
+            safeNonce: null,
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            safeTxHash: null,
+            safeNonce: null,
+          }),
+          expect.objectContaining({
+            id: tx_no_tari_tx_id.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            safeTxHash: null,
+            safeNonce: null,
+          }),
+        ]),
+      );
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/transaction-created', () => {
+    it('should update transactions status to SAFE_TRANSACTION_CREATED', async () => {
+      const [tx_received, tx_other_status, tx_no_tari_tx_id] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+              tariTxId: '123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariTxId: '123',
+            },
+            {
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+              tariTxId: undefined,
+            },
+          ],
+        );
+
+      const dto: TransactionCreatedRequestDTO = {
         wallelTransactions: [
           {
             paymentId: tx_received.paymentId,
@@ -273,7 +349,7 @@ describe('WrapTokenTransactionController', () => {
       };
 
       const { body } = await request(app.getHttpServer())
-        .patch('/wrap-token-transactions-m2m/transaction-proposed')
+        .patch('/wrap-token-transactions-m2m/transaction-created')
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
