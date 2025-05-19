@@ -12,9 +12,7 @@ import {
   getRepository,
 } from '../../test/database';
 import { setMiddlewares } from '../helpers/setMiddlewares';
-import { getAccessToken } from '../../test/utils/getAccessToken';
 import { Factory, getFactory } from '../../test/factory/factory';
-import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m.module';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
