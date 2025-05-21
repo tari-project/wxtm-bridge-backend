@@ -9,6 +9,8 @@ import {
   ErrorUpdateRequestDTO,
   TransactionCreatedRequestDTO,
   CreatingTransactionRequestDTO,
+  ExecutingTransactionRequestDTO,
+  TransactionExecutedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
@@ -77,5 +79,25 @@ export class WrapTokenTransactionM2MController
   })
   setCurrentError(@Body() dto: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
     return this.service.setCurrentError(dto);
+  }
+
+  @Patch('executing-transaction')
+  @M2MAuthGuard({
+    description: 'Update to executing transaction status',
+  })
+  updateToExecutingTransaction(
+    @Body() dto: ExecutingTransactionRequestDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToExecutingTransaction(dto);
+  }
+
+  @Patch('transaction-executed')
+  @M2MAuthGuard({
+    description: 'Update to transaction executed status',
+  })
+  updateToTransactionExecuted(
+    @Body() dto: TransactionExecutedRequestDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToTransactionExecuted(dto);
   }
 }

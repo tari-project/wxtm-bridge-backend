@@ -20,6 +20,8 @@ import {
   ErrorUpdateRequestDTO,
   CreatingTransactionRequestDTO,
   TransactionCreatedRequestDTO,
+  ExecutingTransactionRequestDTO,
+  TransactionExecutedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
@@ -482,5 +484,183 @@ describe('WrapTokenTransactionController', () => {
       .expect(401);
 
     expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/executing-transaction', () => {
+    it('should update transactions status to EXECUTING_SAFE_TRANSACTION', async () => {
+      const [tx_created, tx_other_status, tx_no_safe_tx_hash] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+              tariTxId: '123',
+              safeTxHash: 'hash123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariTxId: '123',
+              safeTxHash: 'hash456',
+            },
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+              tariTxId: '123',
+              safeTxHash: undefined,
+            },
+          ],
+        );
+
+      const dto: ExecutingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_created.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_safe_tx_hash.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/executing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_created.id,
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+            tariTxId: '123',
+            safeTxHash: 'hash123',
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tariTxId: '123',
+            safeTxHash: 'hash456',
+          }),
+          expect.objectContaining({
+            id: tx_no_safe_tx_hash.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            tariTxId: '123',
+            safeTxHash: null,
+          }),
+        ]),
+      );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/executing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/transaction-executed', () => {
+    it('should update transactions status to SAFE_TRANSACTION_EXECUTED', async () => {
+      const [tx_executing, tx_other_status, tx_no_safe_tx_hash] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+              tariTxId: '123',
+              safeTxHash: 'hash123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariTxId: '123',
+              safeTxHash: 'hash456',
+            },
+            {
+              status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+              tariTxId: '123',
+              safeTxHash: undefined,
+            },
+          ],
+        );
+
+      const dto: TransactionExecutedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_executing.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_safe_tx_hash.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-executed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_executing.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+            tariTxId: '123',
+            safeTxHash: 'hash123',
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tariTxId: '123',
+            safeTxHash: 'hash456',
+          }),
+          expect.objectContaining({
+            id: tx_no_safe_tx_hash.id,
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+            tariTxId: '123',
+            safeTxHash: null,
+          }),
+        ]),
+      );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-executed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
   });
 });

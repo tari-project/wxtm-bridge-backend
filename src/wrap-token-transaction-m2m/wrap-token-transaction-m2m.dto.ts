@@ -10,14 +10,16 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class WalletTransactionDTO {
-  @IsNumberString()
-  @IsNotEmpty()
-  txId: string;
-
+export class BaseTransactionDTO {
   @IsUUID()
   @IsNotEmpty()
   paymentId: string;
+}
+
+export class WalletTransactionDTO extends BaseTransactionDTO {
+  @IsNumberString()
+  @IsNotEmpty()
+  txId: string;
 
   @IsNumberString()
   @IsNotEmpty()
@@ -36,25 +38,15 @@ export class TokensReceivedRequestDTO {
   walletTransactions: WalletTransactionDTO[];
 }
 
-export class CreatingTransactionDTO {
-  @IsUUID()
-  @IsNotEmpty()
-  paymentId: string;
-}
-
 export class CreatingTransactionRequestDTO {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreatingTransactionDTO)
-  walletTransactions: CreatingTransactionDTO[];
+  @Type(() => BaseTransactionDTO)
+  walletTransactions: BaseTransactionDTO[];
 }
 
-export class TransactionCreatedDTO {
-  @IsUUID()
-  @IsNotEmpty()
-  paymentId: string;
-
+export class TransactionCreatedDTO extends BaseTransactionDTO {
   @IsNotEmpty()
   @IsString()
   safeTxHash: string;
@@ -72,11 +64,7 @@ export class TransactionCreatedRequestDTO {
   walletTransactions: TransactionCreatedDTO[];
 }
 
-export class ErrorUpdateDTO {
-  @IsUUID()
-  @IsNotEmpty()
-  paymentId: string;
-
+export class ErrorUpdateDTO extends BaseTransactionDTO {
   @IsNotEmpty()
   error: Record<string, string>;
 }
@@ -87,4 +75,20 @@ export class ErrorUpdateRequestDTO {
   @ValidateNested({ each: true })
   @Type(() => ErrorUpdateDTO)
   walletTransactions: ErrorUpdateDTO[];
+}
+
+export class ExecutingTransactionRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BaseTransactionDTO)
+  walletTransactions: BaseTransactionDTO[];
+}
+
+export class TransactionExecutedRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BaseTransactionDTO)
+  walletTransactions: BaseTransactionDTO[];
 }

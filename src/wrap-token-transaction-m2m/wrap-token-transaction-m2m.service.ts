@@ -9,6 +9,8 @@ import {
   ErrorUpdateRequestDTO,
   CreatingTransactionRequestDTO,
   TransactionCreatedRequestDTO,
+  ExecutingTransactionRequestDTO,
+  TransactionExecutedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
@@ -96,6 +98,50 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           safeTxHash: transaction.safeTxHash,
           safeNonce: transaction.safeNonce,
+        },
+      );
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  async updateToExecutingTransaction({
+    walletTransactions,
+  }: ExecutingTransactionRequestDTO): Promise<SuccessDTO> {
+    for (const transaction of walletTransactions) {
+      await this.repo.update(
+        {
+          paymentId: transaction.paymentId,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          tariTxId: Not(IsNull()),
+          safeTxHash: Not(IsNull()),
+        },
+        {
+          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        },
+      );
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  async updateToTransactionExecuted({
+    walletTransactions,
+  }: TransactionExecutedRequestDTO): Promise<SuccessDTO> {
+    for (const transaction of walletTransactions) {
+      await this.repo.update(
+        {
+          paymentId: transaction.paymentId,
+          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          tariTxId: Not(IsNull()),
+          safeTxHash: Not(IsNull()),
+        },
+        {
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
         },
       );
     }
