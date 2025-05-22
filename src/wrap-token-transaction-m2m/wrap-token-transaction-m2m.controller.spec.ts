@@ -147,7 +147,7 @@ describe('WrapTokenTransactionController', () => {
             {
               status: WrapTokenTransactionStatus.TOKENS_SENT,
               tokenAmount: '1000',
-              tariTxId: '1',
+              tariPaymentIdHex: '1',
             },
             { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
           ],
@@ -157,25 +157,25 @@ describe('WrapTokenTransactionController', () => {
         walletTransactions: [
           {
             paymentId: tx_created.paymentId,
-            txId: '1',
+            tariPaymentIdHex: '1',
             amount: '1000',
             timestamp: '1747209840',
           },
           {
             paymentId: tx_token_sent.paymentId,
-            txId: '2',
+            tariPaymentIdHex: '2',
             amount: '2000',
             timestamp: '1747209840',
           },
           {
             paymentId: tx_with_tari_tx_id.paymentId,
-            txId: '3',
+            tariPaymentIdHex: '3',
             amount: '3000',
             timestamp: '1747209840',
           },
           {
             paymentId: uuidV4(),
-            txId: '4',
+            tariPaymentIdHex: '4',
             amount: '4000',
             timestamp: '1747209840',
           },
@@ -201,7 +201,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_created.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            tariTxId: '1',
+            tariPaymentIdHex: '1',
             tokenAmount: '1000',
             tariTxTimestamp: 1747209840,
             amountAfterFee: '997',
@@ -210,7 +210,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_token_sent.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            tariTxId: '2',
+            tariPaymentIdHex: '2',
             tokenAmount: '2000',
             tariTxTimestamp: 1747209840,
             amountAfterFee: '1994',
@@ -219,14 +219,14 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_with_tari_tx_id.id,
             status: WrapTokenTransactionStatus.TOKENS_SENT,
-            tariTxId: '1',
+            tariPaymentIdHex: '1',
             tokenAmount: '1000',
             tariTxTimestamp: null,
           }),
           expect.objectContaining({
             id: tx_other_uuid.id,
             status: WrapTokenTransactionStatus.CREATED,
-            tariTxId: null,
+            tariPaymentIdHex: null,
             tokenAmount: '1000',
             tariTxTimestamp: null,
           }),
@@ -255,15 +255,15 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
             },
             {
               status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariTxId: undefined,
+              tariPaymentIdHex: undefined,
             },
           ],
         );
@@ -341,15 +341,15 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
             },
             {
               status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariTxId: undefined,
+              tariPaymentIdHex: undefined,
             },
           ],
         );
@@ -495,17 +495,17 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: 'hash123',
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: 'hash456',
             },
             {
               status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: undefined,
             },
           ],
@@ -544,19 +544,19 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_created.id,
             status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: 'hash456',
           }),
           expect.objectContaining({
             id: tx_no_safe_tx_hash.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: null,
           }),
         ]),
@@ -584,17 +584,17 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: 'hash123',
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: 'hash456',
             },
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariTxId: '123',
+              tariPaymentIdHex: '123',
               safeTxHash: undefined,
             },
           ],
@@ -633,19 +633,19 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_executing.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: 'hash456',
           }),
           expect.objectContaining({
             id: tx_no_safe_tx_hash.id,
             status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-            tariTxId: '123',
+            tariPaymentIdHex: '123',
             safeTxHash: null,
           }),
         ]),

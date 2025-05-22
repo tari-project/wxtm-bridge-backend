@@ -42,11 +42,11 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
             WrapTokenTransactionStatus.CREATED,
             WrapTokenTransactionStatus.TOKENS_SENT,
           ]),
-          tariTxId: IsNull(),
+          tariPaymentIdHex: IsNull(),
           tariTxTimestamp: IsNull(),
         },
         {
-          tariTxId: transaction.txId,
+          tariPaymentIdHex: transaction.tariPaymentIdHex,
           tokenAmount: transaction.amount,
           amountAfterFee,
           feeAmount,
@@ -71,7 +71,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           paymentId: transaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-          tariTxId: Not(IsNull()),
+          tariPaymentIdHex: Not(IsNull()),
         },
         {
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
@@ -92,7 +92,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           paymentId: transaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          tariTxId: Not(IsNull()),
+          tariPaymentIdHex: Not(IsNull()),
         },
         {
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
@@ -115,7 +115,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           paymentId: transaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-          tariTxId: Not(IsNull()),
+          tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
         {
@@ -137,7 +137,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         {
           paymentId: transaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-          tariTxId: Not(IsNull()),
+          tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
         {
