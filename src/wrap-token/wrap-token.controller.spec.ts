@@ -15,7 +15,7 @@ import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Factory, getFactory } from '../../test/factory/factory';
 
 import { WrapTokenModule } from './wrap-token.module';
-import { CreateWrapTokenReqDTO } from './wrap-token.dto';
+import { CreateWrapTokenReqDTO, UserTransactionStatus } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 
@@ -171,5 +171,113 @@ describe('WrapTokenController', () => {
         WrapTokenTransactionStatus.TOKENS_SENT,
       );
     });
+  });
+
+  describe('GET /wrap-token/transactions', () => {
+    it('returns transactions for the specified wallet address', async () => {
+      const walletAddress = 'tari_address_123';
+      const otherWalletAddress = 'tari_address_456';
+
+      const [transaction_1, transaction_2] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              from: walletAddress,
+              status: WrapTokenTransactionStatus.CREATED,
+            },
+            {
+              from: walletAddress,
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+            },
+            {
+              from: otherWalletAddress,
+              status: WrapTokenTransactionStatus.CREATED,
+            },
+          ],
+        );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/wrap-token/transactions?walletAddress=${walletAddress}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        transactions: expect.arrayContaining([
+          {
+            tokenAmount: transaction_1.tokenAmount,
+            amountAfterFee: transaction_1.amountAfterFee,
+            feeAmount: transaction_1.feeAmount,
+            createdAt: transaction_1.createdAt.toISOString(),
+            status: UserTransactionStatus.PENDING,
+          },
+          {
+            tokenAmount: transaction_2.tokenAmount,
+            amountAfterFee: transaction_2.amountAfterFee,
+            feeAmount: transaction_2.feeAmount,
+            createdAt: transaction_2.createdAt.toISOString(),
+            status: UserTransactionStatus.SUCCESS,
+          },
+        ]),
+      });
+    });
+
+    it('returns an empty array when no transactions exist for the wallet', async () => {
+      const walletAddress = 'non_existent_wallet';
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/wrap-token/transactions?walletAddress=${walletAddress}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        transactions: [],
+      });
+    });
+
+    it.each([
+      [WrapTokenTransactionStatus.CREATED, UserTransactionStatus.PENDING],
+      [WrapTokenTransactionStatus.TOKENS_SENT, UserTransactionStatus.PENDING],
+      [
+        WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        UserTransactionStatus.PENDING,
+      ],
+      [
+        WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        UserTransactionStatus.PENDING,
+      ],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        UserTransactionStatus.PENDING,
+      ],
+      [
+        WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        UserTransactionStatus.PENDING,
+      ],
+      [WrapTokenTransactionStatus.UNPROCESSABLE, UserTransactionStatus.PENDING],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+        UserTransactionStatus.SUCCESS,
+      ],
+    ])(
+      'maps transaction status %s to user status %s',
+      async (txStatus, expectedUserStatus) => {
+        const walletAddress = 'tari_address_123';
+
+        await factory.create<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          {
+            from: walletAddress,
+            status: txStatus,
+          },
+        );
+
+        const { body } = await request(app.getHttpServer())
+          .get(`/wrap-token/transactions?walletAddress=${walletAddress}`)
+          .expect(200);
+
+        expect(body.transactions).toHaveLength(1);
+        expect(body.transactions[0].status).toBe(expectedUserStatus);
+      },
+    );
   });
 });

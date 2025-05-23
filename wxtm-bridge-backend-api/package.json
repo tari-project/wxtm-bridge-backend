@@ -1,6 +1,6 @@
 {
   "name": "@tari-project/wxtm-bridge-backend-api",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "",
   "main": "./api/index.js",
   "types": "./api/index.d.ts",

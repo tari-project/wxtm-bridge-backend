@@ -4,8 +4,10 @@ import {
   IsNumberString,
   IsString,
 } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
 
 import { IsMinMaxNumberString } from '../decorators/is-min-max-number-string';
+import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 
 export class CreateWrapTokenReqDTO {
   @IsNotEmpty()
@@ -24,4 +26,22 @@ export class CreateWrapTokenReqDTO {
 
 export class CreateWrapTokenRespDTO {
   paymentId: string;
+}
+
+export enum UserTransactionStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+}
+
+export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
+  'tokenAmount',
+  'amountAfterFee',
+  'feeAmount',
+  'createdAt',
+]) {
+  status: UserTransactionStatus;
+}
+
+export class GetUserTransactionsRespDTO {
+  transactions: UserTransactionDTO[];
 }
