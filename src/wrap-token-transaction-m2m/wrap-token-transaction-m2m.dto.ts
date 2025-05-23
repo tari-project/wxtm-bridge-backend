@@ -17,7 +17,7 @@ export class BaseTransactionDTO {
 }
 
 export class WalletTransactionDTO extends BaseTransactionDTO {
-  @IsNumberString()
+  @IsString()
   @IsNotEmpty()
   tariPaymentIdHex: string;
 
