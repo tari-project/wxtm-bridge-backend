@@ -7,6 +7,8 @@ import { SuccessDTO } from '../dto/success.dto';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
+  GetUserTransactionsRespDTO,
+  UserTransactionStatus,
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
@@ -75,6 +77,29 @@ export class WrapTokenService {
 
     return {
       success: true,
+    };
+  }
+
+  async getUserTransactions(
+    walletAddress: string,
+  ): Promise<GetUserTransactionsRespDTO> {
+    const transactions = await this.wrapTokenTransactionRepository.find({
+      where: { from: walletAddress },
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      transactions: transactions.map((transaction) => ({
+        tokenAmount: transaction.tokenAmount,
+        amountAfterFee: transaction.amountAfterFee,
+        feeAmount: transaction.feeAmount,
+        createdAt: transaction.createdAt,
+        status:
+          transaction.status ===
+          WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED
+            ? UserTransactionStatus.SUCCESS
+            : UserTransactionStatus.PENDING,
+      })),
     };
   }
 }

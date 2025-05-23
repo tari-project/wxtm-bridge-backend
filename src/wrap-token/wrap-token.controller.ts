@@ -1,4 +1,12 @@
-import { Controller, Patch, Param, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Param,
+  Post,
+  Body,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 import { SuccessDTO } from '../dto/success.dto';
@@ -6,6 +14,7 @@ import { WrapTokenService } from './wrap-token.service';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
+  GetUserTransactionsRespDTO,
 } from './wrap-token.dto';
 
 @ApiTags('wrap-token')
@@ -19,6 +28,14 @@ export class WrapTokenController {
     @Body() dto: CreateWrapTokenReqDTO,
   ): Promise<CreateWrapTokenRespDTO> {
     return this.service.createWrapTokenTransaction(dto);
+  }
+
+  @Get('transactions')
+  @ApiOperation({ summary: 'Get all transactions by from address' })
+  getUserTransactions(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<GetUserTransactionsRespDTO> {
+    return this.service.getUserTransactions(walletAddress);
   }
 
   @Patch('tokens-sent/:paymentId')
