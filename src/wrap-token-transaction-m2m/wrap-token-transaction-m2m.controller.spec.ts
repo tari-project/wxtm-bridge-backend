@@ -429,6 +429,13 @@ describe('WrapTokenTransactionController', () => {
       const [tx1, tx2] = await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         2,
+        [
+          {},
+          {
+            error: { code: 'EXISTING_ERROR' },
+            status: WrapTokenTransactionStatus.UNPROCESSABLE,
+          },
+        ],
       );
 
       const dto: ErrorUpdateRequestDTO = {
@@ -467,7 +474,7 @@ describe('WrapTokenTransactionController', () => {
           }),
           expect.objectContaining({
             id: tx2.id,
-            error: { code: 'ERR_2', message: 'Test error 2' },
+            error: { code: 'EXISTING_ERROR' },
             status: WrapTokenTransactionStatus.UNPROCESSABLE,
           }),
         ]),
