@@ -158,6 +158,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       await this.repo.update(
         {
           paymentId: transaction.paymentId,
+          error: IsNull(),
         },
         {
           error: transaction.error,
