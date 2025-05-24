@@ -162,7 +162,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         },
         {
           error: transaction.error,
-          status: WrapTokenTransactionStatus.UNPROCESSABLE,
         },
       );
     }
