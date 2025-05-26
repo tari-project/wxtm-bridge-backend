@@ -205,6 +205,7 @@ describe('WrapTokenController', () => {
       expect(body).toEqual({
         transactions: expect.arrayContaining([
           {
+            destinationAddress: transaction_1.to,
             tokenAmount: transaction_1.tokenAmount,
             amountAfterFee: transaction_1.amountAfterFee,
             feeAmount: transaction_1.feeAmount,
@@ -212,6 +213,7 @@ describe('WrapTokenController', () => {
             status: UserTransactionStatus.PENDING,
           },
           {
+            destinationAddress: transaction_2.to,
             tokenAmount: transaction_2.tokenAmount,
             amountAfterFee: transaction_2.amountAfterFee,
             feeAmount: transaction_2.feeAmount,

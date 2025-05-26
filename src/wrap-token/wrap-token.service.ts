@@ -90,6 +90,7 @@ export class WrapTokenService {
 
     return {
       transactions: transactions.map((transaction) => ({
+        destinationAddress: transaction.to,
         tokenAmount: transaction.tokenAmount,
         amountAfterFee: transaction.amountAfterFee,
         feeAmount: transaction.feeAmount,

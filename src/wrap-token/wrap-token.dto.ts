@@ -40,6 +40,7 @@ export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
   'createdAt',
 ]) {
   status: UserTransactionStatus;
+  destinationAddress: string;
 }
 
 export class GetUserTransactionsRespDTO {
