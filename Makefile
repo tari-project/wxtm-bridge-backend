@@ -2,6 +2,10 @@ DEV_ARTIFACTS_BUCKET_NAME=artifacts.wxtm-bridge
 DEV_REGION=us-east-1
 DEV_ARTIFACTS_S3_PREFIX=dev/wxtm-bridge
 
+PROD_ARTIFACTS_BUCKET_NAME=artifacts.wxtm-bridge-prod
+PROD_REGION=eu-central-1
+PROD_ARTIFACTS_S3_PREFIX=prod/wxtm-bridge
+
 
 out/ts: $(shell git ls-files "./src/*.[jt]s" --full-name)
 	rm -r -f dist && \
@@ -23,4 +27,9 @@ wxtm-bridge-subgraph.zip: out/ts
 upload-artifact-dev: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip
 	for artifact in $^; do \
 	  aws s3 cp $$artifact s3://$(DEV_ARTIFACTS_BUCKET_NAME)/$(DEV_ARTIFACTS_S3_PREFIX)/ --region $(DEV_REGION); \
+	done
+
+upload-artifact-prod: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip
+	for artifact in $^; do \
+	  aws s3 cp $$artifact s3://$(PROD_ARTIFACTS_BUCKET_NAME)/$(PROD_ARTIFACTS_S3_PREFIX)/ --region $(PROD_REGION); \
 	done
