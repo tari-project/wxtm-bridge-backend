@@ -5,13 +5,9 @@ import { Crud, CrudController } from '@dataui/crud';
 import { AdminGuard } from '../auth/auth.admin.guard';
 import { WrapTokenTransactionService } from './wrap-token-transaction.service';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
-import { UpdateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
 
 @Crud({
   model: { type: WrapTokenTransactionEntity },
-  dto: {
-    update: UpdateWrapTokenTransactionDTO,
-  },
   routes: {
     only: ['updateOneBase', 'getManyBase', 'getOneBase'],
     getManyBase: {

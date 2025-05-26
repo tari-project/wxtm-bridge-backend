@@ -18,8 +18,6 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { WrapTokenTransactionModule } from './wrap-token-transaction.module';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
-import { UpdateWrapTokenTransactionDTO } from './wrap-token-transaction.dto';
-import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -132,31 +130,23 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions/:id', () => {
-    it('successfully updates tokenAmount and status', async () => {
+    it('resets error column', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
+        { error: { message: 'Test error message' } },
       );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        tokenAmount: '2000',
-        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-      };
 
       const { body } = await request(app.getHttpServer())
         .patch(`/wrap-token-transactions/${transaction.id}`)
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
+        .send({})
         .expect(200);
 
       expect(body).toEqual(
         expect.objectContaining({
           id: transaction.id,
-          tokenAmount: dto.tokenAmount,
-          status: dto.status,
-          feePercentageBps: 30,
-          feeAmount: '6',
-          amountAfterFee: '1994',
+          error: null,
         }),
       );
 
@@ -164,164 +154,13 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity,
       ).findOne({ where: { id: transaction.id } });
 
-      expect(updatedTransaction?.tokenAmount).toBe(dto.tokenAmount);
-      expect(updatedTransaction?.feeAmount).toBe('6');
-      expect(updatedTransaction?.amountAfterFee).toBe('1994');
-      expect(updatedTransaction?.status).toBe(dto.status);
-    });
-
-    it('successfully updates status', async () => {
-      const transaction = await factory.create<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-      );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/wrap-token-transactions/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(200);
-
-      expect(body).toEqual(
-        expect.objectContaining({
-          id: transaction.id,
-          tokenAmount: transaction.tokenAmount,
-          status: dto.status,
-          feePercentageBps: 25,
-          feeAmount: transaction.feeAmount,
-          amountAfterFee: transaction.amountAfterFee,
-        }),
-      );
-
-      const updatedTransaction = await getRepository(
-        WrapTokenTransactionEntity,
-      ).findOne({ where: { id: transaction.id } });
-
-      expect(updatedTransaction?.tokenAmount).toBe(transaction.tokenAmount);
-      expect(updatedTransaction?.feeAmount).toBe(transaction.feeAmount);
-      expect(updatedTransaction?.amountAfterFee).toBe(
-        transaction.amountAfterFee,
-      );
-      expect(updatedTransaction?.status).toBe(dto.status);
-    });
-
-    it('fails if transaction status is SAFE_TRANSCTION_CREATED', async () => {
-      const transaction = await factory.create<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-        {
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-        },
-      );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        tokenAmount: '2000',
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/wrap-token-transactions/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(400);
-
-      expect(body).toEqual({
-        error: 'Bad Request',
-        message: 'Transaction status is incorrect',
-        statusCode: 400,
+      expect(updatedTransaction).toEqual({
+        ...transaction,
+        error: null,
+        updatedAt: expect.any(Date),
       });
-    });
 
-    it('fails if trying to update safeNonce when it already exists', async () => {
-      const transaction = await factory.create<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-        {
-          safeNonce: 123,
-        },
-      );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        safeNonce: 456,
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/wrap-token-transactions/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(400);
-
-      expect(body).toEqual({
-        error: 'Bad Request',
-        message: 'Transaction nonce already exists',
-        statusCode: 400,
-      });
-    });
-
-    it('fails if trying to update safeTxHash when it already exists', async () => {
-      const transaction = await factory.create<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-        {
-          safeTxHash: '0x123456789',
-        },
-      );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        safeTxHash: '0x987654321',
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/wrap-token-transactions/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(400);
-
-      expect(body).toEqual({
-        error: 'Bad Request',
-        message: 'Transaction nonce already exists',
-        statusCode: 400,
-      });
-    });
-
-    it('updates status to SAFE_TRANSCTION_CREATED when both safeNonce and safeTxHash are provided', async () => {
-      const transaction = await factory.create<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-      );
-
-      const dto: UpdateWrapTokenTransactionDTO = {
-        safeNonce: 123,
-        safeTxHash: '0x123456789',
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/wrap-token-transactions/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(200);
-
-      expect(body).toEqual(
-        expect.objectContaining({
-          id: transaction.id,
-          safeNonce: dto.safeNonce,
-          safeTxHash: dto.safeTxHash,
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-        }),
-      );
-
-      const updatedTransaction = await getRepository(
-        WrapTokenTransactionEntity,
-      ).findOne({ where: { id: transaction.id } });
-
-      expect(updatedTransaction?.safeNonce).toBe(dto.safeNonce);
-      expect(updatedTransaction?.safeTxHash).toBe(dto.safeTxHash);
-      expect(updatedTransaction?.status).toBe(
-        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-      );
+      expect(updatedTransaction?.error).toBe(null);
     });
 
     it('returns 401 for a regular user', async () => {
