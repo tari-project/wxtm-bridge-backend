@@ -22,11 +22,20 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 describe('WrapTokenController', () => {
   let app: INestApplication;
   let factory: Factory;
+  const coldWalletAddress = '0xTestColdWalletAddress';
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ load: [config], isGlobal: true }),
+        ConfigModule.forRoot({
+          load: [
+            () => ({
+              ...config(),
+              coldWalletAddress,
+            }),
+          ],
+          isGlobal: true,
+        }),
         TestDatabaseModule,
         WrapTokenModule,
       ],
@@ -281,5 +290,17 @@ describe('WrapTokenController', () => {
         expect(body.transactions[0].status).toBe(expectedUserStatus);
       },
     );
+  });
+
+  describe('GET /wrap-token/cold-wallet-address', () => {
+    it('returns the cold wallet address from configuration', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token/cold-wallet-address')
+        .expect(200);
+
+      expect(body).toEqual({
+        coldWalletAddress,
+      });
+    });
   });
 });

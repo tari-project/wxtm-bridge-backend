@@ -37,4 +37,5 @@ export interface IConfig {
   subgraph: ISubgraph;
   fees: IFees;
   blockchain: IBlockchain;
+  coldWalletAddress: string;
 }

@@ -7,12 +7,15 @@ import { SuccessDTO } from '../dto/success.dto';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
+  GetColdWalletAddressRespDTO,
   GetUserTransactionsRespDTO,
   UserTransactionStatus,
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
+import { ConfigService } from '@nestjs/config';
+import { IConfig } from '../config/config.interface';
 
 @Injectable()
 export class WrapTokenService {
@@ -20,6 +23,7 @@ export class WrapTokenService {
     @InjectRepository(WrapTokenTransactionEntity)
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
     private readonly wrapTokenFeesService: WrapTokenFeesService,
+    private readonly configService: ConfigService<IConfig, true>,
   ) {}
 
   async createWrapTokenTransaction({
@@ -101,6 +105,14 @@ export class WrapTokenService {
             ? UserTransactionStatus.SUCCESS
             : UserTransactionStatus.PENDING,
       })),
+    };
+  }
+
+  getColdWalletAddress(): GetColdWalletAddressRespDTO {
+    return {
+      coldWalletAddress: this.configService.get('coldWalletAddress', {
+        infer: true,
+      }),
     };
   }
 }

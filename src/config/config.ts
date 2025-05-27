@@ -47,4 +47,5 @@ export default (): IConfig => ({
   blockchain: {
     chainId: BigInt(process.env.CHAIN_ID || 1),
   },
+  coldWalletAddress: process.env.COLD_WALLET_ADDRESS || '',
 });

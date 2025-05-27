@@ -46,3 +46,7 @@ export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
 export class GetUserTransactionsRespDTO {
   transactions: UserTransactionDTO[];
 }
+
+export class GetColdWalletAddressRespDTO {
+  coldWalletAddress: string;
+}
