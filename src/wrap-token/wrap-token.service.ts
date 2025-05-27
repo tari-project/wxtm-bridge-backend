@@ -7,8 +7,8 @@ import { SuccessDTO } from '../dto/success.dto';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
-  GetColdWalletAddressRespDTO,
   GetUserTransactionsRespDTO,
+  GetWrapTokenParamsRespDTO,
   UserTransactionStatus,
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
@@ -108,11 +108,17 @@ export class WrapTokenService {
     };
   }
 
-  getColdWalletAddress(): GetColdWalletAddressRespDTO {
+  getWrapTokenParams(): GetWrapTokenParamsRespDTO {
     return {
       coldWalletAddress: this.configService.get('coldWalletAddress', {
         infer: true,
       }),
+      wrapTokenFeePercentageBps: this.configService.get(
+        'fees.wrapTokenFeePercentageBps',
+        {
+          infer: true,
+        },
+      ),
     };
   }
 }

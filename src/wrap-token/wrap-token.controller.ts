@@ -14,8 +14,8 @@ import { WrapTokenService } from './wrap-token.service';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
-  GetColdWalletAddressRespDTO,
   GetUserTransactionsRespDTO,
+  GetWrapTokenParamsRespDTO,
 } from './wrap-token.dto';
 
 @ApiTags('wrap-token')
@@ -39,10 +39,12 @@ export class WrapTokenController {
     return this.service.getUserTransactions(walletAddress);
   }
 
-  @Get('cold-wallet-address')
-  @ApiOperation({ summary: 'Get cold wallet address' })
-  getColdWalletAddress(): GetColdWalletAddressRespDTO {
-    return this.service.getColdWalletAddress();
+  @Get('params')
+  @ApiOperation({
+    summary: 'Returns params for creating wrap token transaction',
+  })
+  getWrapTokenParams(): GetWrapTokenParamsRespDTO {
+    return this.service.getWrapTokenParams();
   }
 
   @Patch('tokens-sent/:paymentId')

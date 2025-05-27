@@ -47,6 +47,7 @@ export class GetUserTransactionsRespDTO {
   transactions: UserTransactionDTO[];
 }
 
-export class GetColdWalletAddressRespDTO {
+export class GetWrapTokenParamsRespDTO {
   coldWalletAddress: string;
+  wrapTokenFeePercentageBps: number;
 }

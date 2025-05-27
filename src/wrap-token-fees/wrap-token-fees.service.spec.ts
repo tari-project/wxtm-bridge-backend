@@ -37,8 +37,8 @@ describe('WrapTokenFeesService tests', () => {
         tokenAmount,
       });
 
-      expect(utils.formatUnits(result.feeAmount, 6)).toEqual('0.3');
-      expect(utils.formatUnits(result.amountAfterFee, 6)).toEqual('99.7');
+      expect(utils.formatUnits(result.feeAmount, 6)).toEqual('0.5');
+      expect(utils.formatUnits(result.amountAfterFee, 6)).toEqual('99.5');
     });
   });
 });
