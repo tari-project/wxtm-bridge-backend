@@ -34,7 +34,17 @@ describe('WrapTokenTransactionController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ load: [config], isGlobal: true }),
+        ConfigModule.forRoot({
+          load: [
+            () => ({
+              ...config(),
+              fees: {
+                wrapTokenFeePercentageBps: 0.3 * 100, // 0.3% in basis points
+              },
+            }),
+          ],
+          isGlobal: true,
+        }),
         TestDatabaseModule,
         M2MAuthModule.register({ authToken: m2mToken }),
         WrapTokenTransactionM2MModule,

@@ -32,6 +32,9 @@ describe('WrapTokenController', () => {
             () => ({
               ...config(),
               coldWalletAddress,
+              fees: {
+                wrapTokenFeePercentageBps: 0.3 * 100, // 0.3% in basis points
+              },
             }),
           ],
           isGlobal: true,
@@ -292,14 +295,15 @@ describe('WrapTokenController', () => {
     );
   });
 
-  describe('GET /wrap-token/cold-wallet-address', () => {
-    it('returns the cold wallet address from configuration', async () => {
+  describe('GET /wrap-token/params', () => {
+    it('returns the wrap token parameters from configuration', async () => {
       const { body } = await request(app.getHttpServer())
-        .get('/wrap-token/cold-wallet-address')
+        .get('/wrap-token/params')
         .expect(200);
 
       expect(body).toEqual({
         coldWalletAddress,
+        wrapTokenFeePercentageBps: 30,
       });
     });
   });

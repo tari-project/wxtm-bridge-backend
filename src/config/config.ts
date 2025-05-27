@@ -42,7 +42,7 @@ export default (): IConfig => ({
     url: process.env.SUBGRAPH_URL || '',
   },
   fees: {
-    wrapTokenFeePercentageBps: 0.3 * 100, // 0.3% in basis points
+    wrapTokenFeePercentageBps: 0.5 * 100, // 0.5% in basis points
   },
   blockchain: {
     chainId: BigInt(process.env.CHAIN_ID || 1),
