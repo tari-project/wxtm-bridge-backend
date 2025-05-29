@@ -217,6 +217,7 @@ describe('WrapTokenController', () => {
       expect(body).toEqual({
         transactions: expect.arrayContaining([
           {
+            paymentId: transaction_1.paymentId,
             destinationAddress: transaction_1.to,
             tokenAmount: transaction_1.tokenAmount,
             amountAfterFee: transaction_1.amountAfterFee,
@@ -225,6 +226,7 @@ describe('WrapTokenController', () => {
             status: UserTransactionStatus.PENDING,
           },
           {
+            paymentId: transaction_2.paymentId,
             destinationAddress: transaction_2.to,
             tokenAmount: transaction_2.tokenAmount,
             amountAfterFee: transaction_2.amountAfterFee,
@@ -253,7 +255,7 @@ describe('WrapTokenController', () => {
       [WrapTokenTransactionStatus.TOKENS_SENT, UserTransactionStatus.PENDING],
       [
         WrapTokenTransactionStatus.TOKENS_RECEIVED,
-        UserTransactionStatus.PENDING,
+        UserTransactionStatus.TOKENS_RECEIVED,
       ],
       [
         WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
@@ -261,13 +263,13 @@ describe('WrapTokenController', () => {
       ],
       [
         WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-        UserTransactionStatus.PENDING,
+        UserTransactionStatus.PROCESSING,
       ],
       [
         WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-        UserTransactionStatus.PENDING,
+        UserTransactionStatus.PROCESSING,
       ],
-      [WrapTokenTransactionStatus.TIMEOUT, UserTransactionStatus.PENDING],
+      [WrapTokenTransactionStatus.TIMEOUT, UserTransactionStatus.TIMEOUT],
       [
         WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
         UserTransactionStatus.SUCCESS,

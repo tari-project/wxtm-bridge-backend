@@ -84,6 +84,26 @@ export class WrapTokenService {
     };
   }
 
+  private getUserTransactionStatus(
+    status: WrapTokenTransactionStatus,
+  ): UserTransactionStatus {
+    switch (status) {
+      case WrapTokenTransactionStatus.TOKENS_RECEIVED:
+        return UserTransactionStatus.TOKENS_RECEIVED;
+      case WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED:
+        return UserTransactionStatus.PROCESSING;
+      case WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION:
+        return UserTransactionStatus.PROCESSING;
+      case WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED:
+        return UserTransactionStatus.SUCCESS;
+      case WrapTokenTransactionStatus.TIMEOUT:
+        return UserTransactionStatus.TIMEOUT;
+
+      default:
+        return UserTransactionStatus.PENDING;
+    }
+  }
+
   async getUserTransactions(
     walletAddress: string,
   ): Promise<GetUserTransactionsRespDTO> {
@@ -94,16 +114,13 @@ export class WrapTokenService {
 
     return {
       transactions: transactions.map((transaction) => ({
+        paymentId: transaction.paymentId,
         destinationAddress: transaction.to,
         tokenAmount: transaction.tokenAmount,
         amountAfterFee: transaction.amountAfterFee,
         feeAmount: transaction.feeAmount,
         createdAt: transaction.createdAt,
-        status:
-          transaction.status ===
-          WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED
-            ? UserTransactionStatus.SUCCESS
-            : UserTransactionStatus.PENDING,
+        status: this.getUserTransactionStatus(transaction.status),
       })),
     };
   }
