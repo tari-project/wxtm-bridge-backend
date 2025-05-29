@@ -57,3 +57,22 @@ await esbuild.build({
     'app-root-path',
   ],
 });
+
+await esbuild.build({
+  entryPoints: ['src/lambdas/timeout.ts'],
+  bundle: true,
+  sourcemap: true,
+  minify: false,
+  platform: 'node',
+  target: 'node18',
+  outdir: 'out/timeout',
+  plugins: [esbuildPluginTsc()],
+  external: [
+    '@aws-sdk/*',
+    '@nestjs/websockets/socket-module',
+    '@nestjs/microservices',
+    'class-transformer/storage',
+    'swagger-ui-dist',
+    'app-root-path',
+  ],
+});

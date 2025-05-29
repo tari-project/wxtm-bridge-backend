@@ -267,7 +267,7 @@ describe('WrapTokenController', () => {
         WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
         UserTransactionStatus.PENDING,
       ],
-      [WrapTokenTransactionStatus.UNPROCESSABLE, UserTransactionStatus.PENDING],
+      [WrapTokenTransactionStatus.TIMEOUT, UserTransactionStatus.PENDING],
       [
         WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
         UserTransactionStatus.SUCCESS,

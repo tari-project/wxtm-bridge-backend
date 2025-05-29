@@ -6,5 +6,5 @@ export enum WrapTokenTransactionStatus {
   SAFE_TRANSACTION_CREATED = 'safe_transaction_created',
   EXECUTING_SAFE_TRANSACTION = 'executing_safe_transaction',
   SAFE_TRANSACTION_EXECUTED = 'safe_transaction_executed',
-  UNPROCESSABLE = 'unprocessable',
+  TIMEOUT = 'timeout',
 }

@@ -47,4 +47,7 @@ export default (): IConfig => ({
     chainId: BigInt(process.env.CHAIN_ID || 1),
   },
   coldWalletAddress: process.env.COLD_WALLET_ADDRESS || '',
+  transactionTimeout: Number(
+    process.env.TRANSACTION_TIMEOUT || 1 * 60 * 60 * 1000,
+  ),
 });

@@ -41,6 +41,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           status: In([
             WrapTokenTransactionStatus.CREATED,
             WrapTokenTransactionStatus.TOKENS_SENT,
+            WrapTokenTransactionStatus.TIMEOUT,
           ]),
           tariPaymentIdHex: IsNull(),
           tariTxTimestamp: IsNull(),
