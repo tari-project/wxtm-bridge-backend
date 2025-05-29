@@ -144,24 +144,33 @@ describe('WrapTokenTransactionController', () => {
 
   describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
     it('should update transactions status to TOKENS_RECEIVED and calculate fees', async () => {
-      const [tx_created, tx_token_sent, tx_with_tari_tx_id, tx_other_uuid] =
-        await factory.createMany<WrapTokenTransactionEntity>(
-          WrapTokenTransactionEntity.name,
-          4,
-          [
-            { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
-            {
-              status: WrapTokenTransactionStatus.TOKENS_SENT,
-              tokenAmount: '1000',
-            },
-            {
-              status: WrapTokenTransactionStatus.TOKENS_SENT,
-              tokenAmount: '1000',
-              tariPaymentIdHex: '1',
-            },
-            { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
-          ],
-        );
+      const [
+        tx_created,
+        tx_token_sent,
+        tx_timeout,
+        tx_with_tari_tx_id,
+        tx_other_uuid,
+      ] = await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        5,
+        [
+          { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
+          {
+            status: WrapTokenTransactionStatus.TOKENS_SENT,
+            tokenAmount: '1000',
+          },
+          {
+            status: WrapTokenTransactionStatus.TIMEOUT,
+            tokenAmount: '1000',
+          },
+          {
+            status: WrapTokenTransactionStatus.TOKENS_SENT,
+            tokenAmount: '1000',
+            tariPaymentIdHex: '1',
+          },
+          { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
+        ],
+      );
 
       const dto: TokensReceivedRequestDTO = {
         walletTransactions: [
@@ -174,6 +183,12 @@ describe('WrapTokenTransactionController', () => {
           {
             paymentId: tx_token_sent.paymentId,
             tariPaymentIdHex: '2',
+            amount: '2000',
+            timestamp: '1747209840',
+          },
+          {
+            paymentId: tx_timeout.paymentId,
+            tariPaymentIdHex: '3',
             amount: '2000',
             timestamp: '1747209840',
           },
@@ -205,7 +220,7 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(4);
+      expect(updatedTransactions).toHaveLength(5);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -221,6 +236,15 @@ describe('WrapTokenTransactionController', () => {
             id: tx_token_sent.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariPaymentIdHex: '2',
+            tokenAmount: '2000',
+            tariTxTimestamp: 1747209840,
+            amountAfterFee: '1994',
+            feeAmount: '6',
+          }),
+          expect.objectContaining({
+            id: tx_timeout.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariPaymentIdHex: '3',
             tokenAmount: '2000',
             tariTxTimestamp: 1747209840,
             amountAfterFee: '1994',
@@ -443,7 +467,7 @@ describe('WrapTokenTransactionController', () => {
           {},
           {
             error: { code: 'EXISTING_ERROR' },
-            status: WrapTokenTransactionStatus.UNPROCESSABLE,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           },
         ],
       );
@@ -485,7 +509,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx2.id,
             error: { code: 'EXISTING_ERROR' },
-            status: WrapTokenTransactionStatus.UNPROCESSABLE,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           }),
         ]),
       );

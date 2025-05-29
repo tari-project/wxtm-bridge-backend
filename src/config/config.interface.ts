@@ -38,4 +38,5 @@ export interface IConfig {
   fees: IFees;
   blockchain: IBlockchain;
   coldWalletAddress: string;
+  transactionTimeout: number;
 }
