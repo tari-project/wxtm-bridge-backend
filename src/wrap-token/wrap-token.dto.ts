@@ -31,10 +31,14 @@ export class CreateWrapTokenRespDTO {
 export enum UserTransactionStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
+  TIMEOUT = 'TIMEOUT',
+  TOKENS_RECEIVED = 'TOKENS_RECEIVED',
+  PROCESSING = 'PROCESSING',
 }
 
 export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
   'tokenAmount',
+  'paymentId',
   'amountAfterFee',
   'feeAmount',
   'createdAt',
