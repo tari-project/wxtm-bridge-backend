@@ -16,7 +16,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://github.com/tari-project",
+    "registry": "https://github.com/tari-project"
   },
   "devDependencies": {
     "typescript": "^4.6.4"
