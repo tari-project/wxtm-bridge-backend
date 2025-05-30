@@ -15,7 +15,8 @@
     "url": "https://github.com/tari-project/wxtm-bridge-backend"
   },
   "publishConfig": {
-    "registry": "https://github.com/tari-project"
+    "access": "public",
+    "registry": "https://github.com/tari-project",
   },
   "devDependencies": {
     "typescript": "^4.6.4"
