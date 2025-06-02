@@ -14,14 +14,12 @@ import {
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
-import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
-    private readonly wrapTokenFeesService: WrapTokenFeesService,
   ) {
     super(repo);
   }
@@ -29,15 +27,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async updateToTokensReceived({
     walletTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      const { amountAfterFee, feeAmount } =
-        this.wrapTokenFeesService.calculateFee({
-          tokenAmount: transaction.amount,
-        });
-
-      await this.repo.update(
-        {
-          paymentId: transaction.paymentId,
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
           status: In([
             WrapTokenTransactionStatus.CREATED,
             WrapTokenTransactionStatus.TOKENS_SENT,
@@ -46,17 +39,28 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           tariPaymentIdHex: IsNull(),
           tariTxTimestamp: IsNull(),
         },
-        {
-          tariPaymentIdHex: transaction.tariPaymentIdHex,
-          tokenAmount: transaction.amount,
-          amountAfterFee,
-          feeAmount,
-          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-          tariTxTimestamp: transaction.timestamp
-            ? Number(transaction.timestamp)
-            : undefined,
-        },
-      );
+      });
+
+      if (transaction) {
+        const amountMatches =
+          transaction.tokenAmount === walletTransaction.amount;
+
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            tariPaymentIdHex: walletTransaction.tariPaymentIdHex,
+            tariTxTimestamp: walletTransaction.timestamp
+              ? Number(walletTransaction.timestamp)
+              : undefined,
+            status: amountMatches
+              ? WrapTokenTransactionStatus.TOKENS_RECEIVED
+              : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+            tokenAmountInWallet: walletTransaction.amount,
+          },
+        );
+      }
     }
 
     return {
