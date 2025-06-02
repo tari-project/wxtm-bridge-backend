@@ -29,8 +29,12 @@ export class WrapTokenTransactionEntity {
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   tokenAmount: string;
 
+  //TODO consider deleting this field
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   userProvidedTokenAmount: string;
+
+  @Column({ type: 'numeric', precision: 38, scale: 0, nullable: true })
+  tokenAmountInWallet?: string;
 
   @Column()
   feePercentageBps: number;

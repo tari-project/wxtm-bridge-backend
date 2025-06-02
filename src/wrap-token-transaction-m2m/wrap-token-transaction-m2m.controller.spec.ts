@@ -2,7 +2,6 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { v4 as uuidV4 } from 'uuid';
 
 import config from '../config/config';
 import {
@@ -143,16 +142,15 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
-    it('should update transactions status to TOKENS_RECEIVED and calculate fees', async () => {
+    it('should update transactions status to TOKENS_RECEIVED', async () => {
       const [
         tx_created,
         tx_token_sent,
         tx_timeout,
-        tx_with_tari_tx_id,
-        tx_other_uuid,
+        tx_tokens_send_amount_mismatch,
       ] = await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
-        5,
+        4,
         [
           { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
           {
@@ -166,9 +164,7 @@ describe('WrapTokenTransactionController', () => {
           {
             status: WrapTokenTransactionStatus.TOKENS_SENT,
             tokenAmount: '1000',
-            tariPaymentIdHex: '1',
           },
-          { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
         ],
       );
 
@@ -183,25 +179,19 @@ describe('WrapTokenTransactionController', () => {
           {
             paymentId: tx_token_sent.paymentId,
             tariPaymentIdHex: '2',
-            amount: '2000',
+            amount: '1000',
             timestamp: '1747209840',
           },
           {
             paymentId: tx_timeout.paymentId,
             tariPaymentIdHex: '3',
-            amount: '2000',
+            amount: '1000',
             timestamp: '1747209840',
           },
           {
-            paymentId: tx_with_tari_tx_id.paymentId,
-            tariPaymentIdHex: '3',
-            amount: '3000',
-            timestamp: '1747209840',
-          },
-          {
-            paymentId: uuidV4(),
+            paymentId: tx_tokens_send_amount_mismatch.paymentId,
             tariPaymentIdHex: '4',
-            amount: '4000',
+            amount: '3000',
             timestamp: '1747209840',
           },
         ],
@@ -220,7 +210,7 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(5);
+      expect(updatedTransactions).toHaveLength(4);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -228,45 +218,101 @@ describe('WrapTokenTransactionController', () => {
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariPaymentIdHex: '1',
             tokenAmount: '1000',
+            tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
-            amountAfterFee: '997',
-            feeAmount: '3',
           }),
           expect.objectContaining({
             id: tx_token_sent.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariPaymentIdHex: '2',
-            tokenAmount: '2000',
+            tokenAmount: '1000',
+            tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
-            amountAfterFee: '1994',
-            feeAmount: '6',
           }),
           expect.objectContaining({
             id: tx_timeout.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             tariPaymentIdHex: '3',
-            tokenAmount: '2000',
+            tokenAmount: '1000',
+            tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
-            amountAfterFee: '1994',
-            feeAmount: '6',
           }),
           expect.objectContaining({
-            id: tx_with_tari_tx_id.id,
-            status: WrapTokenTransactionStatus.TOKENS_SENT,
-            tariPaymentIdHex: '1',
+            id: tx_tokens_send_amount_mismatch.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+            tariPaymentIdHex: '4',
             tokenAmount: '1000',
-            tariTxTimestamp: null,
-          }),
-          expect.objectContaining({
-            id: tx_other_uuid.id,
-            status: WrapTokenTransactionStatus.CREATED,
-            tariPaymentIdHex: null,
-            tokenAmount: '1000',
-            tariTxTimestamp: null,
+            tokenAmountInWallet: '3000',
+            tariTxTimestamp: 1747209840,
           }),
         ]),
       );
     });
+
+    it.each([
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        'already in tokens received status',
+      ],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+        'already completed',
+      ],
+      [
+        WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        'already executing',
+      ],
+    ])(
+      'should not update transaction when status is %s (%s)',
+      async (status, _description) => {
+        const transaction = await factory.create<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          {
+            status,
+            tariPaymentIdHex: null as unknown as undefined,
+            tariTxTimestamp: null as unknown as undefined,
+          },
+        );
+
+        const dto: TokensReceivedRequestDTO = {
+          walletTransactions: [
+            {
+              paymentId: transaction.paymentId,
+              tariPaymentIdHex: 'new-tari-id',
+              amount: '1000',
+              timestamp: '1747209999',
+            },
+          ],
+        };
+
+        const { body } = await request(app.getHttpServer())
+          .patch('/wrap-token-transactions-m2m/tokens-received')
+          .set('Content-Type', 'application/json')
+          .set('Authorization', `Bearer ${m2mToken}`)
+          .send(dto)
+          .expect(200);
+
+        expect(body).toEqual({ success: true });
+
+        const unchangedTransaction = await getRepository(
+          WrapTokenTransactionEntity,
+        ).findOne({ where: { id: transaction.id } });
+
+        expect(unchangedTransaction).toEqual(
+          expect.objectContaining({
+            id: transaction.id,
+            status: status,
+            tariPaymentIdHex: null,
+            tariTxTimestamp: null,
+            tokenAmountInWallet: null,
+          }),
+        );
+      },
+    );
 
     it('should not be accessible with an incorrect token', async () => {
       const { body } = await request(app.getHttpServer())
