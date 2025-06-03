@@ -15,6 +15,7 @@
     "url": "https://github.com/tari-project/wxtm-bridge-backend"
   },
   "devDependencies": {
+    "@types/node": "^22.15.29",
     "typescript": "^4.6.4"
   }
 }

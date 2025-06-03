@@ -17,6 +17,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install packages
         run: npm ci
+      - name: Install packages
+        working-directory: "./wxtm-bridge-backend-api-node"
+        run: npm ci
       - name: Generate api
         run: npm run api:generate-node
 
