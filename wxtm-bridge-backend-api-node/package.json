@@ -2,8 +2,8 @@
   "name": "@tari-project/wxtm-bridge-backend-api-node",
   "version": "0.1.23",
   "description": "",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./api/index.js",
+  "types": "./api/index.d.ts",
   "scripts": {
     "build": "tsc",
     "release": "npm run build && npm publish --access public"
