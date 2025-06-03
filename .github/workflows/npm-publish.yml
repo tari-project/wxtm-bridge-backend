@@ -18,7 +18,7 @@ jobs:
       - name: Install packages
         run: npm ci
       - name: Generate api
-        run: npm run api:generate
+        run: npm run api:generate-node
 
       - run: npm run release
         working-directory: "./wxtm-bridge-backend-api-node"
