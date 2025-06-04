@@ -1,30 +1,25 @@
 ### To update package
 
-1. **Change version of the package**
+1. **Start Nest application**
 
    ```sh
-   npm version patch # or minor/major
+   docker compose up app
    ```
 
-2. **Make a commit matching version**
+2. **Generate package from root directory**
 
    ```sh
-   git ci -am "@tari-project/wxtm-bridge-backend-api-node@0.1.21
+   npm run api:generate
    ```
 
-3. **Make a matching tag**
+3. **Change directory**
 
    ```sh
-   git tag @tari-project/wxtm-bridge-backend-api-node@0.1.21
+   cd wxtm-bridge-backend-api-node
    ```
 
-4. **Push to github with tags**
+4. **Bump version, build, and publish package**
 
    ```sh
-   git push
-   git puhs --tags
+   npm run release
    ```
-
-5. **Create a release**
-
-    https://github.com/tari-project/wxtm-bridge-backend/releases/new
