@@ -1,10 +1,12 @@
 import factory from 'factory-girl';
+import { v4 as uuidv4 } from 'uuid';
 
 import { testDataSource } from '../database';
 import { CustomTypeORMAdapter } from './typeorm.adapter';
 import { UserEntity } from '../../src/user/user.entity';
 import { WrapTokenTransactionEntity } from '../../src/wrap-token-transaction/wrap-token-transaction.entity';
 import { TokensUnwrappedEntity } from '../../src/tokens-unwrapped/tokens-unwrapped.entity';
+import { WrapTokenAuditEntity } from '../../src/wrap-token-audit/wrap-token-audit.entity';
 
 export type Factory = typeof factory;
 export let factoryCached: Factory | undefined;
@@ -72,6 +74,13 @@ export const getFactory = async (): Promise<Factory> => {
         'TokensUnwrappedEntity.transactionHash',
         (n) => `0xhash${n}`,
       ),
+    });
+
+    factory.define(WrapTokenAuditEntity.name, WrapTokenAuditEntity, {
+      paymentId: factory.sequence('WrapTokenAuditEntity.paymentId', () =>
+        uuidv4(),
+      ),
+      transactionId: factory.assoc(WrapTokenTransactionEntity.name, 'id'),
     });
 
     factoryCached = factory;

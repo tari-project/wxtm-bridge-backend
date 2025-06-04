@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -38,7 +39,7 @@ export class WrapTokenAuditEntity {
   note?: Record<string, string>;
 
   @ManyToOne(() => WrapTokenTransactionEntity, (entity) => entity.audits)
-  transaction: WrapTokenTransactionEntity;
+  transaction: Relation<WrapTokenTransactionEntity>;
 
   @Column()
   transactionId: number;

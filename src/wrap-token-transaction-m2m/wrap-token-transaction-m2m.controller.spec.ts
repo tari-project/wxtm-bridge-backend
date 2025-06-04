@@ -112,6 +112,7 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toHaveLength(3);
+      expect(body[0].audits).toHaveLength(0);
     });
   });
 
@@ -132,6 +133,12 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity.name,
       );
 
+      const [audit_1, audit_2] = await factory.createMany<WrapTokenAuditEntity>(
+        WrapTokenAuditEntity.name,
+        2,
+        { transactionId: transaction.id },
+      );
+
       const { body } = await request(app.getHttpServer())
         .get(`/wrap-token-transactions-m2m/${transaction.id}`)
         .set('Content-Type', 'application/json')
@@ -139,6 +146,20 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toHaveProperty('id', transaction.id);
+
+      expect(body.audits).toHaveLength(2);
+      expect(body.audits).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: audit_1.id,
+            transactionId: transaction.id,
+          }),
+          expect.objectContaining({
+            id: audit_2.id,
+            transactionId: transaction.id,
+          }),
+        ]),
+      );
     });
   });
 
