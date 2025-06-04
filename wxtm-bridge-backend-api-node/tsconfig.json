@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es5",
+    "outDir": "dist",
+    "types": ["node"],
     "baseUrl": "./",
     "isolatedModules": false,
     "sourceMap": true,
