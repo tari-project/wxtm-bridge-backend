@@ -18,12 +18,12 @@ jobs:
       - name: Install packages
         run: npm ci
       - name: Install packages
-        working-directory: "./wxtm-bridge-backend-api-node"
+        working-directory: "./wxtm-bridge-backend-api"
         run: npm ci
       - name: Generate api
-        run: npm run api:generate-node
+        run: npm run api:generate
 
       - run: npm run release
-        working-directory: "./wxtm-bridge-backend-api-node"
+        working-directory: "./wxtm-bridge-backend-api"
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TOKEN}}

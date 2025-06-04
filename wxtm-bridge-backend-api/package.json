@@ -6,17 +6,13 @@
   "types": "./api/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "release": "npm version patch && npm run build && npm publish"
+    "release": "npm run build && npm publish --access public"
   },
   "author": "",
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "https://github.com/tari-project/wxtm-bridge-backend"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://github.com/tari-project"
   },
   "devDependencies": {
     "typescript": "^4.6.4"
