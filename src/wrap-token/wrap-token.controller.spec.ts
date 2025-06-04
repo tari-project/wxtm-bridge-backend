@@ -18,6 +18,7 @@ import { WrapTokenModule } from './wrap-token.module';
 import { CreateWrapTokenReqDTO, UserTransactionStatus } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 describe('WrapTokenController', () => {
   let app: INestApplication;
@@ -96,6 +97,17 @@ describe('WrapTokenController', () => {
           amountAfterFee: '997000000',
         }),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: null,
+          toStatus: WrapTokenTransactionStatus.CREATED,
+        }),
+      );
     });
 
     it.each([
@@ -130,7 +142,7 @@ describe('WrapTokenController', () => {
   });
 
   describe('PATCH /wrap-token/tokens-sent/:paymentId', () => {
-    it('updates transaction status to TOKENS_SENT', async () => {
+    it('updates transaction status to TOKENS_SENT and creates an audit record', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         {
@@ -153,6 +165,17 @@ describe('WrapTokenController', () => {
 
       expect(updatedTransaction?.status).toBe(
         WrapTokenTransactionStatus.TOKENS_SENT,
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATED,
+          toStatus: WrapTokenTransactionStatus.TOKENS_SENT,
+        }),
       );
     });
 

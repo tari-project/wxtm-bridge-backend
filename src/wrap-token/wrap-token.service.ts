@@ -16,6 +16,7 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
 import { ConfigService } from '@nestjs/config';
 import { IConfig } from '../config/config.interface';
+import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 
 @Injectable()
 export class WrapTokenService {
@@ -24,6 +25,7 @@ export class WrapTokenService {
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
     private readonly wrapTokenFeesService: WrapTokenFeesService,
     private readonly configService: ConfigService<IConfig, true>,
+    private readonly wrapTokenAuditService: WrapTokenAuditService,
   ) {}
 
   async createWrapTokenTransaction({
@@ -36,14 +38,21 @@ export class WrapTokenService {
         tokenAmount,
       });
 
-    const { paymentId } = await this.wrapTokenTransactionRepository.save({
-      from,
-      to,
-      tokenAmount,
-      userProvidedTokenAmount: tokenAmount,
-      feePercentageBps,
-      feeAmount,
-      amountAfterFee,
+    const { paymentId, id, status } =
+      await this.wrapTokenTransactionRepository.save({
+        from,
+        to,
+        tokenAmount,
+        userProvidedTokenAmount: tokenAmount,
+        feePercentageBps,
+        feeAmount,
+        amountAfterFee,
+      });
+
+    await this.wrapTokenAuditService.recordTransactionEvent({
+      transactionId: id,
+      paymentId,
+      toStatus: status,
     });
 
     return {
@@ -77,6 +86,13 @@ export class WrapTokenService {
     await this.wrapTokenTransactionRepository.save({
       ...transaction,
       status: WrapTokenTransactionStatus.TOKENS_SENT,
+    });
+
+    await this.wrapTokenAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: transaction.status,
+      toStatus: WrapTokenTransactionStatus.TOKENS_SENT,
     });
 
     return {
