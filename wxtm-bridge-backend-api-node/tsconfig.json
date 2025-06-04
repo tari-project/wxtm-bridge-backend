@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "baseUrl": "./",
     "outDir": "dist",
     "types": ["node"],
-    "baseUrl": "./",
     "isolatedModules": false,
     "sourceMap": true,
     "noEmitOnError": true,
