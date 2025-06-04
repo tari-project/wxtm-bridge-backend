@@ -18,6 +18,7 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { WrapTokenTransactionModule } from './wrap-token-transaction.module';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
+import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -80,6 +81,7 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toHaveLength(3);
+      expect(body[0].audits).toHaveLength(0);
     });
 
     it('returns 401 for a regular user', async () => {
@@ -102,6 +104,12 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity.name,
       );
 
+      const [audit_1, audit_2] = await factory.createMany<WrapTokenAuditEntity>(
+        WrapTokenAuditEntity.name,
+        2,
+        { transactionId: transaction.id },
+      );
+
       const { body } = await request(app.getHttpServer())
         .get(`/wrap-token-transactions/${transaction.id}`)
         .set('Content-Type', 'application/json')
@@ -109,6 +117,20 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toHaveProperty('id', transaction.id);
+
+      expect(body.audits).toHaveLength(2);
+      expect(body.audits).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: audit_1.id,
+            transactionId: transaction.id,
+          }),
+          expect.objectContaining({
+            id: audit_2.id,
+            transactionId: transaction.id,
+          }),
+        ]),
+      );
     });
 
     it('returns 401 for a regular user', async () => {

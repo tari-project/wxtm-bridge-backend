@@ -17,13 +17,6 @@ import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
 
 @Crud({
   model: { type: WrapTokenTransactionEntity },
-  query: {
-    join: {
-      audits: {
-        eager: true,
-      },
-    },
-  },
   routes: {
     only: ['getManyBase', 'getOneBase'],
     getManyBase: {

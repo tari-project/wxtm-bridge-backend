@@ -5,7 +5,6 @@ import {
   Generated,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -71,7 +70,7 @@ export class WrapTokenTransactionEntity {
   tariTxTimestamp?: number;
 
   @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
-  audits: Relation<WrapTokenAuditEntity[]>;
+  audits: WrapTokenAuditEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
