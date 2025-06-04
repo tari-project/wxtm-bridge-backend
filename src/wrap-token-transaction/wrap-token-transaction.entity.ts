@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
+import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 @Entity({
   name: 'wrap_token_transactions',
@@ -66,6 +68,9 @@ export class WrapTokenTransactionEntity {
 
   @Column({ nullable: true })
   tariTxTimestamp?: number;
+
+  @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
+  audits: WrapTokenAuditEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

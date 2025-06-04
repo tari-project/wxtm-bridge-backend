@@ -14,6 +14,7 @@ import { TransactionTimeoutModule } from './transaction-timeout.module';
 import { TransactionTimeoutService } from './transaction-timeout.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 describe('SubgraphService tests', () => {
   let factory: Factory;
@@ -144,6 +145,24 @@ describe('SubgraphService tests', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+
+      expect(auditRecords).toHaveLength(2); // Only 2 transactions were timed out
+      expect(auditRecords).toEqual([
+        expect.objectContaining({
+          transactionId: txShouldTimeout1.id,
+          paymentId: txShouldTimeout1.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATED,
+          toStatus: WrapTokenTransactionStatus.TIMEOUT,
+        }),
+        expect.objectContaining({
+          transactionId: txShouldTimeout2.id,
+          paymentId: txShouldTimeout2.paymentId,
+          fromStatus: WrapTokenTransactionStatus.TOKENS_SENT,
+          toStatus: WrapTokenTransactionStatus.TIMEOUT,
+        }),
+      ]);
     });
   });
 });

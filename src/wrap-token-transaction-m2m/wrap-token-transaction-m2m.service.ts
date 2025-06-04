@@ -14,12 +14,14 @@ import {
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
+import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
+    private readonly wrapTokenAuditService: WrapTokenAuditService,
   ) {
     super(repo);
   }
@@ -42,8 +44,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       });
 
       if (transaction) {
-        const amountMatches =
-          transaction.tokenAmount === walletTransaction.amount;
+        const newStatus =
+          transaction.tokenAmount === walletTransaction.amount
+            ? WrapTokenTransactionStatus.TOKENS_RECEIVED
+            : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
 
         await this.repo.update(
           {
@@ -54,12 +58,17 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
             tariTxTimestamp: walletTransaction.timestamp
               ? Number(walletTransaction.timestamp)
               : undefined,
-            status: amountMatches
-              ? WrapTokenTransactionStatus.TOKENS_RECEIVED
-              : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+            status: newStatus,
             tokenAmountInWallet: walletTransaction.amount,
           },
         );
+
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: newStatus,
+        });
       }
     }
 
@@ -71,17 +80,32 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async updateToCreatingTransaction({
     walletTransactions,
   }: CreatingTransactionRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      await this.repo.update(
-        {
-          paymentId: transaction.paymentId,
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
           tariPaymentIdHex: Not(IsNull()),
         },
-        {
-          status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-        },
-      );
+      });
+
+      if (transaction) {
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+          },
+        );
+
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        });
+      }
     }
 
     return {
@@ -92,19 +116,34 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async updateToTransactionCreated({
     walletTransactions,
   }: TransactionCreatedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      await this.repo.update(
-        {
-          paymentId: transaction.paymentId,
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
           tariPaymentIdHex: Not(IsNull()),
         },
-        {
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-          safeTxHash: transaction.safeTxHash,
-          safeNonce: transaction.safeNonce,
-        },
-      );
+      });
+
+      if (transaction) {
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            safeTxHash: walletTransaction.safeTxHash,
+            safeNonce: walletTransaction.safeNonce,
+          },
+        );
+
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        });
+      }
     }
 
     return {
@@ -115,18 +154,33 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async updateToExecutingTransaction({
     walletTransactions,
   }: ExecutingTransactionRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      await this.repo.update(
-        {
-          paymentId: transaction.paymentId,
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
-        {
-          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-        },
-      );
+      });
+
+      if (transaction) {
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          },
+        );
+
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        });
+      }
     }
 
     return {
@@ -137,18 +191,33 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async updateToTransactionExecuted({
     walletTransactions,
   }: TransactionExecutedRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      await this.repo.update(
-        {
-          paymentId: transaction.paymentId,
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
           tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
-        {
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-        },
-      );
+      });
+
+      if (transaction) {
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+          },
+        );
+
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+        });
+      }
     }
 
     return {
@@ -159,16 +228,32 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
   async setCurrentError({
     walletTransactions,
   }: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
-    for (const transaction of walletTransactions) {
-      await this.repo.update(
-        {
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
+        },
+      });
+
+      if (transaction && !transaction.error) {
+        await this.repo.update(
+          {
+            id: transaction.id,
+          },
+          {
+            error: walletTransaction.error,
+          },
+        );
+      }
+
+      if (transaction) {
+        await this.wrapTokenAuditService.recordTransactionEvent({
+          transactionId: transaction.id,
           paymentId: transaction.paymentId,
-          error: IsNull(),
-        },
-        {
-          error: transaction.error,
-        },
-      );
+          fromStatus: transaction.status,
+          note: walletTransaction.error,
+        });
+      }
     }
 
     return {

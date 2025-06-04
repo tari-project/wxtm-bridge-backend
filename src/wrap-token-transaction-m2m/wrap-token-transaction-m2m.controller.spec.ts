@@ -24,6 +24,7 @@ import {
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
+import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -142,7 +143,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
-    it('should update transactions status to TOKENS_RECEIVED', async () => {
+    it('should update transactions status to TOKENS_RECEIVED and create audit records', async () => {
       const [
         tx_created,
         tx_token_sent,
@@ -247,6 +248,38 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find({
+        order: { createdAt: 'ASC' },
+      });
+
+      expect(auditRecords).toHaveLength(4);
+      expect(auditRecords).toEqual([
+        expect.objectContaining({
+          transactionId: tx_created.id,
+          paymentId: tx_created.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATED,
+          toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        }),
+        expect.objectContaining({
+          transactionId: tx_token_sent.id,
+          paymentId: tx_token_sent.paymentId,
+          fromStatus: WrapTokenTransactionStatus.TOKENS_SENT,
+          toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        }),
+        expect.objectContaining({
+          transactionId: tx_timeout.id,
+          paymentId: tx_timeout.paymentId,
+          fromStatus: WrapTokenTransactionStatus.TIMEOUT,
+          toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        }),
+        expect.objectContaining({
+          transactionId: tx_tokens_send_amount_mismatch.id,
+          paymentId: tx_tokens_send_amount_mismatch.paymentId,
+          fromStatus: WrapTokenTransactionStatus.TOKENS_SENT,
+          toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+        }),
+      ]);
     });
 
     it.each([
@@ -327,7 +360,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/creating-transaction', () => {
-    it('should update transactions status to SAFE_TRANSACTION_CREATING', async () => {
+    it('should update transactions status to SAFE_TRANSACTION_CREATING and create audit records', async () => {
       const [tx_received, tx_other_status, tx_no_tari_tx_id] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -398,6 +431,17 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_received.id,
+          paymentId: tx_received.paymentId,
+          fromStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          toStatus: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        }),
+      );
     });
 
     it('should not be accessible with an incorrect token', async () => {
@@ -413,7 +457,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/transaction-created', () => {
-    it('should update transactions status to SAFE_TRANSACTION_CREATED', async () => {
+    it('should update transactions status to SAFE_TRANSACTION_CREATED and create audit records', async () => {
       const [tx_received, tx_other_status, tx_no_tari_tx_id] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -490,6 +534,17 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_received.id,
+          paymentId: tx_received.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        }),
+      );
     });
 
     it('should not be accessible with an incorrect token', async () => {
@@ -505,7 +560,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/set-error', () => {
-    it('should update error field for transactions', async () => {
+    it('should update error field for transactions and create audit records', async () => {
       const [tx1, tx2] = await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
         2,
@@ -559,22 +614,43 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(2);
+      expect(auditRecords).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            transactionId: tx1.id,
+            paymentId: tx1.paymentId,
+            fromStatus: WrapTokenTransactionStatus.CREATED,
+            toStatus: null,
+            note: { code: 'ERR_1', message: 'Test error 1' },
+          }),
+          expect.objectContaining({
+            transactionId: tx2.id,
+            paymentId: tx2.paymentId,
+            fromStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            toStatus: null,
+            note: { code: 'ERR_2', message: 'Test error 2' },
+          }),
+        ]),
+      );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/set-error')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
     });
   });
 
-  it('should not be accessible with an incorrect token', async () => {
-    const { body } = await request(app.getHttpServer())
-      .patch('/wrap-token-transactions-m2m/set-error')
-      .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer incorect-token`)
-      .send({})
-      .expect(401);
-
-    expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
-  });
-
   describe('PATCH /wrap-token-transactions-m2m/executing-transaction', () => {
-    it('should update transactions status to EXECUTING_SAFE_TRANSACTION', async () => {
+    it('should update transactions status to EXECUTING_SAFE_TRANSACTION and create audit records', async () => {
       const [tx_created, tx_other_status, tx_no_safe_tx_hash] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -648,6 +724,17 @@ describe('WrapTokenTransactionController', () => {
           }),
         ]),
       );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_created.id,
+          paymentId: tx_created.paymentId,
+          fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        }),
+      );
     });
 
     it('should not be accessible with an incorrect token', async () => {
@@ -663,7 +750,7 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/transaction-executed', () => {
-    it('should update transactions status to SAFE_TRANSACTION_EXECUTED', async () => {
+    it('should update transactions status to SAFE_TRANSACTION_EXECUTED and create audit records', async () => {
       const [tx_executing, tx_other_status, tx_no_safe_tx_hash] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -736,6 +823,17 @@ describe('WrapTokenTransactionController', () => {
             safeTxHash: null,
           }),
         ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_executing.id,
+          paymentId: tx_executing.paymentId,
+          fromStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+        }),
       );
     });
 

@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { IConfig } from '../config/config.interface';
+import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 
 @Injectable()
 export class TransactionTimeoutService {
@@ -14,6 +15,7 @@ export class TransactionTimeoutService {
     @InjectRepository(WrapTokenTransactionEntity)
     private wrapTokenTransactionEntity: Repository<WrapTokenTransactionEntity>,
     protected readonly configService: ConfigService<IConfig, true>,
+    private readonly wrapTokenAuditService: WrapTokenAuditService,
   ) {}
 
   getDateTimeNow(): Date {
@@ -27,8 +29,8 @@ export class TransactionTimeoutService {
     const now = this.getDateTimeNow();
     const timeAgo = new Date(now.getTime() - transactionTimeout);
 
-    await this.wrapTokenTransactionEntity.update(
-      {
+    const transactions = await this.wrapTokenTransactionEntity.find({
+      where: {
         status: In([
           WrapTokenTransactionStatus.CREATED,
           WrapTokenTransactionStatus.TOKENS_SENT,
@@ -37,7 +39,24 @@ export class TransactionTimeoutService {
         tariTxTimestamp: IsNull(),
         updatedAt: LessThan(timeAgo),
       },
-      { status: WrapTokenTransactionStatus.TIMEOUT },
-    );
+    });
+
+    for (const transaction of transactions) {
+      await this.wrapTokenTransactionEntity.update(
+        {
+          id: transaction.id,
+        },
+        {
+          status: WrapTokenTransactionStatus.TIMEOUT,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: WrapTokenTransactionStatus.TIMEOUT,
+      });
+    }
   }
 }
