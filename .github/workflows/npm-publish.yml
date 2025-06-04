@@ -8,7 +8,7 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && contains(github.ref, '@tari-project/wxtm-bridge-backend-api-node')
+    if: github.event_name == 'release' && contains(github.ref, '@tari-project/wxtm-bridge-backend-api')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
