@@ -8,6 +8,13 @@ import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
 
 @Crud({
   model: { type: WrapTokenTransactionEntity },
+  query: {
+    join: {
+      audits: {
+        eager: true,
+      },
+    },
+  },
   routes: {
     only: ['updateOneBase', 'getManyBase', 'getOneBase'],
     getManyBase: {
