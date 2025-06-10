@@ -10,7 +10,7 @@ PROD_ARTIFACTS_S3_PREFIX=prod/wxtm-bridge
 out/ts: $(shell git ls-files "./src/*.[jt]s" --full-name)
 	rm -r -f dist && \
 	rm -r -f out && \
-	rm -f wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip && \
+	rm -f wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip wxtm-bridge-notifications.zip && \
 	npm run build && \
 	npm run esbuild && \
 	touch out/ts
@@ -25,14 +25,17 @@ wxtm-bridge-subgraph.zip: out/ts
 	zip $@ -r out/subgraph/*.js node_modules/app-root-path
 
 wxtm-bridge-timeout.zip: out/ts
-	zip $@ -r out/timeout/*.js node_modules/app-root-path		
+	zip $@ -r out/timeout/*.js node_modules/app-root-path
 
-upload-artifact-dev: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip
+wxtm-bridge-notifications.zip: out/ts
+	zip $@ -r out/notifications/*.js node_modules/app-root-path
+
+upload-artifact-dev: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip wxtm-bridge-notifications.zip
 	for artifact in $^; do \
 	  aws s3 cp $$artifact s3://$(DEV_ARTIFACTS_BUCKET_NAME)/$(DEV_ARTIFACTS_S3_PREFIX)/ --region $(DEV_REGION); \
 	done
 
-upload-artifact-prod: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip
+upload-artifact-prod: wxtm-bridge-backend.zip wxtm-bridge-migrations.zip wxtm-bridge-subgraph.zip wxtm-bridge-timeout.zip wxtm-bridge-notifications.zip
 	for artifact in $^; do \
 	  aws s3 cp $$artifact s3://$(PROD_ARTIFACTS_BUCKET_NAME)/$(PROD_ARTIFACTS_S3_PREFIX)/ --region $(PROD_REGION); \
 	done
