@@ -25,6 +25,8 @@ import {
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsServiceMock } from '../../test/mocks/notifications.service.mock';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -41,6 +43,7 @@ describe('WrapTokenTransactionController', () => {
               fees: {
                 wrapTokenFeePercentageBps: 0.3 * 100, // 0.3% in basis points
               },
+              domain: 'example.com',
             }),
           ],
           isGlobal: true,
@@ -49,7 +52,10 @@ describe('WrapTokenTransactionController', () => {
         M2MAuthModule.register({ authToken: m2mToken }),
         WrapTokenTransactionM2MModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(NotificationsServiceMock)
+      .compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -634,6 +640,24 @@ describe('WrapTokenTransactionController', () => {
             note: { code: 'ERR_2', message: 'Test error 2' },
           }),
         ]),
+      );
+
+      expect(NotificationsServiceMock.emitNotification).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(NotificationsServiceMock.emitNotification).toHaveBeenNthCalledWith(
+        1,
+        {
+          message: `Error processing transaction: https://admin.example.com/wrap-token-transactions/edit/${tx1.id}  Message: {\"code\":\"ERR_1\",\"message\":\"Test error 1\"}`,
+          origin: 'Processor',
+        },
+      );
+      expect(NotificationsServiceMock.emitNotification).toHaveBeenNthCalledWith(
+        2,
+        {
+          message: `Error processing transaction: https://admin.example.com/wrap-token-transactions/edit/${tx2.id}  Message: ${JSON.stringify(dto.walletTransactions[1].error)}`,
+          origin: 'Processor',
+        },
       );
     });
 

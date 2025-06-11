@@ -30,6 +30,7 @@ services:
     depends_on:
       - db
     environment:
+      DOMAIN: local-domain
       ENVIRONMENT: local
       DATABASE_HOST: db
       DATABASE_PORT: 5432
