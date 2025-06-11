@@ -50,4 +50,8 @@ export default (): IConfig => ({
   transactionTimeout: Number(
     process.env.TRANSACTION_TIMEOUT || 1 * 60 * 60 * 1000,
   ),
+  aws: {
+    region: process.env.AWS_REGION || '',
+    notificationsTopicArn: process.env.NOTIFICATIONS_TOPIC_ARN || '',
+  },
 });
