@@ -34,6 +34,7 @@ export interface IAWS {
 }
 
 export interface IConfig {
+  domain: string;
   enviroment: Enviroment;
   database: DataSourceOptions;
   testDatabase: DataSourceOptions;

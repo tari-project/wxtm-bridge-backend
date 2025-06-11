@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
@@ -15,6 +16,8 @@ import {
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { IConfig } from '../config/config.interface';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
@@ -22,6 +25,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
+    private readonly notificationsService: NotificationsService,
+    private readonly configService: ConfigService<IConfig, true>,
   ) {
     super(repo);
   }
@@ -225,6 +230,20 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     };
   }
 
+  private async notifyTransactionError(
+    transactionId: number,
+    errorMessage: string,
+  ): Promise<void> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.notificationsService.emitNotification({
+      message: `Error processing transaction: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}  Message: ${errorMessage}`,
+      origin: 'Processor',
+    });
+  }
+
   async setCurrentError({
     walletTransactions,
   }: ErrorUpdateRequestDTO): Promise<SuccessDTO> {
@@ -253,6 +272,11 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           fromStatus: transaction.status,
           note: walletTransaction.error,
         });
+
+        await this.notifyTransactionError(
+          transaction.id,
+          JSON.stringify(walletTransaction.error),
+        );
       }
     }
 

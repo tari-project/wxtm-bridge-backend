@@ -3,6 +3,7 @@ import { IConfig } from './config.interface';
 import { Enviroment } from './config.interface';
 
 export default (): IConfig => ({
+  domain: process.env.DOMAIN || '',
   enviroment: (process.env.ENVIRONMENT as Enviroment) || Enviroment.LOCAL,
   database: {
     type: 'postgres',

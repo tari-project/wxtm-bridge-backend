@@ -50,6 +50,7 @@ jobs:
       - name: Run tests
         run: npm run test
         env:
+          AWS_REGION: us
           ENVIRONMENT: test
           DATABASE_HOST: postgres
           DATABASE_PORT: 5432
