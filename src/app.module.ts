@@ -13,6 +13,7 @@ import { SafeApiModule } from './safe-api/safe-api.module';
 import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m/wrap-token-transaction-m2m.module';
 import { M2MAuthModule } from './m2m-auth/m2m-auth.module';
 import { WrapTokenAuditModule } from './wrap-token-audit/wrap-token-audit.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WrapTokenAuditModule } from './wrap-token-audit/wrap-token-audit.module
     WrapTokenFeesModule,
     SafeApiModule,
     WrapTokenAuditModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

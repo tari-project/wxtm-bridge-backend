@@ -39,6 +39,11 @@ services:
       AUTH0_DOMAIN: ${AUTH0_DOMAIN}
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
       CHAIN_ID: 11155111
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      NOTIFICATIONS_TOPIC_ARN: ${NOTIFICATIONS_TOPIC_ARN}
     command: 'npm run start:dev'
     networks:
       - shared-wxtm-network

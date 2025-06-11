@@ -1448,6 +1448,46 @@
           }
         ]
       }
+    },
+    "/notifications/send": {
+      "post": {
+        "operationId": "sendNotification",
+        "summary": "Send notification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -2090,6 +2130,21 @@
             ]
           }
         }
+      },
+      "NotificationDTO": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "message"
+        ]
       }
     }
   }

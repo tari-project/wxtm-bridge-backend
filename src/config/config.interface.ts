@@ -28,6 +28,11 @@ export interface IBlockchain {
   chainId: bigint;
 }
 
+export interface IAWS {
+  region: string;
+  notificationsTopicArn: string;
+}
+
 export interface IConfig {
   enviroment: Enviroment;
   database: DataSourceOptions;
@@ -39,4 +44,5 @@ export interface IConfig {
   blockchain: IBlockchain;
   coldWalletAddress: string;
   transactionTimeout: number;
+  aws: IAWS;
 }
