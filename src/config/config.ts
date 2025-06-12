@@ -55,4 +55,7 @@ export default (): IConfig => ({
     region: process.env.AWS_REGION || '',
     notificationsTopicArn: process.env.NOTIFICATIONS_TOPIC_ARN || '',
   },
+  slack: {
+    webhookUrl: process.env.SLACK_WEBHOOK_URL || '',
+  },
 });

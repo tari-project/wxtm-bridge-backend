@@ -6,6 +6,7 @@ import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { IConfig } from '../config/config.interface';
 import { SuccessDTO } from '../dto/success.dto';
 import { NotificationDTO } from './notifications.dto';
+import { SlackService } from '../slack/slack.service';
 
 @Injectable()
 export class NotificationsService {
@@ -15,6 +16,7 @@ export class NotificationsService {
   constructor(
     private readonly configService: ConfigService<IConfig, true>,
     private readonly snsClient: SNSClient,
+    private readonly slackService: SlackService,
   ) {
     this.topicArn = this.configService.get('aws.notificationsTopicArn', {
       infer: true,
@@ -34,6 +36,8 @@ export class NotificationsService {
     this.logger.log(
       `Notification message: ${notification.message} and origin: ${notification.origin}`,
     );
+
+    await this.slackService.sendMessage(notification.message);
   }
 
   async emitNotification(notification: NotificationDTO): Promise<SuccessDTO> {
