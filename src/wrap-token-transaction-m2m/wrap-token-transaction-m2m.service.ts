@@ -263,9 +263,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
             error: walletTransaction.error,
           },
         );
-      }
 
-      if (transaction) {
         await this.wrapTokenAuditService.recordTransactionEvent({
           transactionId: transaction.id,
           paymentId: transaction.paymentId,
