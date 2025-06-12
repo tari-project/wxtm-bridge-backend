@@ -924,6 +924,92 @@
         ]
       }
     },
+    "/wrap-token-transactions-m2m/signing-transaction": {
+      "patch": {
+        "operationId": "updateToSigningTransaction",
+        "summary": "Update to signing transaction status",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SigningTransactionRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "wrap-token-transactions-m2m"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/wrap-token-transactions-m2m/transaction-signed": {
+      "patch": {
+        "operationId": "updateToTransactionSigned",
+        "summary": "Update to transaction signed status",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionSignedRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "wrap-token-transactions-m2m"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/wrap-token-transactions-m2m/{id}": {
       "get": {
         "operationId": "getOneBaseWrapTokenTransactionM2MControllerWrapTokenTransactionEntity",
@@ -1739,6 +1825,8 @@
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "safe_transaction_created",
+              "signing_safe_transaction",
+              "safe_transaction_signed",
               "executing_safe_transaction",
               "safe_transaction_executed",
               "timeout"
@@ -1753,6 +1841,8 @@
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "safe_transaction_created",
+              "signing_safe_transaction",
+              "safe_transaction_signed",
               "executing_safe_transaction",
               "safe_transaction_executed",
               "timeout"
@@ -1826,6 +1916,8 @@
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "safe_transaction_created",
+              "signing_safe_transaction",
+              "safe_transaction_signed",
               "executing_safe_transaction",
               "safe_transaction_executed",
               "timeout"
@@ -2018,6 +2110,34 @@
         ]
       },
       "TransactionExecutedRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "SigningTransactionRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "TransactionSignedRequestDTO": {
         "type": "object",
         "properties": {
           "walletTransactions": {

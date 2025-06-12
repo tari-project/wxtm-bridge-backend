@@ -289,6 +289,14 @@ describe('WrapTokenController', () => {
         UserTransactionStatus.PROCESSING,
       ],
       [
+        WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+        UserTransactionStatus.PROCESSING,
+      ],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+        UserTransactionStatus.PROCESSING,
+      ],
+      [
         WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
         UserTransactionStatus.PROCESSING,
       ],

@@ -92,3 +92,19 @@ export class TransactionExecutedRequestDTO {
   @Type(() => BaseTransactionDTO)
   walletTransactions: BaseTransactionDTO[];
 }
+
+export class SigningTransactionRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BaseTransactionDTO)
+  walletTransactions: BaseTransactionDTO[];
+}
+
+export class TransactionSignedRequestDTO {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BaseTransactionDTO)
+  walletTransactions: BaseTransactionDTO[];
+}

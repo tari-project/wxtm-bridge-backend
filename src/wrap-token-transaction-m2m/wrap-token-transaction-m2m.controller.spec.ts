@@ -21,6 +21,8 @@ import {
   TransactionCreatedRequestDTO,
   ExecutingTransactionRequestDTO,
   TransactionExecutedRequestDTO,
+  SigningTransactionRequestDTO,
+  TransactionSignedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
@@ -657,8 +659,8 @@ describe('WrapTokenTransactionController', () => {
     });
   });
 
-  describe('PATCH /wrap-token-transactions-m2m/executing-transaction', () => {
-    it('should update transactions status to EXECUTING_SAFE_TRANSACTION and create audit records', async () => {
+  describe('PATCH /wrap-token-transactions-m2m/signing-transaction', () => {
+    it('should update transactions status to SIGNING_SAFE_TRANSACTION and create audit records', async () => {
       const [tx_created, tx_other_status, tx_no_safe_tx_hash] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
@@ -682,10 +684,210 @@ describe('WrapTokenTransactionController', () => {
           ],
         );
 
-      const dto: ExecutingTransactionRequestDTO = {
+      const dto: SigningTransactionRequestDTO = {
         walletTransactions: [
           {
             paymentId: tx_created.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_safe_tx_hash.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/signing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_created.id,
+            status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+            tariPaymentIdHex: '123',
+            safeTxHash: 'hash123',
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tariPaymentIdHex: '123',
+            safeTxHash: 'hash456',
+          }),
+          expect.objectContaining({
+            id: tx_no_safe_tx_hash.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            tariPaymentIdHex: '123',
+            safeTxHash: null,
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_created.id,
+          paymentId: tx_created.paymentId,
+          fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          toStatus: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+        }),
+      );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/signing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/transaction-signed', () => {
+    it('should update transactions status to SAFE_TRANSACTION_SIGNED and create audit records', async () => {
+      const [tx_signing, tx_other_status, tx_no_safe_tx_hash] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+              tariPaymentIdHex: '123',
+              safeTxHash: 'hash123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariPaymentIdHex: '123',
+              safeTxHash: 'hash456',
+            },
+            {
+              status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+              tariPaymentIdHex: '123',
+              safeTxHash: undefined,
+            },
+          ],
+        );
+
+      const dto: TransactionSignedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_signing.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+          {
+            paymentId: tx_no_safe_tx_hash.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-signed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_signing.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+            tariPaymentIdHex: '123',
+            safeTxHash: 'hash123',
+          }),
+          expect.objectContaining({
+            id: tx_other_status.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tariPaymentIdHex: '123',
+            safeTxHash: 'hash456',
+          }),
+          expect.objectContaining({
+            id: tx_no_safe_tx_hash.id,
+            status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+            tariPaymentIdHex: '123',
+            safeTxHash: null,
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_signing.id,
+          paymentId: tx_signing.paymentId,
+          fromStatus: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
+          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+        }),
+      );
+    });
+
+    it('should not be accessible with an incorrect token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-signed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer incorect-token`)
+        .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/executing-transaction', () => {
+    it('should update transactions status to EXECUTING_SAFE_TRANSACTION and create audit records', async () => {
+      const [tx_signed, tx_other_status, tx_no_safe_tx_hash] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+              tariPaymentIdHex: '123',
+              safeTxHash: 'hash123',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariPaymentIdHex: '123',
+              safeTxHash: 'hash456',
+            },
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+              tariPaymentIdHex: '123',
+              safeTxHash: undefined,
+            },
+          ],
+        );
+
+      const dto: ExecutingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_signed.paymentId,
           },
           {
             paymentId: tx_other_status.paymentId,
@@ -713,7 +915,7 @@ describe('WrapTokenTransactionController', () => {
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            id: tx_created.id,
+            id: tx_signed.id,
             status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
             tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
@@ -726,7 +928,7 @@ describe('WrapTokenTransactionController', () => {
           }),
           expect.objectContaining({
             id: tx_no_safe_tx_hash.id,
-            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
             tariPaymentIdHex: '123',
             safeTxHash: null,
           }),
@@ -737,9 +939,9 @@ describe('WrapTokenTransactionController', () => {
       expect(auditRecords).toHaveLength(1);
       expect(auditRecords[0]).toEqual(
         expect.objectContaining({
-          transactionId: tx_created.id,
-          paymentId: tx_created.paymentId,
-          fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          transactionId: tx_signed.id,
+          paymentId: tx_signed.paymentId,
+          fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
           toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
         }),
       );
