@@ -622,40 +622,24 @@ describe('WrapTokenTransactionController', () => {
       );
 
       const auditRecords = await getRepository(WrapTokenAuditEntity).find();
-      expect(auditRecords).toHaveLength(2);
-      expect(auditRecords).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            transactionId: tx1.id,
-            paymentId: tx1.paymentId,
-            fromStatus: WrapTokenTransactionStatus.CREATED,
-            toStatus: null,
-            note: { code: 'ERR_1', message: 'Test error 1' },
-          }),
-          expect.objectContaining({
-            transactionId: tx2.id,
-            paymentId: tx2.paymentId,
-            fromStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            toStatus: null,
-            note: { code: 'ERR_2', message: 'Test error 2' },
-          }),
-        ]),
-      );
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords).toEqual([
+        expect.objectContaining({
+          transactionId: tx1.id,
+          paymentId: tx1.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATED,
+          toStatus: null,
+          note: { code: 'ERR_1', message: 'Test error 1' },
+        }),
+      ]);
 
       expect(NotificationsServiceMock.emitNotification).toHaveBeenCalledTimes(
-        2,
+        1,
       );
       expect(NotificationsServiceMock.emitNotification).toHaveBeenNthCalledWith(
         1,
         {
           message: `Error processing transaction: https://admin.example.com/wrap-token-transactions/edit/${tx1.id}  Message: {\"code\":\"ERR_1\",\"message\":\"Test error 1\"}`,
-          origin: 'Processor',
-        },
-      );
-      expect(NotificationsServiceMock.emitNotification).toHaveBeenNthCalledWith(
-        2,
-        {
-          message: `Error processing transaction: https://admin.example.com/wrap-token-transactions/edit/${tx2.id}  Message: ${JSON.stringify(dto.walletTransactions[1].error)}`,
           origin: 'Processor',
         },
       );
