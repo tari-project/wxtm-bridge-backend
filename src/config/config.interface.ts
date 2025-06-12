@@ -33,6 +33,10 @@ export interface IAWS {
   notificationsTopicArn: string;
 }
 
+export interface ISlack {
+  webhookUrl: string;
+}
+
 export interface IConfig {
   domain: string;
   enviroment: Enviroment;
@@ -46,4 +50,5 @@ export interface IConfig {
   coldWalletAddress: string;
   transactionTimeout: number;
   aws: IAWS;
+  slack: ISlack;
 }
