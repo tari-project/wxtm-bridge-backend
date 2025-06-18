@@ -12,8 +12,6 @@ import {
   TransactionCreatedRequestDTO,
   ExecutingTransactionRequestDTO,
   TransactionExecutedRequestDTO,
-  SigningTransactionRequestDTO,
-  TransactionSignedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
@@ -165,7 +163,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       const transaction = await this.repo.findOne({
         where: {
           paymentId: walletTransaction.paymentId,
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
@@ -277,80 +275,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           transaction.id,
           JSON.stringify(walletTransaction.error),
         );
-      }
-    }
-
-    return {
-      success: true,
-    };
-  }
-
-  async updateToSigningTransaction({
-    walletTransactions,
-  }: SigningTransactionRequestDTO): Promise<SuccessDTO> {
-    for (const walletTransaction of walletTransactions) {
-      const transaction = await this.repo.findOne({
-        where: {
-          paymentId: walletTransaction.paymentId,
-          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-          tariPaymentIdHex: Not(IsNull()),
-          safeTxHash: Not(IsNull()),
-        },
-      });
-
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
-          },
-        );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
-        });
-      }
-    }
-
-    return {
-      success: true,
-    };
-  }
-
-  async updateToTransactionSigned({
-    walletTransactions,
-  }: TransactionSignedRequestDTO): Promise<SuccessDTO> {
-    for (const walletTransaction of walletTransactions) {
-      const transaction = await this.repo.findOne({
-        where: {
-          paymentId: walletTransaction.paymentId,
-          status: WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION,
-          tariPaymentIdHex: Not(IsNull()),
-          safeTxHash: Not(IsNull()),
-        },
-      });
-
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
-          },
-        );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED,
-        });
       }
     }
 
