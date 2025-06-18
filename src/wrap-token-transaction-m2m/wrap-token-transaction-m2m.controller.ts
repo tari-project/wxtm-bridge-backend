@@ -11,8 +11,6 @@ import {
   CreatingTransactionRequestDTO,
   ExecutingTransactionRequestDTO,
   TransactionExecutedRequestDTO,
-  SigningTransactionRequestDTO,
-  TransactionSignedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
@@ -101,25 +99,5 @@ export class WrapTokenTransactionM2MController
     @Body() dto: TransactionExecutedRequestDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTransactionExecuted(dto);
-  }
-
-  @Patch('signing-transaction')
-  @M2MAuthGuard({
-    description: 'Update to signing transaction status',
-  })
-  updateToSigningTransaction(
-    @Body() dto: SigningTransactionRequestDTO,
-  ): Promise<SuccessDTO> {
-    return this.service.updateToSigningTransaction(dto);
-  }
-
-  @Patch('transaction-signed')
-  @M2MAuthGuard({
-    description: 'Update to transaction signed status',
-  })
-  updateToTransactionSigned(
-    @Body() dto: TransactionSignedRequestDTO,
-  ): Promise<SuccessDTO> {
-    return this.service.updateToTransactionSigned(dto);
   }
 }

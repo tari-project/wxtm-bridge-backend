@@ -108,10 +108,6 @@ export class WrapTokenService {
         return UserTransactionStatus.TOKENS_RECEIVED;
       case WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED:
         return UserTransactionStatus.PROCESSING;
-      case WrapTokenTransactionStatus.SIGNING_SAFE_TRANSACTION:
-        return UserTransactionStatus.PROCESSING;
-      case WrapTokenTransactionStatus.SAFE_TRANSACTION_SIGNED:
-        return UserTransactionStatus.PROCESSING;
       case WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION:
         return UserTransactionStatus.PROCESSING;
       case WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED:
