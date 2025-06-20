@@ -35,6 +35,7 @@ export interface IAWS {
 
 export interface ISlack {
   webhookUrl: string;
+  tags: string[];
 }
 
 export interface IConfig {

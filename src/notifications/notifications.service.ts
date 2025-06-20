@@ -47,8 +47,12 @@ export class NotificationsService {
       infer: true,
     });
 
+    const tags = this.configService.get('slack.tags', {
+      infer: true,
+    });
+
     await this.emitNotification({
-      message: `Mint high transaction awaiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
+      message: `${tags} mint high transaction awaiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
       origin: 'Processor',
     });
 
