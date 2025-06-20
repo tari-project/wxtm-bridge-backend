@@ -57,5 +57,9 @@ export default (): IConfig => ({
   },
   slack: {
     webhookUrl: process.env.SLACK_WEBHOOK_URL || '',
+    tags:
+      process.env.ENVIRONMENT === Enviroment.PRODUCTION
+        ? ['@the_raven', '@the_pony', '@stringhandler', '@88', '@hamilton']
+        : ['@marius', '@patrykw'],
   },
 });
