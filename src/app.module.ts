@@ -14,6 +14,7 @@ import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m/wrap
 import { M2MAuthModule } from './m2m-auth/m2m-auth.module';
 import { WrapTokenAuditModule } from './wrap-token-audit/wrap-token-audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SlackModule } from './slack/slack.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     SafeApiModule,
     WrapTokenAuditModule,
     NotificationsModule,
+    SlackModule,
   ],
 })
 export class AppModule {}

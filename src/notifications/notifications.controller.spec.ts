@@ -6,7 +6,7 @@ import { SNSClient } from '@aws-sdk/client-sns';
 
 import { setMiddlewares } from '../helpers/setMiddlewares';
 import { NotificationsModule } from './notifications.module';
-import { NotificationDTO } from './notifications.dto';
+import { MintHightTransactionReqDTO } from './notifications.dto';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import { SNSClientMock } from '../../test/mocks/sns-client.mock';
 import config from '../config/config';
@@ -14,6 +14,7 @@ import config from '../config/config';
 describe('NotificationsController', () => {
   let app: INestApplication;
   const m2mToken = 'test-m2m-auth-token';
+  const domain = 'example.com';
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +23,7 @@ describe('NotificationsController', () => {
           load: [
             () => ({
               ...config(),
+              domain,
               aws: {
                 region: 'us-east-1',
                 notificationsTopicArn: 'test-topic-arn',
@@ -51,18 +53,17 @@ describe('NotificationsController', () => {
     await app.close();
   });
 
-  describe('POST /notifications/send', () => {
-    it('should send notification successfully with valid M2M auth token', async () => {
-      const notificationDto: NotificationDTO = {
-        origin: 'test-origin',
-        message: 'This is a test message',
+  describe('POST /notifications/mint-high-transaction', () => {
+    it('should send mint high transaction notification', async () => {
+      const dto: MintHightTransactionReqDTO = {
+        safeTxHash: 'test-safe-tx-hash',
       };
 
       const { body } = await request(app.getHttpServer())
-        .post('/notifications/send')
+        .post('/notifications/mint-high-transaction')
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
-        .send(notificationDto)
+        .send(dto)
         .expect(201);
 
       expect(body).toEqual({ success: true });
@@ -72,20 +73,22 @@ describe('NotificationsController', () => {
       const callArgs = SNSClientMock.send.mock.calls[0][0];
       expect(callArgs.input).toEqual({
         TopicArn: 'test-topic-arn',
-        Message: JSON.stringify(notificationDto),
+        Message: JSON.stringify({
+          message: `Mint high transaction waiting approval: https://admin.${domain}/safe-transactions/show/${dto.safeTxHash}`,
+          origin: 'Processor',
+        }),
       });
     });
 
     it('returns 401 without M2M auth token', async () => {
-      const notificationDto: NotificationDTO = {
-        origin: 'test-origin',
-        message: 'This is a test message',
+      const mintHighTransactionDto: MintHightTransactionReqDTO = {
+        safeTxHash: 'test-safe-tx-hash',
       };
 
       await request(app.getHttpServer())
-        .post('/notifications/send')
+        .post('/notifications/mint-high-transaction')
         .set('Content-Type', 'application/json')
-        .send(notificationDto)
+        .send(mintHighTransactionDto)
         .expect(401);
 
       expect(SNSClientMock.send).not.toHaveBeenCalled();

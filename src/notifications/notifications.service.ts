@@ -6,6 +6,7 @@ import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { IConfig } from '../config/config.interface';
 import { SuccessDTO } from '../dto/success.dto';
 import { NotificationDTO } from './notifications.dto';
+import { SlackService } from '../slack/slack.service';
 
 @Injectable()
 export class NotificationsService {
@@ -15,6 +16,7 @@ export class NotificationsService {
   constructor(
     private readonly configService: ConfigService<IConfig, true>,
     private readonly snsClient: SNSClient,
+    private readonly slackService: SlackService,
   ) {
     this.topicArn = this.configService.get('aws.notificationsTopicArn', {
       infer: true,
@@ -34,18 +36,33 @@ export class NotificationsService {
     this.logger.log(
       `Notification message: ${notification.message} and origin: ${notification.origin}`,
     );
+
+    await this.slackService.sendMessage(notification.message);
   }
 
-  async emitNotification(notification: NotificationDTO): Promise<SuccessDTO> {
+  async sendMintHighTransactionNotification(
+    safeTxHash: string,
+  ): Promise<SuccessDTO> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.emitNotification({
+      message: `Mint high transaction waiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
+
+  async emitNotification(notification: NotificationDTO): Promise<void> {
     const command = new PublishCommand({
       TopicArn: this.topicArn,
       Message: JSON.stringify(notification),
     });
 
     await this.snsClient.send(command);
-
-    return {
-      success: true,
-    };
   }
 }

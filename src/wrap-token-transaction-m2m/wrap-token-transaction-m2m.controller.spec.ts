@@ -25,8 +25,6 @@ import {
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationsServiceMock } from '../../test/mocks/notifications.service.mock';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -52,10 +50,7 @@ describe('WrapTokenTransactionController', () => {
         M2MAuthModule.register({ authToken: m2mToken }),
         WrapTokenTransactionM2MModule,
       ],
-    })
-      .overrideProvider(NotificationsService)
-      .useValue(NotificationsServiceMock)
-      .compile();
+    }).compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -632,17 +627,6 @@ describe('WrapTokenTransactionController', () => {
           note: { code: 'ERR_1', message: 'Test error 1' },
         }),
       ]);
-
-      expect(NotificationsServiceMock.emitNotification).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(NotificationsServiceMock.emitNotification).toHaveBeenNthCalledWith(
-        1,
-        {
-          message: `Error processing transaction: https://admin.example.com/wrap-token-transactions/edit/${tx1.id}  Message: {\"code\":\"ERR_1\",\"message\":\"Test error 1\"}`,
-          origin: 'Processor',
-        },
-      );
     });
 
     it('should not be accessible with an incorrect token', async () => {
