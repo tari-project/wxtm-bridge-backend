@@ -1166,46 +1166,6 @@
         ]
       }
     },
-    "/notifications/send": {
-      "post": {
-        "operationId": "sendNotification",
-        "summary": "Send notification",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotificationDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessDTO"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "notifications"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/tokens-unwrapped/{id}": {
       "get": {
         "operationId": "getOneBaseTokensUnwrappedControllerTokensUnwrappedEntity",
@@ -1481,6 +1441,46 @@
         },
         "tags": [
           "tokens-unwrapped"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/notifications/mint-high-transaction": {
+      "post": {
+        "operationId": "sendMintHighTransactionNotification",
+        "summary": "Send mint high transaction notification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MintHightTransactionReqDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "notifications"
         ],
         "security": [
           {
@@ -2031,21 +2031,6 @@
           "walletTransactions"
         ]
       },
-      "NotificationDTO": {
-        "type": "object",
-        "properties": {
-          "origin": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "origin",
-          "message"
-        ]
-      },
       "GetManyTokensUnwrappedEntityResponseDto": {
         "type": "object",
         "properties": {
@@ -2145,6 +2130,17 @@
             ]
           }
         }
+      },
+      "MintHightTransactionReqDTO": {
+        "type": "object",
+        "properties": {
+          "safeTxHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "safeTxHash"
+        ]
       }
     }
   }
