@@ -9,3 +9,9 @@ export class NotificationDTO {
   @IsNotEmpty()
   message: string;
 }
+
+export class MintHightTransactionReqDTO {
+  @IsString()
+  @IsNotEmpty()
+  safeTxHash: string;
+}

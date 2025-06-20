@@ -40,16 +40,29 @@ export class NotificationsService {
     await this.slackService.sendMessage(notification.message);
   }
 
-  async emitNotification(notification: NotificationDTO): Promise<SuccessDTO> {
+  async sendMintHighTransactionNotification(
+    safeTxHash: string,
+  ): Promise<SuccessDTO> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.emitNotification({
+      message: `Mint high transaction waiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
+
+  async emitNotification(notification: NotificationDTO): Promise<void> {
     const command = new PublishCommand({
       TopicArn: this.topicArn,
       Message: JSON.stringify(notification),
     });
 
     await this.snsClient.send(command);
-
-    return {
-      success: true,
-    };
   }
 }
