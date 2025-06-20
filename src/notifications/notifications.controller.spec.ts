@@ -74,7 +74,7 @@ describe('NotificationsController', () => {
       expect(callArgs.input).toEqual({
         TopicArn: 'test-topic-arn',
         Message: JSON.stringify({
-          message: `Mint high transaction waiting approval: https://admin.${domain}/safe-transactions/show/${dto.safeTxHash}`,
+          message: `Mint high transaction awaiting approval: https://admin.${domain}/safe-transactions/show/${dto.safeTxHash}`,
           origin: 'Processor',
         }),
       });

@@ -48,7 +48,7 @@ export class NotificationsService {
     });
 
     await this.emitNotification({
-      message: `Mint high transaction waiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
+      message: `Mint high transaction awaiting approval: https://admin.${domain}/safe-transactions/show/${safeTxHash}`,
       origin: 'Processor',
     });
 
