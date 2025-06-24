@@ -52,4 +52,5 @@ export interface IConfig {
   transactionTimeout: number;
   aws: IAWS;
   slack: ISlack;
+  sentryDsn: string;
 }
