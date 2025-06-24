@@ -62,4 +62,5 @@ export default (): IConfig => ({
         ? ['@the_raven', '@the_pony', '@stringhandler', '@88', '@hamilton']
         : ['@marius', '@patrykw'],
   },
+  sentryDsn: process.env.SENTRY_DSN ?? '',
 });
