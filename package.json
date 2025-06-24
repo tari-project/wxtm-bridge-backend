@@ -47,7 +47,8 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.8.0",
     "typeorm": "^0.3.20",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "@sentry/nestjs": "^9.31.0"
   },
   "devDependencies": {
     "@aws-sdk/client-codedeploy": "3.435.0",

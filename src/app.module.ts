@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 import config from './config/config';
 import { UserModule } from './user/user.module';
@@ -18,6 +19,7 @@ import { SlackModule } from './slack/slack.module';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
