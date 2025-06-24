@@ -37,6 +37,8 @@
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/typeorm": "^10.0.2",
     "@safe-global/api-kit": "^3.0.1",
+    "@sentry/esbuild-plugin": "^3.5.0",
+    "@sentry/nestjs": "^9.31.0",
     "@types/uuid": "^10.0.0",
     "@vendia/serverless-express": "^4.3.4",
     "class-transformer": "^0.5.1",
@@ -47,8 +49,7 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.8.0",
     "typeorm": "^0.3.20",
-    "uuid": "^10.0.0",
-    "@sentry/nestjs": "^9.31.0"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@aws-sdk/client-codedeploy": "3.435.0",
