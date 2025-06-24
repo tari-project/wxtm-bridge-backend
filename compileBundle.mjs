@@ -1,5 +1,19 @@
 import * as esbuild from 'esbuild';
 import esbuildPluginTsc from 'esbuild-plugin-tsc';
+import { sentryEsbuildPlugin } from '@sentry/esbuild-plugin';
+
+const uploadSourceMapToSentry = () => {
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    throw new Error('SENTRY_AUTH_TOKEN is not provided!');
+  }
+  return [
+    sentryEsbuildPlugin({
+      org: 'tari-labs',
+      project: 'wxtm-bridge-backend',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ];
+};
 
 await esbuild.build({
   entryPoints: ['src/lambdas/app.ts'],
@@ -9,7 +23,7 @@ await esbuild.build({
   platform: 'node',
   target: 'node18',
   outdir: 'out/app',
-  plugins: [esbuildPluginTsc()],
+  plugins: [esbuildPluginTsc(), ...uploadSourceMapToSentry()],
   external: [
     '@aws-sdk/*',
     '@nestjs/websockets/socket-module',
