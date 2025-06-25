@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
@@ -56,6 +57,19 @@ export class WrapTokenTransactionEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   error: Record<string, string> | null;
+
+  @ApiProperty({
+    type: 'object',
+    nullable: true,
+    additionalProperties: {
+      type: 'object',
+      additionalProperties: {
+        type: 'string',
+      },
+    },
+  })
+  @Column({ type: 'jsonb', nullable: true })
+  debug: Record<string, Record<string, string>> | null;
 
   @Column({ nullable: true })
   safeTxHash?: string;

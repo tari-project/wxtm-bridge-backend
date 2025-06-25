@@ -366,6 +366,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateToTokensSentReqDTO"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -1581,6 +1591,12 @@
       "CreateWrapTokenReqDTO": {
         "type": "object",
         "properties": {
+          "debug": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "from": {
             "type": "string"
           },
@@ -1679,6 +1695,17 @@
           "coldWalletAddress",
           "wrapTokenFeePercentageBps"
         ]
+      },
+      "UpdateToTokensSentReqDTO": {
+        "type": "object",
+        "properties": {
+          "debug": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
       },
       "SuccessDTO": {
         "type": "object",
@@ -1788,6 +1815,16 @@
       "WrapTokenTransactionEntity": {
         "type": "object",
         "properties": {
+          "debug": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
           "id": {
             "type": "number"
           },
@@ -1864,6 +1901,7 @@
           }
         },
         "required": [
+          "debug",
           "id",
           "paymentId",
           "from",

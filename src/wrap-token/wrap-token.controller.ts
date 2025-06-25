@@ -7,7 +7,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenService } from './wrap-token.service';
@@ -16,6 +16,7 @@ import {
   CreateWrapTokenRespDTO,
   GetUserTransactionsRespDTO,
   GetWrapTokenParamsRespDTO,
+  UpdateToTokensSentReqDTO,
 } from './wrap-token.dto';
 
 @ApiTags('wrap-token')
@@ -49,9 +50,14 @@ export class WrapTokenController {
 
   @Patch('tokens-sent/:paymentId')
   @ApiOperation({ summary: 'Update transaction status to tokens sent' })
+  @ApiBody({
+    type: UpdateToTokensSentReqDTO,
+    required: false,
+  })
   updateToTokensSent(
     @Param('paymentId') paymentId: string,
+    @Body() dto?: UpdateToTokensSentReqDTO,
   ): Promise<SuccessDTO> {
-    return this.service.updateToTokensSent(paymentId);
+    return this.service.updateToTokensSent(paymentId, dto);
   }
 }
