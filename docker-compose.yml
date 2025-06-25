@@ -45,6 +45,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       NOTIFICATIONS_TOPIC_ARN: ${NOTIFICATIONS_TOPIC_ARN}
+      SENTRY_DSN: ${SENTRY_DSN}
     command: 'npm run start:dev'
     networks:
       - shared-wxtm-network
