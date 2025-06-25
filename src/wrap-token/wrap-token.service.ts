@@ -9,6 +9,7 @@ import {
   CreateWrapTokenRespDTO,
   GetUserTransactionsRespDTO,
   GetWrapTokenParamsRespDTO,
+  UpdateToTokensSentReqDTO,
   UserTransactionStatus,
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
@@ -32,6 +33,7 @@ export class WrapTokenService {
     from,
     to,
     tokenAmount,
+    debug,
   }: CreateWrapTokenReqDTO): Promise<CreateWrapTokenRespDTO> {
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({
@@ -47,6 +49,7 @@ export class WrapTokenService {
         feePercentageBps,
         feeAmount,
         amountAfterFee,
+        debug: debug && { data_1: debug },
       });
 
     await this.wrapTokenAuditService.recordTransactionEvent({
@@ -74,7 +77,10 @@ export class WrapTokenService {
     return transaction;
   }
 
-  async updateToTokensSent(paymentId: string): Promise<SuccessDTO> {
+  async updateToTokensSent(
+    paymentId: string,
+    dto?: UpdateToTokensSentReqDTO,
+  ): Promise<SuccessDTO> {
     const transaction = await this.resolveTransactionByPaymentId(paymentId);
 
     if (transaction.status !== WrapTokenTransactionStatus.CREATED) {
@@ -86,6 +92,7 @@ export class WrapTokenService {
     await this.wrapTokenTransactionRepository.save({
       ...transaction,
       status: WrapTokenTransactionStatus.TOKENS_SENT,
+      debug: dto?.debug && { ...transaction.debug, data_2: dto.debug },
     });
 
     await this.wrapTokenAuditService.recordTransactionEvent({

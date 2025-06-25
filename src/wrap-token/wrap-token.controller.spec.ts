@@ -15,7 +15,11 @@ import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Factory, getFactory } from '../../test/factory/factory';
 
 import { WrapTokenModule } from './wrap-token.module';
-import { CreateWrapTokenReqDTO, UserTransactionStatus } from './wrap-token.dto';
+import {
+  CreateWrapTokenReqDTO,
+  UpdateToTokensSentReqDTO,
+  UserTransactionStatus,
+} from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
@@ -95,6 +99,7 @@ describe('WrapTokenController', () => {
           feePercentageBps: 30,
           feeAmount: '3000000',
           amountAfterFee: '997000000',
+          debug: null,
         }),
       );
 
@@ -108,6 +113,47 @@ describe('WrapTokenController', () => {
           toStatus: WrapTokenTransactionStatus.CREATED,
         }),
       );
+    });
+
+    it('creates a new transaction with debug logs', async () => {
+      const dto: CreateWrapTokenReqDTO = {
+        from: 'tari_address_123',
+        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        tokenAmount: '1000000000',
+        debug: { height: '100', blockHash: '0x1234567890abcdef' },
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .post('/wrap-token')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(201);
+
+      const [transaction] = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(body).toEqual({
+        paymentId: transaction.paymentId,
+      });
+
+      expect(transaction).toEqual(
+        expect.objectContaining({
+          from: dto.from,
+          to: dto.to,
+          tokenAmount: dto.tokenAmount,
+          userProvidedTokenAmount: dto.tokenAmount,
+          status: WrapTokenTransactionStatus.CREATED,
+          paymentId: body.paymentId,
+          feePercentageBps: 30,
+          feeAmount: '3000000',
+          amountAfterFee: '997000000',
+          debug: { data_1: { height: '100', blockHash: '0x1234567890abcdef' } },
+        }),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
     });
 
     it.each([
@@ -167,6 +213,8 @@ describe('WrapTokenController', () => {
         WrapTokenTransactionStatus.TOKENS_SENT,
       );
 
+      expect(updatedTransaction?.debug).toBeNull();
+
       const auditRecords = await getRepository(WrapTokenAuditEntity).find();
       expect(auditRecords).toHaveLength(1);
       expect(auditRecords[0]).toEqual(
@@ -177,6 +225,46 @@ describe('WrapTokenController', () => {
           toStatus: WrapTokenTransactionStatus.TOKENS_SENT,
         }),
       );
+    });
+
+    it('updates transaction status to TOKENS_SENT and adds an additional debug data', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.CREATED,
+          debug: { data_1: { height: '50', blockHash: '0x1111111' } },
+        },
+      );
+
+      const dto: UpdateToTokensSentReqDTO = {
+        debug: { height: '100', blockHash: '0x222222222' },
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token/tokens-sent/${transaction.paymentId}`)
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({
+        success: true,
+      });
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.status).toBe(
+        WrapTokenTransactionStatus.TOKENS_SENT,
+      );
+
+      expect(updatedTransaction?.debug).toEqual({
+        data_1: { height: '50', blockHash: '0x1111111' },
+        data_2: { height: '100', blockHash: '0x222222222' },
+      });
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
     });
 
     it('returns 400 when transaction status is not CREATED', async () => {
