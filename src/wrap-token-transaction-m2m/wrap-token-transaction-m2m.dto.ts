@@ -85,10 +85,16 @@ export class ExecutingTransactionRequestDTO {
   walletTransactions: BaseTransactionDTO[];
 }
 
+export class TransactionExecutedDTO extends BaseTransactionDTO {
+  @IsOptional()
+  @IsString()
+  transactionHash?: string;
+}
+
 export class TransactionExecutedRequestDTO {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => BaseTransactionDTO)
-  walletTransactions: BaseTransactionDTO[];
+  @Type(() => TransactionExecutedDTO)
+  walletTransactions: TransactionExecutedDTO[];
 }
