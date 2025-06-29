@@ -1879,6 +1879,9 @@
           "safeNonce": {
             "type": "number"
           },
+          "transactionHash": {
+            "type": "string"
+          },
           "tariPaymentIdHex": {
             "type": "string"
           },
@@ -2055,13 +2058,27 @@
           "walletTransactions"
         ]
       },
+      "TransactionExecutedDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "transactionHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId"
+        ]
+      },
       "TransactionExecutedRequestDTO": {
         "type": "object",
         "properties": {
           "walletTransactions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/BaseTransactionDTO"
+              "$ref": "#/components/schemas/TransactionExecutedDTO"
             }
           }
         },
