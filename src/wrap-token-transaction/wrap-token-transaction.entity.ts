@@ -78,6 +78,9 @@ export class WrapTokenTransactionEntity {
   safeNonce?: number;
 
   @Column({ nullable: true })
+  transactionHash?: string;
+
+  @Column({ nullable: true })
   tariPaymentIdHex?: string;
 
   @Column({ nullable: true })
