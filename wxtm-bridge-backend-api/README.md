@@ -9,13 +9,13 @@
 2. **Make a commit matching version**
 
    ```sh
-   git commit -m "@tari-project/wxtm-bridge-backend-api-node@0.1.21
+   git commit -m "@tari-project/wxtm-bridge-backend-api@0.1.31
    ```
 
 3. **Make a matching tag**
 
    ```sh
-   git tag @tari-project/wxtm-bridge-backend-api-node@0.1.21
+   git tag @tari-project/wxtm-bridge-backend-api@0.1.13
    ```
 
 4. **Push to github with tags**
@@ -27,4 +27,4 @@
 
 5. **Create a release**
 
-    https://github.com/tari-project/wxtm-bridge-backend/releases/new
+   https://github.com/tari-project/wxtm-bridge-backend/releases/new
