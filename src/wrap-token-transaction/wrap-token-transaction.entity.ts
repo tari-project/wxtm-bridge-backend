@@ -72,6 +72,9 @@ export class WrapTokenTransactionEntity {
   debug: Record<string, Record<string, string>> | null;
 
   @Column({ nullable: true })
+  safeAddress?: string;
+
+  @Column({ nullable: true })
   safeTxHash?: string;
 
   @Column({ nullable: true })
