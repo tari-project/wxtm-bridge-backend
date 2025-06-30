@@ -1873,6 +1873,9 @@
             "type": "object",
             "nullable": true
           },
+          "safeAddress": {
+            "type": "string"
+          },
           "safeTxHash": {
             "type": "string"
           },
@@ -1986,6 +1989,9 @@
         "type": "object",
         "properties": {
           "paymentId": {
+            "type": "string"
+          },
+          "safeAddress": {
             "type": "string"
           },
           "safeTxHash": {

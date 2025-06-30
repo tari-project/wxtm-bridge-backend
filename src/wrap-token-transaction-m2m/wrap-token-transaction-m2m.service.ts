@@ -134,6 +134,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
             safeTxHash: walletTransaction.safeTxHash,
             safeNonce: walletTransaction.safeNonce,
+            safeAddress: walletTransaction.safeAddress,
           },
         );
 
