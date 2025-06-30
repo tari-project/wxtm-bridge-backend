@@ -47,6 +47,10 @@ export class CreatingTransactionRequestDTO {
 }
 
 export class TransactionCreatedDTO extends BaseTransactionDTO {
+  @IsOptional()
+  @IsString()
+  safeAddress?: string;
+
   @IsNotEmpty()
   @IsString()
   safeTxHash: string;

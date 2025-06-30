@@ -520,18 +520,21 @@ describe('WrapTokenTransactionController', () => {
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
             safeTxHash: 'tx_1_hash',
             safeNonce: 1,
+            safeAddress: null,
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
             safeTxHash: null,
             safeNonce: null,
+            safeAddress: null,
           }),
           expect.objectContaining({
             id: tx_no_tari_tx_id.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             safeTxHash: null,
             safeNonce: null,
+            safeAddress: null,
           }),
         ]),
       );
@@ -546,6 +549,53 @@ describe('WrapTokenTransactionController', () => {
           toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
         }),
       );
+    });
+
+    it('should update transaction with safeAddress when provided', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+          tariPaymentIdHex: '123',
+        },
+      );
+
+      const dto: TransactionCreatedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: transaction.paymentId,
+            safeTxHash: 'tx_hash',
+            safeNonce: 1,
+            safeAddress: '0x1234567890abcdef1234567890abcdef12345678',
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-created')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          safeTxHash: 'tx_hash',
+          safeNonce: 1,
+          safeAddress: '0x1234567890abcdef1234567890abcdef12345678',
+        }),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
     });
 
     it('should not be accessible with an incorrect token', async () => {
