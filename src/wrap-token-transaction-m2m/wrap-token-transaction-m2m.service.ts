@@ -15,6 +15,7 @@ import {
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
+import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
@@ -22,6 +23,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     @InjectRepository(WrapTokenTransactionEntity)
     repo: Repository<WrapTokenTransactionEntity>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
+    private readonly transactionEvaluationService: TransactionEvaluationService,
   ) {
     super(repo);
   }
@@ -237,13 +239,13 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         },
       });
 
-      if (transaction && !transaction.error) {
+      if (transaction) {
         await this.repo.update(
           {
             id: transaction.id,
           },
           {
-            error: walletTransaction.error,
+            error: [...transaction.error, walletTransaction.error],
           },
         );
 
@@ -253,6 +255,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           fromStatus: transaction.status,
           note: walletTransaction.error,
         });
+
+        await this.transactionEvaluationService.evaluateErrors(transaction.id);
       }
     }
 

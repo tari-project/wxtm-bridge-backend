@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -69,6 +70,12 @@ export class TransactionCreatedRequestDTO {
 }
 
 export class ErrorUpdateDTO extends BaseTransactionDTO {
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'string',
+    },
+  })
   @IsNotEmpty()
   error: Record<string, string>;
 }

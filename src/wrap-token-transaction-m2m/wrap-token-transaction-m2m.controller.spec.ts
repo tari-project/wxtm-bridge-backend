@@ -25,6 +25,8 @@ import {
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
+import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
+import { TransactionEvaluationServiceMock } from '../../test/mocks/transaction-evaluation.service.mock';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -50,7 +52,10 @@ describe('WrapTokenTransactionController', () => {
         M2MAuthModule.register({ authToken: m2mToken }),
         WrapTokenTransactionM2MModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(TransactionEvaluationService)
+      .useValue(TransactionEvaluationServiceMock)
+      .compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -616,10 +621,10 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity.name,
         2,
         [
-          {},
+          { error: [], status: WrapTokenTransactionStatus.CREATED },
           {
-            error: { code: 'EXISTING_ERROR' },
-            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            error: [{ code: 'EXISTING_ERROR', message: 'Old error' }],
+            status: WrapTokenTransactionStatus.CREATED,
           },
         ],
       );
@@ -655,28 +660,51 @@ describe('WrapTokenTransactionController', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: tx1.id,
-            error: { code: 'ERR_1', message: 'Test error 1' },
+            error: [{ code: 'ERR_1', message: 'Test error 1' }],
             status: tx1.status,
           }),
           expect.objectContaining({
             id: tx2.id,
-            error: { code: 'EXISTING_ERROR' },
-            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            error: [
+              { code: 'EXISTING_ERROR', message: 'Old error' },
+              { code: 'ERR_2', message: 'Test error 2' },
+            ],
+            status: tx2.status,
           }),
         ]),
       );
 
       const auditRecords = await getRepository(WrapTokenAuditEntity).find();
-      expect(auditRecords).toHaveLength(1);
-      expect(auditRecords).toEqual([
-        expect.objectContaining({
-          transactionId: tx1.id,
-          paymentId: tx1.paymentId,
-          fromStatus: WrapTokenTransactionStatus.CREATED,
-          toStatus: null,
-          note: { code: 'ERR_1', message: 'Test error 1' },
-        }),
-      ]);
+      expect(auditRecords).toHaveLength(2);
+
+      expect(auditRecords).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            transactionId: tx1.id,
+            paymentId: tx1.paymentId,
+            fromStatus: WrapTokenTransactionStatus.CREATED,
+            toStatus: null,
+            note: { code: 'ERR_1', message: 'Test error 1' },
+          }),
+          expect.objectContaining({
+            transactionId: tx2.id,
+            paymentId: tx2.paymentId,
+            fromStatus: WrapTokenTransactionStatus.CREATED,
+            toStatus: null,
+            note: { code: 'ERR_2', message: 'Test error 2' },
+          }),
+        ]),
+      );
+
+      expect(
+        TransactionEvaluationServiceMock.evaluateErrors,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        TransactionEvaluationServiceMock.evaluateErrors,
+      ).toHaveBeenCalledWith(tx1.id);
+      expect(
+        TransactionEvaluationServiceMock.evaluateErrors,
+      ).toHaveBeenCalledWith(tx2.id);
     });
 
     it('should not be accessible with an incorrect token', async () => {
