@@ -1655,6 +1655,9 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "transactionHash": {
+            "type": "string"
           }
         },
         "required": [
