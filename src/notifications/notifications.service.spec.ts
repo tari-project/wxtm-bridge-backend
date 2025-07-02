@@ -1,16 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { SNSEvent } from 'aws-lambda';
+import { SNSClient } from '@aws-sdk/client-sns';
 
 import { NotificationsService } from './notifications.service';
 import { SlackService } from '../slack/slack.service';
 import { SlackServiceMock } from '../../test/mocks/slack.service.mock';
+import { SNSClientMock } from '../../test/mocks/sns-client.mock';
 import config from '../config/config';
 import { NotificationsModule } from './notifications.module';
 
 describe('NotificationsService', () => {
   let module: TestingModule;
   let service: NotificationsService;
+  const domain = 'example.com';
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -19,6 +22,7 @@ describe('NotificationsService', () => {
           load: [
             () => ({
               ...config(),
+              domain,
               aws: {
                 region: 'us-east-1',
                 notificationsTopicArn: 'test-topic-arn',
@@ -32,6 +36,8 @@ describe('NotificationsService', () => {
     })
       .overrideProvider(SlackService)
       .useValue(SlackServiceMock)
+      .overrideProvider(SNSClient)
+      .useValue(SNSClientMock)
       .compile();
 
     service = module.get<NotificationsService>(NotificationsService);
@@ -79,6 +85,27 @@ describe('NotificationsService', () => {
       expect(SlackServiceMock.sendMessage).toHaveBeenCalledWith(
         'This is a test message',
       );
+    });
+  });
+
+  describe('sendTransactionUnprocessableNotification', () => {
+    it('should send transaction unprocessable notification', async () => {
+      const transactionId = 12345;
+
+      const result =
+        await service.sendTransactionUnprocessableNotification(transactionId);
+
+      expect(result).toEqual({ success: true });
+      expect(SNSClientMock.send).toHaveBeenCalledTimes(1);
+
+      const callArgs = SNSClientMock.send.mock.calls[0][0];
+      expect(callArgs.input).toEqual({
+        TopicArn: 'test-topic-arn',
+        Message: JSON.stringify({
+          message: `Transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+          origin: 'Processor',
+        }),
+      });
     });
   });
 });

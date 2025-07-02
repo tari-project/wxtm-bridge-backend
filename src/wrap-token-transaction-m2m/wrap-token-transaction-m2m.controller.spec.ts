@@ -2,7 +2,6 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-
 import config from '../config/config';
 import {
   TestDatabaseModule,
@@ -705,6 +704,58 @@ describe('WrapTokenTransactionController', () => {
       expect(
         TransactionEvaluationServiceMock.evaluateErrors,
       ).toHaveBeenCalledWith(tx2.id);
+    });
+
+    it('should not update error field when transaction already has 10 errors', async () => {
+      const initialErrors = Array(10)
+        .fill(0)
+        .map((_, index) => ({
+          code: `EXISTING_ERROR_${index}`,
+          message: `Error ${index}`,
+        }));
+
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          error: initialErrors,
+          status: WrapTokenTransactionStatus.CREATED,
+        },
+      );
+
+      const dto: ErrorUpdateRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: transaction.paymentId,
+            error: {
+              code: 'NEW_ERROR',
+              message: 'This error should not be added',
+            },
+          },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/set-error')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction?.error).toHaveLength(10);
+      expect(updatedTransaction?.error).toEqual(initialErrors);
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find({
+        where: { transactionId: transaction.id },
+      });
+      expect(auditRecords).toHaveLength(0);
+
+      expect(
+        TransactionEvaluationServiceMock.evaluateErrors,
+      ).not.toHaveBeenCalled();
     });
 
     it('should not be accessible with an incorrect token', async () => {

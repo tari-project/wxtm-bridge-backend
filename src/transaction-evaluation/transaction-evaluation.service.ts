@@ -68,9 +68,11 @@ export class TransactionEvaluationService {
 
   async evaluateRemainingTransactionErrors(
     transaction: WrapTokenTransactionEntity,
-  ): Promise<boolean> {
+  ): Promise<void> {
     if (
-      transaction.status === WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED
+      transaction.status ===
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED &&
+      transaction.error.length >= 5
     ) {
       await this.transactionRepository.update(transaction.id, {
         status: WrapTokenTransactionStatus.SAFE_TRANSACTION_UNPROCESSABLE,
@@ -82,11 +84,7 @@ export class TransactionEvaluationService {
           transaction.id,
         );
       }
-
-      return true;
     }
-
-    return false;
   }
 
   async evaluateErrors(transactionId: number): Promise<void> {
@@ -110,8 +108,6 @@ export class TransactionEvaluationService {
       return;
     }
 
-    if (transaction.error.length >= 5) {
-      await this.evaluateRemainingTransactionErrors(transaction);
-    }
+    await this.evaluateRemainingTransactionErrors(transaction);
   }
 }
