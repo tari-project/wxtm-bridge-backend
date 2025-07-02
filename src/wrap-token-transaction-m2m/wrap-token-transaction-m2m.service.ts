@@ -239,7 +239,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         },
       });
 
-      if (transaction) {
+      if (transaction && transaction.error.length < 10) {
         await this.repo.update(
           {
             id: transaction.id,
