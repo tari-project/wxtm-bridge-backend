@@ -56,6 +56,7 @@ export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
   'amountAfterFee',
   'feeAmount',
   'createdAt',
+  'transactionHash',
 ]) {
   status: UserTransactionStatus;
   destinationAddress: string;
