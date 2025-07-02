@@ -7,4 +7,5 @@ type NotificationsServiceMock = {
 export const NotificationsServiceMock = {
   emitNotification: jest.fn().mockResolvedValue({ success: true }),
   onEventReceived: jest.fn(),
+  sendTransactionUnprocessableNotification: jest.fn(),
 } satisfies Partial<NotificationsServiceMock>;

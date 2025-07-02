@@ -55,8 +55,21 @@ export class WrapTokenTransactionEntity {
   })
   status: WrapTokenTransactionStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
-  error: Record<string, string> | null;
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'object',
+      additionalProperties: {
+        type: 'string',
+      },
+    },
+    default: [],
+  })
+  @Column({ type: 'jsonb', default: [] })
+  error: Record<string, string>[];
+
+  @Column({ default: false })
+  isNotificationSent: boolean;
 
   @ApiProperty({
     type: 'object',

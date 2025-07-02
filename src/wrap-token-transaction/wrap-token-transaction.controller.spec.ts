@@ -19,6 +19,7 @@ import { WrapTokenTransactionModule } from './wrap-token-transaction.module';
 import { UserEntity } from '../user/user.entity';
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
+import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
@@ -152,10 +153,15 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions/:id', () => {
-    it('resets error column', async () => {
+    it('updates transaction from CREATING_SAFE_TRANSACTION_UNPROCESSABLE to TOKENS_RECEIVED', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
-        { error: { message: 'Test error message' } },
+
+        {
+          error: [{ message: 'Test error message' }],
+          status:
+            WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION_UNPROCESSABLE,
+        },
       );
 
       const { body } = await request(app.getHttpServer())
@@ -168,7 +174,6 @@ describe('WrapTokenTransactionController', () => {
       expect(body).toEqual(
         expect.objectContaining({
           id: transaction.id,
-          error: null,
         }),
       );
 
@@ -178,11 +183,76 @@ describe('WrapTokenTransactionController', () => {
 
       expect(updatedTransaction).toEqual({
         ...transaction,
-        error: null,
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        error: [],
+        isNotificationSent: false,
         updatedAt: expect.any(Date),
       });
+    });
 
-      expect(updatedTransaction?.error).toBe(null);
+    it('updates transaction from SAFE_TRANSACTION_UNPROCESSABLE to SAFE_TRANSACTION_CREATED', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          error: [{ message: 'Safe transaction error' }],
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_UNPROCESSABLE,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send({})
+        .expect(200);
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+        }),
+      );
+
+      const updatedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual({
+        ...transaction,
+        status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        error: [],
+        isNotificationSent: false,
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('leaves transaction unchanged if status does not match any conditions', async () => {
+      const transaction = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/wrap-token-transactions/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send({})
+        .expect(200);
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+        }),
+      );
+
+      const unchangedTransaction = await getRepository(
+        WrapTokenTransactionEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(unchangedTransaction).toEqual({
+        ...transaction,
+      });
     });
 
     it('returns 401 for a regular user', async () => {
