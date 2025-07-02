@@ -69,4 +69,21 @@ export class NotificationsService {
 
     await this.snsClient.send(command);
   }
+
+  async sendTransactionUnprocessableNotification(
+    transactionId: number,
+  ): Promise<SuccessDTO> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.emitNotification({
+      message: `Transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
 }

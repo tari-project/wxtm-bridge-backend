@@ -1176,6 +1176,46 @@
         ]
       }
     },
+    "/notifications/mint-high-transaction": {
+      "post": {
+        "operationId": "sendMintHighTransactionNotification",
+        "summary": "Send mint high transaction notification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MintHightTransactionReqDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/tokens-unwrapped/{id}": {
       "get": {
         "operationId": "getOneBaseTokensUnwrappedControllerTokensUnwrappedEntity",
@@ -1458,46 +1498,6 @@
           }
         ]
       }
-    },
-    "/notifications/mint-high-transaction": {
-      "post": {
-        "operationId": "sendMintHighTransactionNotification",
-        "summary": "Send mint high transaction notification",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MintHightTransactionReqDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessDTO"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "notifications"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
     }
   },
   "info": {
@@ -1655,6 +1655,9 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "transactionHash": {
+            "type": "string"
           }
         },
         "required": [
@@ -1765,8 +1768,10 @@
               "tokens_received",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
+              "creating_safe_transaction_unprocessable",
               "safe_transaction_created",
               "executing_safe_transaction",
+              "safe_transaction_unprocessable",
               "safe_transaction_executed",
               "timeout"
             ]
@@ -1779,8 +1784,10 @@
               "tokens_received",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
+              "creating_safe_transaction_unprocessable",
               "safe_transaction_created",
               "executing_safe_transaction",
+              "safe_transaction_unprocessable",
               "safe_transaction_executed",
               "timeout"
             ]
@@ -1815,6 +1822,16 @@
       "WrapTokenTransactionEntity": {
         "type": "object",
         "properties": {
+          "error": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "default": []
+          },
           "debug": {
             "type": "object",
             "nullable": true,
@@ -1862,16 +1879,17 @@
               "tokens_received",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
+              "creating_safe_transaction_unprocessable",
               "safe_transaction_created",
               "executing_safe_transaction",
+              "safe_transaction_unprocessable",
               "safe_transaction_executed",
               "timeout"
             ],
             "type": "string"
           },
-          "error": {
-            "type": "object",
-            "nullable": true
+          "isNotificationSent": {
+            "type": "boolean"
           },
           "safeAddress": {
             "type": "string"
@@ -1907,6 +1925,7 @@
           }
         },
         "required": [
+          "error",
           "debug",
           "id",
           "paymentId",
@@ -1918,7 +1937,7 @@
           "feeAmount",
           "amountAfterFee",
           "status",
-          "error",
+          "isNotificationSent",
           "audits",
           "createdAt",
           "updatedAt"
@@ -2024,16 +2043,19 @@
       "ErrorUpdateDTO": {
         "type": "object",
         "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "paymentId": {
             "type": "string"
-          },
-          "error": {
-            "type": "object"
           }
         },
         "required": [
-          "paymentId",
-          "error"
+          "error",
+          "paymentId"
         ]
       },
       "ErrorUpdateRequestDTO": {
@@ -2090,6 +2112,17 @@
         },
         "required": [
           "walletTransactions"
+        ]
+      },
+      "MintHightTransactionReqDTO": {
+        "type": "object",
+        "properties": {
+          "safeTxHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "safeTxHash"
         ]
       },
       "GetManyTokensUnwrappedEntityResponseDto": {
@@ -2191,17 +2224,6 @@
             ]
           }
         }
-      },
-      "MintHightTransactionReqDTO": {
-        "type": "object",
-        "properties": {
-          "safeTxHash": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "safeTxHash"
-        ]
       }
     }
   }

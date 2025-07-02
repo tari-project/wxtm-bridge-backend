@@ -5,6 +5,7 @@ import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 import { CrudRequest } from '@dataui/crud';
 
 import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
+import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
 
 @Injectable()
 export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
@@ -16,6 +17,30 @@ export class WrapTokenTransactionService extends TypeOrmCrudService<WrapTokenTra
   }
 
   async updateOne(req: CrudRequest): Promise<WrapTokenTransactionEntity> {
-    return super.updateOne(req, { error: null });
+    const transaction = await super.getOne(req);
+
+    if (
+      transaction.status ===
+      WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION_UNPROCESSABLE
+    ) {
+      return super.updateOne(req, {
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        error: [],
+        isNotificationSent: false,
+      });
+    }
+
+    if (
+      transaction.status ===
+      WrapTokenTransactionStatus.SAFE_TRANSACTION_UNPROCESSABLE
+    ) {
+      return super.updateOne(req, {
+        status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        error: [],
+        isNotificationSent: false,
+      });
+    }
+
+    return transaction;
   }
 }

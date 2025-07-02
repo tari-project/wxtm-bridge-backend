@@ -144,6 +144,7 @@ export class WrapTokenService {
         feeAmount: transaction.feeAmount,
         createdAt: transaction.createdAt,
         status: this.getUserTransactionStatus(transaction.status),
+        transactionHash: transaction.transactionHash,
       })),
     };
   }
