@@ -309,6 +309,7 @@ describe('WrapTokenController', () => {
             {
               from: walletAddress,
               status: WrapTokenTransactionStatus.CREATED,
+              transactionHash: '0x1234567890abcdef',
             },
             {
               from: walletAddress,
@@ -335,6 +336,7 @@ describe('WrapTokenController', () => {
             feeAmount: transaction_1.feeAmount,
             createdAt: transaction_1.createdAt.toISOString(),
             status: UserTransactionStatus.PENDING,
+            transactionHash: transaction_1.transactionHash,
           },
           {
             paymentId: transaction_2.paymentId,
@@ -344,6 +346,7 @@ describe('WrapTokenController', () => {
             feeAmount: transaction_2.feeAmount,
             createdAt: transaction_2.createdAt.toISOString(),
             status: UserTransactionStatus.SUCCESS,
+            transactionHash: null,
           },
         ]),
       });
