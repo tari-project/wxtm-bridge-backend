@@ -222,7 +222,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_created.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            tariPaymentIdHex: '1',
+            tariPaymentIdHex: null,
             tokenAmount: '1000',
             tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
@@ -230,7 +230,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_token_sent.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            tariPaymentIdHex: '2',
+            tariPaymentIdHex: null,
             tokenAmount: '1000',
             tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
@@ -238,7 +238,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_timeout.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-            tariPaymentIdHex: '3',
+            tariPaymentIdHex: null,
             tokenAmount: '1000',
             tokenAmountInWallet: '1000',
             tariTxTimestamp: 1747209840,
@@ -246,7 +246,7 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_tokens_send_amount_mismatch.id,
             status: WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
-            tariPaymentIdHex: '4',
+            tariPaymentIdHex: null,
             tokenAmount: '1000',
             tokenAmountInWallet: '3000',
             tariTxTimestamp: 1747209840,

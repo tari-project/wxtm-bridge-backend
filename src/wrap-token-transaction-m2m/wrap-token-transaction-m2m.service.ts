@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
@@ -16,6 +16,7 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
+import { WrapTokenProcessingService } from '../wrap-token-processing/wrap-token-processing.service';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
@@ -24,6 +25,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     repo: Repository<WrapTokenTransactionEntity>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
     private readonly transactionEvaluationService: TransactionEvaluationService,
+    private readonly wrapTokenProcessingService: WrapTokenProcessingService,
   ) {
     super(repo);
   }
@@ -32,46 +34,12 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     walletTransactions,
   }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
     for (const walletTransaction of walletTransactions) {
-      const transaction = await this.repo.findOne({
-        where: {
-          paymentId: walletTransaction.paymentId,
-          status: In([
-            WrapTokenTransactionStatus.CREATED,
-            WrapTokenTransactionStatus.TOKENS_SENT,
-            WrapTokenTransactionStatus.TIMEOUT,
-          ]),
-          tariPaymentIdHex: IsNull(),
-          tariTxTimestamp: IsNull(),
-        },
+      //TODO in final implemtation onTokensReceived should receive events from mutltisig
+      await this.wrapTokenProcessingService.onTokensReceived({
+        amount: walletTransaction.amount,
+        paymentId: walletTransaction.paymentId,
+        timestamp: Number(walletTransaction.timestamp),
       });
-
-      if (transaction) {
-        const newStatus =
-          transaction.tokenAmount === walletTransaction.amount
-            ? WrapTokenTransactionStatus.TOKENS_RECEIVED
-            : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
-
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            tariPaymentIdHex: walletTransaction.tariPaymentIdHex,
-            tariTxTimestamp: walletTransaction.timestamp
-              ? Number(walletTransaction.timestamp)
-              : undefined,
-            status: newStatus,
-            tokenAmountInWallet: walletTransaction.amount,
-          },
-        );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: newStatus,
-        });
-      }
     }
 
     return {
