@@ -9,6 +9,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 
 import { IsMinMaxNumberString } from '../decorators/is-min-max-number-string';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
+import { ServiceStatus } from '../settings/settings.const';
 
 export class DebugDataDTO {
   @IsOptional()
@@ -69,4 +70,8 @@ export class GetUserTransactionsRespDTO {
 export class GetWrapTokenParamsRespDTO {
   coldWalletAddress: string;
   wrapTokenFeePercentageBps: number;
+}
+
+export class GetWrapTokenServiceStatusRespDTO {
+  status: ServiceStatus;
 }
