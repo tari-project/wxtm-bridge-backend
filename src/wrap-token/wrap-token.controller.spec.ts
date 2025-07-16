@@ -66,7 +66,7 @@ describe('WrapTokenController', () => {
     await app.close();
   });
 
-  describe.skip('POST /wrap-token', () => {
+  describe('POST /wrap-token', () => {
     it('creates a new transaction and returns paymentId', async () => {
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
