@@ -7,6 +7,7 @@ import { UserEntity } from '../../src/user/user.entity';
 import { WrapTokenTransactionEntity } from '../../src/wrap-token-transaction/wrap-token-transaction.entity';
 import { TokensUnwrappedEntity } from '../../src/tokens-unwrapped/tokens-unwrapped.entity';
 import { WrapTokenAuditEntity } from '../../src/wrap-token-audit/wrap-token-audit.entity';
+import { SettingsEntity } from '../../src/settings/settings.entity';
 
 export type Factory = typeof factory;
 export let factoryCached: Factory | undefined;
@@ -82,6 +83,8 @@ export const getFactory = async (): Promise<Factory> => {
       ),
       transactionId: factory.assoc(WrapTokenTransactionEntity.name, 'id'),
     });
+
+    factory.define(SettingsEntity.name, SettingsEntity, {});
 
     factoryCached = factory;
   }

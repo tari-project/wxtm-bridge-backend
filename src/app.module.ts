@@ -17,6 +17,7 @@ import { M2MAuthModule } from './m2m-auth/m2m-auth.module';
 import { WrapTokenAuditModule } from './wrap-token-audit/wrap-token-audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SlackModule } from './slack/slack.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SlackModule } from './slack/slack.module';
     WrapTokenAuditModule,
     NotificationsModule,
     SlackModule,
+    SettingsModule,
   ],
   providers: [
     {

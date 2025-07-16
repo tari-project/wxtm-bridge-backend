@@ -9,6 +9,7 @@ import {
   CreateWrapTokenRespDTO,
   GetUserTransactionsRespDTO,
   GetWrapTokenParamsRespDTO,
+  GetWrapTokenServiceStatusRespDTO,
   UpdateToTokensSentReqDTO,
   UserTransactionStatus,
 } from './wrap-token.dto';
@@ -18,12 +19,16 @@ import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service
 import { ConfigService } from '@nestjs/config';
 import { IConfig } from '../config/config.interface';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
+import { SettingsEntity } from '../settings/settings.entity';
+import { ServiceStatus } from '../settings/settings.const';
 
 @Injectable()
 export class WrapTokenService {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
+    @InjectRepository(SettingsEntity)
+    private readonly settingsRepository: Repository<SettingsEntity>,
     private readonly wrapTokenFeesService: WrapTokenFeesService,
     private readonly configService: ConfigService<IConfig, true>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
@@ -35,6 +40,12 @@ export class WrapTokenService {
     tokenAmount,
     debug,
   }: CreateWrapTokenReqDTO): Promise<CreateWrapTokenRespDTO> {
+    const settings = await this.settingsRepository.findOneByOrFail({ id: 1 });
+
+    if (settings.wrapTokensServiceStatus === ServiceStatus.OFFLINE) {
+      throw new BadRequestException('Wrap token service is currently offline');
+    }
+
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({
         tokenAmount,
@@ -160,6 +171,15 @@ export class WrapTokenService {
           infer: true,
         },
       ),
+    };
+  }
+
+  async getServiceStatus(): Promise<GetWrapTokenServiceStatusRespDTO> {
+    const { wrapTokensServiceStatus } =
+      await this.settingsRepository.findOneByOrFail({ id: 1 });
+
+    return {
+      status: wrapTokensServiceStatus,
     };
   }
 }

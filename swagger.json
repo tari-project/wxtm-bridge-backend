@@ -352,6 +352,28 @@
         ]
       }
     },
+    "/wrap-token/status": {
+      "get": {
+        "operationId": "getServiceStatus",
+        "summary": "Returns current wrap token service status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetWrapTokenServiceStatusRespDTO"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "wrap-token"
+        ]
+      }
+    },
     "/wrap-token/tokens-sent/{paymentId}": {
       "patch": {
         "operationId": "updateToTokensSent",
@@ -1498,6 +1520,74 @@
           }
         ]
       }
+    },
+    "/settings": {
+      "get": {
+        "operationId": "getSettings",
+        "summary": "Get application settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "settings"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateSettings",
+        "summary": "Update application settings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingReqDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "settings"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -1697,6 +1787,21 @@
         "required": [
           "coldWalletAddress",
           "wrapTokenFeePercentageBps"
+        ]
+      },
+      "GetWrapTokenServiceStatusRespDTO": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "UpdateToTokensSentReqDTO": {
@@ -2224,6 +2329,51 @@
             ]
           }
         }
+      },
+      "SettingsEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "default": 1
+          },
+          "wrapTokensServiceStatus": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "wrapTokensServiceStatus",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateSettingReqDTO": {
+        "type": "object",
+        "properties": {
+          "wrapTokensServiceStatus": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          }
+        },
+        "required": [
+          "wrapTokensServiceStatus"
+        ]
       }
     }
   }

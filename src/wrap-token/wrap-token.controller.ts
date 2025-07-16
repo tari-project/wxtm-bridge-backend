@@ -16,6 +16,7 @@ import {
   CreateWrapTokenRespDTO,
   GetUserTransactionsRespDTO,
   GetWrapTokenParamsRespDTO,
+  GetWrapTokenServiceStatusRespDTO,
   UpdateToTokensSentReqDTO,
 } from './wrap-token.dto';
 
@@ -46,6 +47,14 @@ export class WrapTokenController {
   })
   getWrapTokenParams(): GetWrapTokenParamsRespDTO {
     return this.service.getWrapTokenParams();
+  }
+
+  @Get('status')
+  @ApiOperation({
+    summary: 'Returns current wrap token service status',
+  })
+  getServiceStatus(): Promise<GetWrapTokenServiceStatusRespDTO> {
+    return this.service.getServiceStatus();
   }
 
   @Patch('tokens-sent/:paymentId')
