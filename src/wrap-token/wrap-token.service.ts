@@ -19,6 +19,7 @@ import { ConfigService } from '@nestjs/config';
 import { IConfig } from '../config/config.interface';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 
+@Injectable()
 export class WrapTokenService {
   constructor(
     @InjectRepository(WrapTokenTransactionEntity)
@@ -34,7 +35,6 @@ export class WrapTokenService {
     tokenAmount,
     debug,
   }: CreateWrapTokenReqDTO): Promise<CreateWrapTokenRespDTO> {
-    throw new BadRequestException('Bridge temporarily disabled');
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({
         tokenAmount,
