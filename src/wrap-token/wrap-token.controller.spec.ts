@@ -23,6 +23,8 @@ import {
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
+import { SettingsEntity } from '../settings/settings.entity';
+import { ServiceStatus } from '../settings/settings.const';
 
 describe('WrapTokenController', () => {
   let app: INestApplication;
@@ -68,6 +70,10 @@ describe('WrapTokenController', () => {
 
   describe('POST /wrap-token', () => {
     it('creates a new transaction and returns paymentId', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        wrapTokensServiceStatus: ServiceStatus.ONLINE,
+      });
+
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
         to: '0xD34dB33F000000000000000000000000DeAdBeEf',
@@ -116,6 +122,10 @@ describe('WrapTokenController', () => {
     });
 
     it('creates a new transaction with debug logs', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        wrapTokensServiceStatus: ServiceStatus.ONLINE,
+      });
+
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
         to: '0xD34dB33F000000000000000000000000DeAdBeEf',
@@ -183,6 +193,30 @@ describe('WrapTokenController', () => {
           'tokenAmount must be a numeric string greater than  1000000000 and less than 1000000000000000',
         ],
         statusCode: 400,
+      });
+    });
+
+    it('returns 400 when service is offline', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        wrapTokensServiceStatus: ServiceStatus.OFFLINE,
+      });
+
+      const dto: CreateWrapTokenReqDTO = {
+        from: 'tari_address_123',
+        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        tokenAmount: '1000000000',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .post('/wrap-token')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        statusCode: 400,
+        message: 'Wrap token service is currently offline',
+        error: 'Bad Request',
       });
     });
   });
@@ -420,6 +454,22 @@ describe('WrapTokenController', () => {
       expect(body).toEqual({
         coldWalletAddress,
         wrapTokenFeePercentageBps: 30,
+      });
+    });
+  });
+
+  describe('GET /wrap-token/status', () => {
+    it('returns the current service status when ONLINE', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        wrapTokensServiceStatus: ServiceStatus.ONLINE,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token/status')
+        .expect(200);
+
+      expect(body).toEqual({
+        status: ServiceStatus.ONLINE,
       });
     });
   });
