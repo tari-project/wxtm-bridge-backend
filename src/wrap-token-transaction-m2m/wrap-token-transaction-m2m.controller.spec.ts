@@ -14,12 +14,13 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { WrapTokenTransactionM2MModule } from './wrap-token-transaction-m2m.module';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
-  TokensReceivedRequestDTO,
+  TokensReceivedRequestDTO_DELETE,
   ErrorUpdateRequestDTO,
   CreatingTransactionRequestDTO,
   TransactionCreatedRequestDTO,
   ExecutingTransactionRequestDTO,
   TransactionExecutedRequestDTO,
+  TokensReceivedRequestDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
@@ -174,7 +175,7 @@ describe('WrapTokenTransactionController', () => {
         ],
       );
 
-      const dto: TokensReceivedRequestDTO = {
+      const dto: TokensReceivedRequestDTO_DELETE = {
         walletTransactions: [
           {
             paymentId: tx_created.paymentId,
@@ -316,7 +317,7 @@ describe('WrapTokenTransactionController', () => {
           },
         );
 
-        const dto: TokensReceivedRequestDTO = {
+        const dto: TokensReceivedRequestDTO_DELETE = {
           walletTransactions: [
             {
               paymentId: transaction.paymentId,
@@ -358,6 +359,324 @@ describe('WrapTokenTransactionController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer incorect-token`)
         .send({})
+        .expect(401);
+
+      expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });
+    });
+  });
+
+  describe('PATCH /wrap-token-transactions-m2m/tokens-received', () => {
+    it('should update transactions status to TOKENS_RECEIVED', async () => {
+      const [tx_created, tx_timeout, tx_tokens_sent] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            { status: WrapTokenTransactionStatus.CREATED, tokenAmount: '1000' },
+            { status: WrapTokenTransactionStatus.TIMEOUT, tokenAmount: '2000' },
+            {
+              status: WrapTokenTransactionStatus.TOKENS_SENT,
+              tokenAmount: '5000',
+            },
+          ],
+        );
+
+      const dto: TokensReceivedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_created.paymentId,
+            amount: '1000',
+            timestamp: 1747209999,
+            blockHeight: 12345,
+            paymentReference: 'ref1',
+          },
+          {
+            paymentId: tx_timeout.paymentId,
+            amount: '3000',
+            timestamp: 1747210000,
+            blockHeight: 12346,
+            paymentReference: 'ref2',
+          },
+          {
+            paymentId: tx_tokens_sent.paymentId,
+            amount: '5000',
+            timestamp: 1747210001,
+            blockHeight: 12347,
+            paymentReference: 'ref3',
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/tokens-received-processed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_created.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariTxTimestamp: 1747209999,
+            tariBlockHeight: 12345,
+            tariPaymentReference: 'ref1',
+            tokenAmountInWallet: '1000',
+          }),
+          expect.objectContaining({
+            id: tx_timeout.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+            tariTxTimestamp: 1747210000,
+            tariBlockHeight: 12346,
+            tariPaymentReference: 'ref2',
+            tokenAmountInWallet: '3000',
+          }),
+          expect.objectContaining({
+            id: tx_tokens_sent.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariTxTimestamp: 1747210001,
+            tariBlockHeight: 12347,
+            tariPaymentReference: 'ref3',
+            tokenAmountInWallet: '5000',
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+
+      expect(auditRecords).toHaveLength(3);
+      expect(auditRecords).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            transactionId: tx_created.id,
+            paymentId: tx_created.paymentId,
+            fromStatus: WrapTokenTransactionStatus.CREATED,
+            toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          }),
+          expect.objectContaining({
+            transactionId: tx_timeout.id,
+            paymentId: tx_timeout.paymentId,
+            fromStatus: WrapTokenTransactionStatus.TIMEOUT,
+            toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+          }),
+          expect.objectContaining({
+            transactionId: tx_tokens_sent.id,
+            paymentId: tx_tokens_sent.paymentId,
+            fromStatus: WrapTokenTransactionStatus.TOKENS_SENT,
+            toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          }),
+        ]),
+      );
+    });
+
+    it('should update only missing data for SAFE_TRANSACTION_EXECUTED transactions', async () => {
+      const [tx_1, tx_2, tx_created] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          3,
+          [
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+              tariTxTimestamp: 111111,
+              tokenAmount: '1000',
+            },
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+              tariBlockHeight: 999,
+              tariPaymentReference: 'already-set',
+              tariTxTimestamp: 222222,
+              tokenAmount: '2000',
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              tariTxTimestamp: 2222,
+              tokenAmount: '3000',
+            },
+          ],
+        );
+
+      const dto: TokensReceivedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_1.paymentId,
+            amount: '1000',
+            timestamp: 111111,
+            blockHeight: 1,
+            paymentReference: 'ref-safe',
+          },
+          {
+            paymentId: tx_2.paymentId,
+            amount: '2000',
+            timestamp: 222222,
+            blockHeight: 888,
+            paymentReference: 'should-not-overwrite',
+          },
+          {
+            paymentId: tx_created.paymentId,
+            amount: '3000',
+            timestamp: 333333,
+            blockHeight: 777,
+            paymentReference: 'ref-created',
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/tokens-received-processed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updated = await getRepository(WrapTokenTransactionEntity).find();
+
+      expect(updated).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_1.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+            tariBlockHeight: 1,
+            tariPaymentReference: 'ref-safe',
+            tariTxTimestamp: tx_1.tariTxTimestamp,
+            tokenAmount: '1000',
+          }),
+          expect.objectContaining({
+            id: tx_2.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+            tariBlockHeight: 999,
+            tariPaymentReference: 'already-set',
+            tariTxTimestamp: 222222,
+            tokenAmount: '2000',
+          }),
+          expect.objectContaining({
+            id: tx_created.id,
+            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            tariBlockHeight: 777,
+            tariPaymentReference: 'ref-created',
+            tariTxTimestamp: 333333,
+            tokenAmount: '3000',
+            tokenAmountInWallet: '3000',
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+      expect(auditRecords[0]).toEqual(
+        expect.objectContaining({
+          transactionId: tx_created.id,
+          paymentId: tx_created.paymentId,
+          fromStatus: WrapTokenTransactionStatus.CREATED,
+          toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        }),
+      );
+    });
+
+    it.each([
+      [WrapTokenTransactionStatus.TOKENS_RECEIVED, 'not in valid statuses'],
+      [
+        WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION_UNPROCESSABLE,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        'not in valid statuses',
+      ],
+      [
+        WrapTokenTransactionStatus.SAFE_TRANSACTION_UNPROCESSABLE,
+        'not in valid statuses',
+      ],
+    ])(
+      'should not update transaction when status is %s (%s)',
+      async (status, _description) => {
+        const transaction = await factory.create<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          {
+            status,
+            tokenAmount: '1000',
+          },
+        );
+
+        const dto: TokensReceivedRequestDTO = {
+          walletTransactions: [
+            {
+              paymentId: transaction.paymentId,
+              amount: '1000',
+              timestamp: 1747209999,
+              blockHeight: 12345,
+              paymentReference: 'ref-v2',
+            },
+          ],
+        };
+
+        const { body } = await request(app.getHttpServer())
+          .patch('/wrap-token-transactions-m2m/tokens-received-processed')
+          .set('Content-Type', 'application/json')
+          .set('Authorization', `Bearer ${m2mToken}`)
+          .send(dto)
+          .expect(200);
+
+        expect(body).toEqual({ success: true });
+
+        const unchangedTransaction = await getRepository(
+          WrapTokenTransactionEntity,
+        ).findOne({ where: { id: transaction.id } });
+
+        expect(unchangedTransaction).toEqual(
+          expect.objectContaining({
+            id: transaction.id,
+            status: status,
+            tariBlockHeight: null,
+            tariPaymentReference: null,
+            tariTxTimestamp: null,
+            tokenAmountInWallet: null,
+          }),
+        );
+
+        const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+        expect(auditRecords).toHaveLength(0);
+      },
+    );
+
+    it('should not be accessible with an incorrect token', async () => {
+      const dto: TokensReceivedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: 'some-id',
+            amount: '1000',
+            timestamp: 123456,
+            blockHeight: 1,
+            paymentReference: 'ref',
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/tokens-received-processed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer invalid-token`)
+        .send(dto)
         .expect(401);
 
       expect(body).toEqual({ message: 'Unauthorized', statusCode: 401 });

@@ -96,11 +96,18 @@ export class WrapTokenTransactionEntity {
   @Column({ nullable: true })
   transactionHash?: string;
 
+  //TODO delete after migration
   @Column({ nullable: true })
   tariPaymentIdHex?: string;
 
   @Column({ nullable: true })
   tariTxTimestamp?: number;
+
+  @Column({ nullable: true })
+  tariBlockHeight?: number;
+
+  @Column({ nullable: true })
+  tariPaymentReference?: string;
 
   @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
   audits: WrapTokenAuditEntity[];
