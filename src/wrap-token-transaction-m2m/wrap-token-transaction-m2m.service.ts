@@ -5,12 +5,14 @@ import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
-  TokensReceivedRequestDTO,
+  TokensReceivedRequestDTO_DELETE,
   ErrorUpdateRequestDTO,
   CreatingTransactionRequestDTO,
   TransactionCreatedRequestDTO,
   ExecutingTransactionRequestDTO,
   TransactionExecutedRequestDTO,
+  TokensReceivedRequestDTO,
+  WalletTransactionDTO,
 } from './wrap-token-transaction-m2m.dto';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { SuccessDTO } from '../dto/success.dto';
@@ -28,9 +30,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     super(repo);
   }
 
-  async updateToTokensReceived({
+  async updateToTokensReceived_DELETE({
     walletTransactions,
-  }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
+  }: TokensReceivedRequestDTO_DELETE): Promise<SuccessDTO> {
     for (const walletTransaction of walletTransactions) {
       const transaction = await this.repo.findOne({
         where: {
@@ -72,6 +74,111 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           toStatus: newStatus,
         });
       }
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  private async updateNewTransaction(
+    {
+      status,
+      id,
+      tokenAmount,
+      tariBlockHeight,
+      tariTxTimestamp,
+      tariPaymentReference,
+      paymentId,
+    }: WrapTokenTransactionEntity,
+    { timestamp, blockHeight, paymentReference, amount }: WalletTransactionDTO,
+  ) {
+    if (
+      status === WrapTokenTransactionStatus.CREATED ||
+      status === WrapTokenTransactionStatus.TOKENS_SENT ||
+      (status === WrapTokenTransactionStatus.TIMEOUT &&
+        !tariBlockHeight &&
+        !tariTxTimestamp &&
+        !tariPaymentReference)
+    ) {
+      const newStatus =
+        tokenAmount === amount
+          ? WrapTokenTransactionStatus.TOKENS_RECEIVED
+          : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
+
+      await this.repo.update(
+        {
+          id,
+        },
+        {
+          tariTxTimestamp: timestamp,
+          tariBlockHeight: blockHeight,
+          tariPaymentReference: paymentReference,
+          tokenAmountInWallet: amount,
+          status: newStatus,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: id,
+        paymentId,
+        fromStatus: status,
+        toStatus: newStatus,
+      });
+    }
+  }
+
+  private async patchExistingTransactionWithWalletData(
+    {
+      status,
+      id,
+      tariBlockHeight,
+      tariPaymentReference,
+    }: WrapTokenTransactionEntity,
+    { blockHeight, paymentReference }: WalletTransactionDTO,
+  ) {
+    if (
+      status === WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED &&
+      !tariBlockHeight &&
+      !tariPaymentReference
+    ) {
+      await this.repo.update(
+        {
+          id,
+        },
+        {
+          tariBlockHeight: blockHeight,
+          tariPaymentReference: paymentReference,
+        },
+      );
+    }
+  }
+
+  async updateToTokensReceived({
+    walletTransactions,
+  }: TokensReceivedRequestDTO): Promise<SuccessDTO> {
+    for (const walletTransaction of walletTransactions) {
+      const transaction = await this.repo.findOne({
+        where: {
+          paymentId: walletTransaction.paymentId,
+          status: In([
+            WrapTokenTransactionStatus.CREATED,
+            WrapTokenTransactionStatus.TOKENS_SENT,
+            WrapTokenTransactionStatus.TIMEOUT,
+            WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+          ]),
+        },
+      });
+
+      if (!transaction) {
+        continue;
+      }
+
+      await this.updateNewTransaction(transaction, walletTransaction);
+      await this.patchExistingTransactionWithWalletData(
+        transaction,
+        walletTransaction,
+      );
     }
 
     return {

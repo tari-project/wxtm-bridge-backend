@@ -17,7 +17,7 @@ export class BaseTransactionDTO {
   paymentId: string;
 }
 
-export class WalletTransactionDTO extends BaseTransactionDTO {
+export class WalletTransactionDTO_DELETE extends BaseTransactionDTO {
   @IsString()
   @IsNotEmpty()
   tariPaymentIdHex: string;
@@ -29,6 +29,32 @@ export class WalletTransactionDTO extends BaseTransactionDTO {
   @IsNumberString()
   @IsOptional()
   timestamp?: string;
+}
+
+export class TokensReceivedRequestDTO_DELETE {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WalletTransactionDTO_DELETE)
+  walletTransactions: WalletTransactionDTO_DELETE[];
+}
+
+export class WalletTransactionDTO extends BaseTransactionDTO {
+  @IsNumberString()
+  @IsNotEmpty()
+  amount: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  timestamp: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  blockHeight: number;
+
+  @IsNotEmpty()
+  @IsString()
+  paymentReference: string;
 }
 
 export class TokensReceivedRequestDTO {
