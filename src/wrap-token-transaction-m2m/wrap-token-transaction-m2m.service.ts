@@ -194,7 +194,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-          tariPaymentIdHex: Not(IsNull()),
         },
       });
 
@@ -230,7 +229,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          tariPaymentIdHex: Not(IsNull()),
         },
       });
 
@@ -269,7 +267,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-          tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
       });
@@ -306,7 +303,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-          tariPaymentIdHex: Not(IsNull()),
           safeTxHash: Not(IsNull()),
         },
       });

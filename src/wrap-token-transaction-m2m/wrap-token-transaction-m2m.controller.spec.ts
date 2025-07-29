@@ -685,10 +685,10 @@ describe('WrapTokenTransactionController', () => {
 
   describe('PATCH /wrap-token-transactions-m2m/creating-transaction', () => {
     it('should update transactions status to SAFE_TRANSACTION_CREATING and create audit records', async () => {
-      const [tx_received, tx_other_status, tx_no_tari_tx_id] =
+      const [tx_received, tx_other_status] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
-          3,
+          2,
           [
             {
               status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
@@ -697,10 +697,6 @@ describe('WrapTokenTransactionController', () => {
             {
               status: WrapTokenTransactionStatus.CREATED,
               tariPaymentIdHex: '123',
-            },
-            {
-              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariPaymentIdHex: undefined,
             },
           ],
         );
@@ -712,9 +708,6 @@ describe('WrapTokenTransactionController', () => {
           },
           {
             paymentId: tx_other_status.paymentId,
-          },
-          {
-            paymentId: tx_no_tari_tx_id.paymentId,
           },
         ],
       };
@@ -732,7 +725,7 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toHaveLength(2);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -744,12 +737,6 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            safeTxHash: null,
-            safeNonce: null,
-          }),
-          expect.objectContaining({
-            id: tx_no_tari_tx_id.id,
-            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             safeTxHash: null,
             safeNonce: null,
           }),
