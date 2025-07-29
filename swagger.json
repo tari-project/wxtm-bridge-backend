@@ -1631,6 +1631,37 @@
           }
         ]
       }
+    },
+    "/mine-to-exchange/config": {
+      "post": {
+        "operationId": "config",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MineToExchangeConfigDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MineToExchangeConfigRespDTO"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mine-to-exchange"
+        ]
+      }
     }
   },
   "info": {
@@ -2463,6 +2494,32 @@
         },
         "required": [
           "wrapTokensServiceStatus"
+        ]
+      },
+      "MineToExchangeConfigDTO": {
+        "type": "object",
+        "properties": {
+          "toAddress": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "toAddress"
+        ]
+      },
+      "MineToExchangeConfigRespDTO": {
+        "type": "object",
+        "properties": {
+          "walletAddress": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "walletAddress",
+          "paymentId"
         ]
       }
     }
