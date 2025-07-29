@@ -63,4 +63,8 @@ export default (): IConfig => ({
         : ['@marius', '@patrykw'],
   },
   sentryDsn: process.env.SENTRY_DSN ?? '',
+  mineToExchange: {
+    walletAddress: process.env.MINE_TO_EXCHANGE_WALLET_ADDRESS || '',
+    addressPrefix: process.env.MINE_TO_EXCHANGE_ADDRESS_PREFIX || '',
+  },
 });

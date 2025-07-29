@@ -18,6 +18,7 @@ import { WrapTokenAuditModule } from './wrap-token-audit/wrap-token-audit.module
 import { NotificationsModule } from './notifications/notifications.module';
 import { SlackModule } from './slack/slack.module';
 import { SettingsModule } from './settings/settings.module';
+import { MineToExchangeModule } from './mine-to-exchange/mine-to-exchange.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SettingsModule } from './settings/settings.module';
     NotificationsModule,
     SlackModule,
     SettingsModule,
+    MineToExchangeModule,
   ],
   providers: [
     {

@@ -38,6 +38,11 @@ export interface ISlack {
   tags: string[];
 }
 
+export interface IMineToExchange {
+  walletAddress: string;
+  addressPrefix: string;
+}
+
 export interface IConfig {
   domain: string;
   enviroment: Enviroment;
@@ -53,4 +58,5 @@ export interface IConfig {
   aws: IAWS;
   slack: ISlack;
   sentryDsn: string;
+  mineToExchange: IMineToExchange;
 }
