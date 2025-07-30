@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
@@ -194,26 +194,34 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          //TODO: Enable these checks after implementation is complete
+          // tariPaymentReference: Not(IsNull()),
+          // tariBlockHeight: Not(IsNull()),
+          // tariTxTimestamp: Not(IsNull()),
         },
       });
 
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          },
+      if (!transaction) {
+        throw new BadRequestException(
+          `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-        });
       }
+
+      await this.repo.update(
+        {
+          id: transaction.id,
+        },
+        {
+          status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+      });
     }
 
     return {
@@ -229,29 +237,37 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+          //TODO: Enable these checks after implementation is complete
+          // tariPaymentReference: Not(IsNull()),
+          // tariBlockHeight: Not(IsNull()),
+          // tariTxTimestamp: Not(IsNull()),
         },
       });
 
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-            safeTxHash: walletTransaction.safeTxHash,
-            safeNonce: walletTransaction.safeNonce,
-            safeAddress: walletTransaction.safeAddress,
-          },
+      if (!transaction) {
+        throw new BadRequestException(
+          `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-        });
       }
+
+      await this.repo.update(
+        {
+          id: transaction.id,
+        },
+        {
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          safeTxHash: walletTransaction.safeTxHash,
+          safeNonce: walletTransaction.safeNonce,
+          safeAddress: walletTransaction.safeAddress,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+      });
     }
 
     return {
@@ -268,26 +284,34 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           safeTxHash: Not(IsNull()),
+          //TODO: Enable these checks after implementation is complete
+          // tariPaymentReference: Not(IsNull()),
+          // tariBlockHeight: Not(IsNull()),
+          // tariTxTimestamp: Not(IsNull()),
         },
       });
 
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-          },
+      if (!transaction) {
+        throw new BadRequestException(
+          `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-        });
       }
+
+      await this.repo.update(
+        {
+          id: transaction.id,
+        },
+        {
+          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+      });
     }
 
     return {
@@ -304,27 +328,35 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
           safeTxHash: Not(IsNull()),
+          //TODO: Enable these checks after implementation is complete
+          // tariPaymentReference: Not(IsNull()),
+          // tariBlockHeight: Not(IsNull()),
+          // tariTxTimestamp: Not(IsNull()),
         },
       });
 
-      if (transaction) {
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-            transactionHash: walletTransaction.transactionHash,
-          },
+      if (!transaction) {
+        throw new BadRequestException(
+          `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-        });
       }
+
+      await this.repo.update(
+        {
+          id: transaction.id,
+        },
+        {
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+          transactionHash: walletTransaction.transactionHash,
+        },
+      );
+
+      await this.wrapTokenAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+      });
     }
 
     return {
