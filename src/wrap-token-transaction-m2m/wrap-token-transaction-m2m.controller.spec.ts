@@ -692,7 +692,9 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariPaymentIdHex: '123',
+              tariBlockHeight: 12345,
+              tariPaymentReference: 'ref-123',
+              tariTxTimestamp: 1747209999,
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
@@ -717,9 +719,13 @@ describe('WrapTokenTransactionController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${tx_other_status.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const updatedTransactions = await getRepository(
         WrapTokenTransactionEntity,
@@ -769,22 +775,19 @@ describe('WrapTokenTransactionController', () => {
 
   describe('PATCH /wrap-token-transactions-m2m/transaction-created', () => {
     it('should update transactions status to SAFE_TRANSACTION_CREATED and create audit records', async () => {
-      const [tx_received, tx_other_status, tx_no_tari_tx_id] =
+      const [tx_received, tx_other_status] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
-          3,
+          2,
           [
             {
               status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-              tariPaymentIdHex: '123',
+              tariBlockHeight: 12345,
+              tariPaymentReference: 'ref-123',
+              tariTxTimestamp: 1747209999,
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariPaymentIdHex: '123',
-            },
-            {
-              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-              tariPaymentIdHex: undefined,
             },
           ],
         );
@@ -801,11 +804,6 @@ describe('WrapTokenTransactionController', () => {
             safeTxHash: 'tx_2_hash',
             safeNonce: 2,
           },
-          {
-            paymentId: tx_no_tari_tx_id.paymentId,
-            safeTxHash: 'tx_3_hash',
-            safeNonce: 3,
-          },
         ],
       };
 
@@ -814,15 +812,19 @@ describe('WrapTokenTransactionController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${tx_other_status.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const updatedTransactions = await getRepository(
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toHaveLength(2);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -835,13 +837,6 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            safeTxHash: null,
-            safeNonce: null,
-            safeAddress: null,
-          }),
-          expect.objectContaining({
-            id: tx_no_tari_tx_id.id,
-            status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
             safeTxHash: null,
             safeNonce: null,
             safeAddress: null,
@@ -866,7 +861,9 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity.name,
         {
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          tariPaymentIdHex: '123',
+          tariBlockHeight: 12345,
+          tariPaymentReference: 'ref-123',
+          tariTxTimestamp: 1747209999,
         },
       );
 
@@ -1078,25 +1075,24 @@ describe('WrapTokenTransactionController', () => {
 
   describe('PATCH /wrap-token-transactions-m2m/executing-transaction', () => {
     it('should update transactions status to EXECUTING_SAFE_TRANSACTION and create audit records', async () => {
-      const [tx_created, tx_other_status, tx_no_safe_tx_hash] =
+      const [tx_created_1, tx_created_2] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
-          3,
+
           [
             {
               status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-              tariPaymentIdHex: '123',
               safeTxHash: 'hash123',
-            },
-            {
-              status: WrapTokenTransactionStatus.CREATED,
-              tariPaymentIdHex: '123',
-              safeTxHash: 'hash456',
+              tariPaymentReference: 'ref123',
+              tariBlockHeight: 100,
+              tariTxTimestamp: 123,
             },
             {
               status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-              tariPaymentIdHex: '123',
-              safeTxHash: undefined,
+              safeTxHash: 'hash456',
+              tariPaymentReference: 'ref222',
+              tariBlockHeight: 200,
+              tariTxTimestamp: 223,
             },
           ],
         );
@@ -1104,13 +1100,10 @@ describe('WrapTokenTransactionController', () => {
       const dto: ExecutingTransactionRequestDTO = {
         walletTransactions: [
           {
-            paymentId: tx_created.paymentId,
+            paymentId: tx_created_1.paymentId,
           },
           {
-            paymentId: tx_other_status.paymentId,
-          },
-          {
-            paymentId: tx_no_safe_tx_hash.paymentId,
+            paymentId: tx_created_2.paymentId,
           },
         ],
       };
@@ -1128,26 +1121,101 @@ describe('WrapTokenTransactionController', () => {
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: tx_created_1.id,
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+            safeTxHash: 'hash123',
+          }),
+          expect.objectContaining({
+            id: tx_created_2.id,
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+            safeTxHash: 'hash456',
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(2);
+      expect(auditRecords).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            transactionId: tx_created_1.id,
+            paymentId: tx_created_1.paymentId,
+            fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          }),
+          expect.objectContaining({
+            transactionId: tx_created_2.id,
+            paymentId: tx_created_2.paymentId,
+            fromStatus: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            toStatus: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          }),
+        ]),
+      );
+    });
+
+    it('should update transactions status, and throw an exception if some transactions cannot be found', async () => {
+      const [tx_created, tx_other_status] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          [
+            {
+              status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+              safeTxHash: 'hash123',
+              tariPaymentReference: 'ref123',
+              tariBlockHeight: 100,
+              tariTxTimestamp: 123,
+            },
+            {
+              status: WrapTokenTransactionStatus.CREATED,
+              safeTxHash: 'hash456',
+            },
+          ],
+        );
+
+      const dto: ExecutingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: tx_created.paymentId,
+          },
+          {
+            paymentId: tx_other_status.paymentId,
+          },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/executing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${tx_other_status.paymentId} not found`,
+        statusCode: 400,
+      });
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: tx_created.id,
             status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash456',
-          }),
-          expect.objectContaining({
-            id: tx_no_safe_tx_hash.id,
-            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
-            tariPaymentIdHex: '123',
-            safeTxHash: null,
           }),
         ]),
       );
@@ -1177,26 +1245,23 @@ describe('WrapTokenTransactionController', () => {
   });
 
   describe('PATCH /wrap-token-transactions-m2m/transaction-executed', () => {
-    it('should update transactions status to SAFE_TRANSACTION_EXECUTED and create audit records', async () => {
-      const [tx_executing, tx_other_status, tx_no_safe_tx_hash] =
+    it('should update transactions status to SAFE_TRANSACTION_EXECUTED, and throw an exception if some transactions cannot be found', async () => {
+      const [tx_executing, tx_other_status] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
-          3,
+
           [
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariPaymentIdHex: '123',
               safeTxHash: 'hash123',
+              tariPaymentReference: 'ref123',
+              tariBlockHeight: 100,
+              tariTxTimestamp: 123,
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
               tariPaymentIdHex: '123',
               safeTxHash: 'hash456',
-            },
-            {
-              status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariPaymentIdHex: '123',
-              safeTxHash: undefined,
             },
           ],
         );
@@ -1209,9 +1274,6 @@ describe('WrapTokenTransactionController', () => {
           {
             paymentId: tx_other_status.paymentId,
           },
-          {
-            paymentId: tx_no_safe_tx_hash.paymentId,
-          },
         ],
       };
 
@@ -1220,36 +1282,31 @@ describe('WrapTokenTransactionController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${tx_other_status.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const updatedTransactions = await getRepository(
         WrapTokenTransactionEntity,
       ).find();
 
-      expect(updatedTransactions).toHaveLength(3);
+      expect(updatedTransactions).toHaveLength(2);
       expect(updatedTransactions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: tx_executing.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
             transactionHash: null,
           }),
           expect.objectContaining({
             id: tx_other_status.id,
             status: WrapTokenTransactionStatus.CREATED,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash456',
-            transactionHash: null,
-          }),
-          expect.objectContaining({
-            id: tx_no_safe_tx_hash.id,
-            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-            tariPaymentIdHex: '123',
-            safeTxHash: null,
             transactionHash: null,
           }),
         ]),
@@ -1275,13 +1332,17 @@ describe('WrapTokenTransactionController', () => {
           [
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariPaymentIdHex: '123',
               safeTxHash: 'hash123',
+              tariPaymentReference: 'ref123',
+              tariBlockHeight: 100,
+              tariTxTimestamp: 123,
             },
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
-              tariPaymentIdHex: '123',
               safeTxHash: 'hash456',
+              tariPaymentReference: 'ref123',
+              tariBlockHeight: 100,
+              tariTxTimestamp: 123,
             },
           ],
         );
@@ -1317,14 +1378,12 @@ describe('WrapTokenTransactionController', () => {
           expect.objectContaining({
             id: tx_executing.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash123',
             transactionHash: 'tx_hash_123',
           }),
           expect.objectContaining({
             id: tx_executing_2.id,
             status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
-            tariPaymentIdHex: '123',
             safeTxHash: 'hash456',
             transactionHash: null,
           }),
