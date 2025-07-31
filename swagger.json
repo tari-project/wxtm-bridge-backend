@@ -700,7 +700,7 @@
     },
     "/wrap-token-transactions-m2m/tokens-received": {
       "patch": {
-        "operationId": "updateToTokensReceived_DELETE",
+        "operationId": "updateToTokensReceived",
         "summary": "Update tokens received status with M2M authentication",
         "parameters": [],
         "requestBody": {
@@ -708,7 +708,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TokensReceivedRequestDTO_DELETE"
+                "$ref": "#/components/schemas/TokensReceivedRequestDTO"
               }
             }
           }
@@ -743,7 +743,7 @@
     },
     "/wrap-token-transactions-m2m/tokens-received-processed": {
       "patch": {
-        "operationId": "updateToTokensReceived",
+        "operationId": "updateToTokensReceived_DELETE_DUBLICATE",
         "summary": "Update tokens received status with M2M authentication",
         "parameters": [],
         "requestBody": {
@@ -2126,42 +2126,6 @@
           "audits",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "WalletTransactionDTO_DELETE": {
-        "type": "object",
-        "properties": {
-          "tariPaymentIdHex": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string"
-          },
-          "timestamp": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "tariPaymentIdHex",
-          "amount",
-          "paymentId"
-        ]
-      },
-      "TokensReceivedRequestDTO_DELETE": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WalletTransactionDTO_DELETE"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
         ]
       },
       "WalletTransactionDTO": {
