@@ -5,7 +5,6 @@ import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
-  TokensReceivedRequestDTO_DELETE,
   ErrorUpdateRequestDTO,
   CreatingTransactionRequestDTO,
   TransactionCreatedRequestDTO,
@@ -30,128 +29,34 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     super(repo);
   }
 
-  async updateToTokensReceived_DELETE({
-    walletTransactions,
-  }: TokensReceivedRequestDTO_DELETE): Promise<SuccessDTO> {
-    for (const walletTransaction of walletTransactions) {
-      const transaction = await this.repo.findOne({
-        where: {
-          paymentId: walletTransaction.paymentId,
-          status: In([
-            WrapTokenTransactionStatus.CREATED,
-            WrapTokenTransactionStatus.TOKENS_SENT,
-            WrapTokenTransactionStatus.TIMEOUT,
-          ]),
-          tariPaymentIdHex: IsNull(),
-          tariTxTimestamp: IsNull(),
-        },
-      });
-
-      if (transaction) {
-        const newStatus =
-          transaction.tokenAmount === walletTransaction.amount
-            ? WrapTokenTransactionStatus.TOKENS_RECEIVED
-            : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
-
-        await this.repo.update(
-          {
-            id: transaction.id,
-          },
-          {
-            tariPaymentIdHex: walletTransaction.tariPaymentIdHex,
-            tariTxTimestamp: walletTransaction.timestamp
-              ? Number(walletTransaction.timestamp)
-              : undefined,
-            status: newStatus,
-            tokenAmountInWallet: walletTransaction.amount,
-          },
-        );
-
-        await this.wrapTokenAuditService.recordTransactionEvent({
-          transactionId: transaction.id,
-          paymentId: transaction.paymentId,
-          fromStatus: transaction.status,
-          toStatus: newStatus,
-        });
-      }
-    }
-
-    return {
-      success: true,
-    };
-  }
-
   private async updateNewTransaction(
-    {
-      status,
-      id,
-      tokenAmount,
-      tariBlockHeight,
-      tariTxTimestamp,
-      tariPaymentReference,
-      paymentId,
-    }: WrapTokenTransactionEntity,
+    { status, id, tokenAmount, paymentId }: WrapTokenTransactionEntity,
     { timestamp, blockHeight, paymentReference, amount }: WalletTransactionDTO,
   ) {
-    if (
-      status === WrapTokenTransactionStatus.CREATED ||
-      status === WrapTokenTransactionStatus.TOKENS_SENT ||
-      (status === WrapTokenTransactionStatus.TIMEOUT &&
-        !tariBlockHeight &&
-        !tariTxTimestamp &&
-        !tariPaymentReference)
-    ) {
-      const newStatus =
-        tokenAmount === amount
-          ? WrapTokenTransactionStatus.TOKENS_RECEIVED
-          : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
+    const newStatus =
+      tokenAmount === amount
+        ? WrapTokenTransactionStatus.TOKENS_RECEIVED
+        : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
 
-      await this.repo.update(
-        {
-          id,
-        },
-        {
-          tariTxTimestamp: timestamp,
-          tariBlockHeight: blockHeight,
-          tariPaymentReference: paymentReference,
-          tokenAmountInWallet: amount,
-          status: newStatus,
-        },
-      );
+    await this.repo.update(
+      {
+        id,
+      },
+      {
+        tariTxTimestamp: timestamp,
+        tariBlockHeight: blockHeight,
+        tariPaymentReference: paymentReference,
+        tokenAmountInWallet: amount,
+        status: newStatus,
+      },
+    );
 
-      await this.wrapTokenAuditService.recordTransactionEvent({
-        transactionId: id,
-        paymentId,
-        fromStatus: status,
-        toStatus: newStatus,
-      });
-    }
-  }
-
-  private async patchExistingTransactionWithWalletData(
-    {
-      status,
-      id,
-      tariBlockHeight,
-      tariPaymentReference,
-    }: WrapTokenTransactionEntity,
-    { blockHeight, paymentReference }: WalletTransactionDTO,
-  ) {
-    if (
-      status === WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED &&
-      !tariBlockHeight &&
-      !tariPaymentReference
-    ) {
-      await this.repo.update(
-        {
-          id,
-        },
-        {
-          tariBlockHeight: blockHeight,
-          tariPaymentReference: paymentReference,
-        },
-      );
-    }
+    await this.wrapTokenAuditService.recordTransactionEvent({
+      transactionId: id,
+      paymentId,
+      fromStatus: status,
+      toStatus: newStatus,
+    });
   }
 
   async updateToTokensReceived({
@@ -165,8 +70,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
             WrapTokenTransactionStatus.CREATED,
             WrapTokenTransactionStatus.TOKENS_SENT,
             WrapTokenTransactionStatus.TIMEOUT,
-            WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
           ]),
+          tariPaymentReference: IsNull(),
+          tariBlockHeight: IsNull(),
+          tariTxTimestamp: IsNull(),
         },
       });
 
@@ -175,10 +82,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       }
 
       await this.updateNewTransaction(transaction, walletTransaction);
-      await this.patchExistingTransactionWithWalletData(
-        transaction,
-        walletTransaction,
-      );
     }
 
     return {
@@ -194,10 +97,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-          //TODO: Enable these checks after implementation is complete
-          // tariPaymentReference: Not(IsNull()),
-          // tariBlockHeight: Not(IsNull()),
-          // tariTxTimestamp: Not(IsNull()),
+          tariPaymentReference: Not(IsNull()),
+          tariBlockHeight: Not(IsNull()),
+          tariTxTimestamp: Not(IsNull()),
         },
       });
 
@@ -237,10 +139,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          //TODO: Enable these checks after implementation is complete
-          // tariPaymentReference: Not(IsNull()),
-          // tariBlockHeight: Not(IsNull()),
-          // tariTxTimestamp: Not(IsNull()),
+          tariPaymentReference: Not(IsNull()),
+          tariBlockHeight: Not(IsNull()),
+          tariTxTimestamp: Not(IsNull()),
         },
       });
 
@@ -284,10 +185,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           safeTxHash: Not(IsNull()),
-          //TODO: Enable these checks after implementation is complete
-          // tariPaymentReference: Not(IsNull()),
-          // tariBlockHeight: Not(IsNull()),
-          // tariTxTimestamp: Not(IsNull()),
+          tariPaymentReference: Not(IsNull()),
+          tariBlockHeight: Not(IsNull()),
+          tariTxTimestamp: Not(IsNull()),
         },
       });
 
@@ -328,10 +228,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
           safeTxHash: Not(IsNull()),
-          //TODO: Enable these checks after implementation is complete
-          // tariPaymentReference: Not(IsNull()),
-          // tariBlockHeight: Not(IsNull()),
-          // tariTxTimestamp: Not(IsNull()),
+          tariPaymentReference: Not(IsNull()),
+          tariBlockHeight: Not(IsNull()),
+          tariTxTimestamp: Not(IsNull()),
         },
       });
 

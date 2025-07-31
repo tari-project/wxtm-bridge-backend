@@ -5,7 +5,6 @@ import { Crud, CrudController } from '@dataui/crud';
 import { WrapTokenTransactionM2MService } from './wrap-token-transaction-m2m.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import {
-  TokensReceivedRequestDTO_DELETE,
   ErrorUpdateRequestDTO,
   TransactionCreatedRequestDTO,
   CreatingTransactionRequestDTO,
@@ -48,17 +47,17 @@ export class WrapTokenTransactionM2MController
   @M2MAuthGuard({
     description: 'Update tokens received status with M2M authentication',
   })
-  updateToTokensReceived_DELETE(
-    @Body() dto: TokensReceivedRequestDTO_DELETE,
+  updateToTokensReceived(
+    @Body() dto: TokensReceivedRequestDTO,
   ): Promise<SuccessDTO> {
-    return this.service.updateToTokensReceived_DELETE(dto);
+    return this.service.updateToTokensReceived(dto);
   }
 
   @Patch('tokens-received-processed')
   @M2MAuthGuard({
     description: 'Update tokens received status with M2M authentication',
   })
-  updateToTokensReceived(
+  updateToTokensReceived_DELETE_DUBLICATE(
     @Body() dto: TokensReceivedRequestDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTokensReceived(dto);
