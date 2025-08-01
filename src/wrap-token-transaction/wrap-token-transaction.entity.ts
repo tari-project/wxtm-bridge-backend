@@ -9,7 +9,10 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { WrapTokenTransactionStatus } from './wrap-token-transaction.const';
+import {
+  WrapTokenTransactionOrigin,
+  WrapTokenTransactionStatus,
+} from './wrap-token-transaction.const';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 
 @Entity({
@@ -32,10 +35,6 @@ export class WrapTokenTransactionEntity {
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   tokenAmount: string;
 
-  //TODO consider deleting this field
-  @Column({ type: 'numeric', precision: 38, scale: 0 })
-  userProvidedTokenAmount: string;
-
   @Column({ type: 'numeric', precision: 38, scale: 0, nullable: true })
   tokenAmountInWallet?: string;
 
@@ -54,6 +53,13 @@ export class WrapTokenTransactionEntity {
     default: WrapTokenTransactionStatus.CREATED,
   })
   status: WrapTokenTransactionStatus;
+
+  @Column({
+    type: 'enum',
+    enum: WrapTokenTransactionOrigin,
+    default: WrapTokenTransactionOrigin.BRIDGE,
+  })
+  origin: WrapTokenTransactionOrigin;
 
   @ApiProperty({
     type: 'array',
@@ -96,18 +102,17 @@ export class WrapTokenTransactionEntity {
   @Column({ nullable: true })
   transactionHash?: string;
 
-  //TODO delete after migration
-  @Column({ nullable: true })
-  tariPaymentIdHex?: string;
-
   @Column({ nullable: true })
   tariTxTimestamp?: number;
 
   @Column({ nullable: true })
   tariBlockHeight?: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   tariPaymentReference?: string;
+
+  @Column({ nullable: true })
+  tariUserPaymentId?: string;
 
   @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
   audits: WrapTokenAuditEntity[];

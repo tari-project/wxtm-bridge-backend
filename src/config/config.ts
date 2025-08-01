@@ -66,5 +66,6 @@ export default (): IConfig => ({
   mineToExchange: {
     walletAddress: process.env.MINE_TO_EXCHANGE_WALLET_ADDRESS || '',
     addressPrefix: process.env.MINE_TO_EXCHANGE_ADDRESS_PREFIX || '',
+    minTokenAmount: '8000000',
   },
 });

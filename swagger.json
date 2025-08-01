@@ -1662,6 +1662,46 @@
           "mine-to-exchange"
         ]
       }
+    },
+    "/mine-to-exchange/transactions": {
+      "post": {
+        "operationId": "createMiningTransactions",
+        "summary": "Create mining transactions",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMiningTransactionsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "mine-to-exchange"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -1952,7 +1992,10 @@
               "executing_safe_transaction",
               "safe_transaction_unprocessable",
               "safe_transaction_executed",
-              "timeout"
+              "timeout",
+              "mining_tokens_received_below_min_amount",
+              "mining_incorect_payment_id",
+              "mining_incorect_payment_id_and_amount"
             ]
           },
           "toStatus": {
@@ -1968,7 +2011,10 @@
               "executing_safe_transaction",
               "safe_transaction_unprocessable",
               "safe_transaction_executed",
-              "timeout"
+              "timeout",
+              "mining_tokens_received_below_min_amount",
+              "mining_incorect_payment_id",
+              "mining_incorect_payment_id_and_amount"
             ]
           },
           "note": {
@@ -2036,9 +2082,6 @@
           "tokenAmount": {
             "type": "string"
           },
-          "userProvidedTokenAmount": {
-            "type": "string"
-          },
           "tokenAmountInWallet": {
             "type": "string"
           },
@@ -2063,7 +2106,17 @@
               "executing_safe_transaction",
               "safe_transaction_unprocessable",
               "safe_transaction_executed",
-              "timeout"
+              "timeout",
+              "mining_tokens_received_below_min_amount",
+              "mining_incorect_payment_id",
+              "mining_incorect_payment_id_and_amount"
+            ],
+            "type": "string"
+          },
+          "origin": {
+            "enum": [
+              "bridge",
+              "mining"
             ],
             "type": "string"
           },
@@ -2082,9 +2135,6 @@
           "transactionHash": {
             "type": "string"
           },
-          "tariPaymentIdHex": {
-            "type": "string"
-          },
           "tariTxTimestamp": {
             "type": "number"
           },
@@ -2092,6 +2142,9 @@
             "type": "number"
           },
           "tariPaymentReference": {
+            "type": "string"
+          },
+          "tariUserPaymentId": {
             "type": "string"
           },
           "audits": {
@@ -2117,11 +2170,11 @@
           "from",
           "to",
           "tokenAmount",
-          "userProvidedTokenAmount",
           "feePercentageBps",
           "feeAmount",
           "amountAfterFee",
           "status",
+          "origin",
           "isNotificationSent",
           "audits",
           "createdAt",
@@ -2484,6 +2537,51 @@
         "required": [
           "walletAddress",
           "paymentId"
+        ]
+      },
+      "MiningTransactionDTO": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "paymentReference": {
+            "type": "string"
+          },
+          "blockHeight": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "from",
+          "paymentId",
+          "amount",
+          "paymentReference",
+          "blockHeight",
+          "timestamp"
+        ]
+      },
+      "CreateMiningTransactionsDTO": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiningTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "transactions"
         ]
       }
     }

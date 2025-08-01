@@ -375,7 +375,6 @@ describe('WrapTokenTransactionController', () => {
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariPaymentIdHex: '123',
             },
           ],
         );
@@ -937,7 +936,6 @@ describe('WrapTokenTransactionController', () => {
             },
             {
               status: WrapTokenTransactionStatus.CREATED,
-              tariPaymentIdHex: '123',
               safeTxHash: 'hash456',
             },
           ],
@@ -1005,7 +1003,7 @@ describe('WrapTokenTransactionController', () => {
       const [tx_executing, tx_executing_2] =
         await factory.createMany<WrapTokenTransactionEntity>(
           WrapTokenTransactionEntity.name,
-          2,
+
           [
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
@@ -1017,7 +1015,7 @@ describe('WrapTokenTransactionController', () => {
             {
               status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
               safeTxHash: 'hash456',
-              tariPaymentReference: 'ref123',
+              tariPaymentReference: 'ref124',
               tariBlockHeight: 100,
               tariTxTimestamp: 123,
             },

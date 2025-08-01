@@ -41,6 +41,7 @@ export interface ISlack {
 export interface IMineToExchange {
   walletAddress: string;
   addressPrefix: string;
+  minTokenAmount: string;
 }
 
 export interface IConfig {
