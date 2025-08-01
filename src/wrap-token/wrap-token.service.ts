@@ -56,7 +56,6 @@ export class WrapTokenService {
         from,
         to,
         tokenAmount,
-        userProvidedTokenAmount: tokenAmount,
         feePercentageBps,
         feeAmount,
         amountAfterFee,

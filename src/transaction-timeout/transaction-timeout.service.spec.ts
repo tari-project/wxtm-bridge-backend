@@ -65,7 +65,7 @@ describe('SubgraphService tests', () => {
         txShouldTimeout2, // TOKENS_SENT status, old enough to timeout
         txTooRecent, // CREATED status, but too recent to timeout
         txAlreadyTimeOut, // Already in TIMEOUT status
-        txWithTariPaymentId, // Has tariPaymentIdHex, shouldn't timeout
+        txWithTariPaymentId, // Has tariPaymentReference, shouldn't timeout
         txWithTariTxTimestamp, // Has tariTxTimestamp, shouldn't timeout
         txTokensReceived, // TOKENS_RECEIVED status, shouldn't timeout
       ] = await factory.createMany<WrapTokenTransactionEntity>(
@@ -90,7 +90,7 @@ describe('SubgraphService tests', () => {
           },
           {
             status: WrapTokenTransactionStatus.CREATED,
-            tariPaymentIdHex: '123abc',
+            tariPaymentReference: '123abc',
             updatedAt: timeBeforeTimeout,
           },
           {

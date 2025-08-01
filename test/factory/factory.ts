@@ -33,10 +33,6 @@ export const getFactory = async (): Promise<Factory> => {
           'WrapTokenTransactionEntity.tokenAmount',
           (n) => `${n}`,
         ),
-        userProvidedTokenAmount: factory.sequence(
-          'WrapTokenTransactionEntity.userProvidedTokenAmount',
-          (n) => `${n}`,
-        ),
         feePercentageBps: 25,
         feeAmount: factory.sequence(
           'WrapTokenTransactionEntity.feeAmount',
