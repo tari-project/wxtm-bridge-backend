@@ -1,9 +1,18 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MineToExchangeController } from './mine-to-exchange.controller';
 import { MineToExchangeService } from './mine-to-exchange.service';
+import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
+import { WrapTokenAuditModule } from '../wrap-token-audit/wrap-token-audit.module';
+import { WrapTokenFeesModule } from '../wrap-token-fees/wrap-token-fees.module';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([WrapTokenTransactionEntity]),
+    WrapTokenAuditModule,
+    WrapTokenFeesModule,
+  ],
   controllers: [MineToExchangeController],
   providers: [MineToExchangeService],
 })
