@@ -112,7 +112,7 @@ export class WrapTokenTransactionEntity {
   tariPaymentReference?: string;
 
   @Column({ nullable: true })
-  tariUserPaymentId?: string;
+  incomingPaymentId?: string;
 
   @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
   audits: WrapTokenAuditEntity[];

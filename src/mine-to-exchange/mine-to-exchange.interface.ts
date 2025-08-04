@@ -7,6 +7,6 @@ export class CreateMiningTransactionParams {
   paymentReference: string;
   blockHeight: number;
   timestamp: number;
-  paymentId: string;
+  paymentId?: string;
   status: WrapTokenTransactionStatus;
 }
