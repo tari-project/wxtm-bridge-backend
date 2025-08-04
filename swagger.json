@@ -2144,7 +2144,7 @@
           "tariPaymentReference": {
             "type": "string"
           },
-          "tariUserPaymentId": {
+          "incomingPaymentId": {
             "type": "string"
           },
           "audits": {
@@ -2563,7 +2563,6 @@
         },
         "required": [
           "from",
-          "paymentId",
           "amount",
           "paymentReference",
           "blockHeight",

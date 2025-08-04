@@ -211,6 +211,7 @@ describe('WrapTokenTransactionController', () => {
             tariBlockHeight: 12345,
             tariPaymentReference: 'ref1',
             tokenAmountInWallet: '1000',
+            incomingPaymentId: tx_created.paymentId,
           }),
           expect.objectContaining({
             id: tx_timeout.id,
@@ -219,6 +220,7 @@ describe('WrapTokenTransactionController', () => {
             tariBlockHeight: 12346,
             tariPaymentReference: 'ref2',
             tokenAmountInWallet: '3000',
+            incomingPaymentId: tx_timeout.paymentId,
           }),
           expect.objectContaining({
             id: tx_tokens_sent.id,
@@ -227,6 +229,7 @@ describe('WrapTokenTransactionController', () => {
             tariBlockHeight: 12347,
             tariPaymentReference: 'ref3',
             tokenAmountInWallet: '5000',
+            incomingPaymentId: tx_tokens_sent.paymentId,
           }),
         ]),
       );
@@ -328,6 +331,7 @@ describe('WrapTokenTransactionController', () => {
             tariPaymentReference: null,
             tariTxTimestamp: null,
             tokenAmountInWallet: null,
+            incomingPaymentId: null,
           }),
         );
 

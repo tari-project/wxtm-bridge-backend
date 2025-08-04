@@ -44,12 +44,16 @@ export class MineToExchangeService {
     };
   }
 
-  private parseUserPaymentId(paymentId: string): string | undefined {
+  private parseUserPaymentId(paymentId?: string): string | undefined {
     const { addressPrefix } = this.configService.get('mineToExchange', {
       infer: true,
     });
 
     try {
+      if (!paymentId) {
+        return;
+      }
+
       const parts = paymentId.split(':');
 
       if (parts.length !== 2) {
@@ -73,7 +77,7 @@ export class MineToExchangeService {
       this.logger.error(e);
       Sentry.captureException(e);
 
-      return undefined;
+      return;
     }
   }
 
@@ -115,7 +119,7 @@ export class MineToExchangeService {
         tariPaymentReference: paymentReference,
         tariBlockHeight: blockHeight,
         tariTxTimestamp: timestamp,
-        tariUserPaymentId: paymentId,
+        incomingPaymentId: paymentId,
       });
 
     await this.wrapTokenAuditService.recordTransactionEvent({

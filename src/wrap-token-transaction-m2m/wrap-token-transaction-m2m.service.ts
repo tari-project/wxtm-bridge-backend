@@ -31,7 +31,13 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
 
   private async updateNewTransaction(
     { status, id, tokenAmount, paymentId }: WrapTokenTransactionEntity,
-    { timestamp, blockHeight, paymentReference, amount }: WalletTransactionDTO,
+    {
+      timestamp,
+      blockHeight,
+      paymentReference,
+      amount,
+      paymentId: incomingPaymentId,
+    }: WalletTransactionDTO,
   ) {
     const newStatus =
       tokenAmount === amount
@@ -46,6 +52,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         tariTxTimestamp: timestamp,
         tariBlockHeight: blockHeight,
         tariPaymentReference: paymentReference,
+        incomingPaymentId,
         tokenAmountInWallet: amount,
         status: newStatus,
       },

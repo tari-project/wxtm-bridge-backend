@@ -128,7 +128,7 @@ describe('MineToExchangeController', () => {
         tariPaymentReference: transactionDTO.paymentReference,
         tariBlockHeight: transactionDTO.blockHeight,
         tariTxTimestamp: transactionDTO.timestamp,
-        tariUserPaymentId: transactionDTO.paymentId,
+        incomingPaymentId: transactionDTO.paymentId,
         status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
         origin: WrapTokenTransactionOrigin.MININING,
       });
@@ -188,7 +188,7 @@ describe('MineToExchangeController', () => {
         tariPaymentReference: transactionDTO.paymentReference,
         tariBlockHeight: transactionDTO.blockHeight,
         tariTxTimestamp: transactionDTO.timestamp,
-        tariUserPaymentId: transactionDTO.paymentId,
+        incomingPaymentId: transactionDTO.paymentId,
         status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
         origin: WrapTokenTransactionOrigin.MININING,
       });
@@ -269,7 +269,44 @@ describe('MineToExchangeController', () => {
       expect(transactions[0]).toMatchObject({
         tariPaymentReference: transactionDTOincorrectPaymentId.paymentReference,
         to: 'not_provided',
-        tariUserPaymentId: 'incorrect-payment-id',
+        incomingPaymentId: 'incorrect-payment-id',
+        status: WrapTokenTransactionStatus.MINING_INCORECT_PAYMENT_ID,
+      });
+
+      const audits = await getRepository(WrapTokenAuditEntity).find();
+      expect(audits).toHaveLength(1);
+      expect(audits[0]).toMatchObject({
+        transactionId: transactions[0].id,
+        toStatus: WrapTokenTransactionStatus.MINING_INCORECT_PAYMENT_ID,
+      });
+    });
+
+    it('should create a new transaction with status MINING_INCORECT_PAYMENT_ID when payment id is not provided', async () => {
+      const transactionDTOincorrectPaymentId: MiningTransactionDTO = {
+        ...transactionDTO,
+        paymentId: undefined,
+      };
+
+      const dto: CreateMiningTransactionsDTO = {
+        transactions: [transactionDTOincorrectPaymentId],
+      };
+
+      await request(app.getHttpServer())
+        .post('/mine-to-exchange/transactions')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(201);
+
+      const transactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0]).toMatchObject({
+        tariPaymentReference: transactionDTOincorrectPaymentId.paymentReference,
+        to: 'not_provided',
+        incomingPaymentId: null,
         status: WrapTokenTransactionStatus.MINING_INCORECT_PAYMENT_ID,
       });
 
@@ -308,7 +345,7 @@ describe('MineToExchangeController', () => {
         tariPaymentReference:
           transactionDTOincorrectPaymentIdAndAmount.paymentReference,
         to: 'not_provided',
-        tariUserPaymentId: 'incorrect-payment-id',
+        incomingPaymentId: 'incorrect-payment-id',
         tokenAmount: '1',
         feePercentageBps: 50,
         feeAmount: '0',
