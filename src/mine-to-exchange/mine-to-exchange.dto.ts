@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsNumberString,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -27,9 +28,9 @@ export class MiningTransactionDTO {
   @IsString()
   from: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  paymentId: string;
+  paymentId?: string;
 
   @IsNotEmpty()
   @IsNumberString()
