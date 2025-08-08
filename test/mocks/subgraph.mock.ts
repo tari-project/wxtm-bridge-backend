@@ -9,7 +9,6 @@ export const SubgraphClientServiceMock = {
   getTokensUnwrapped: jest.fn().mockResolvedValue([]),
 
   getPushNotifications: jest.fn().mockImplementation((lastSubgraphId) => {
-    // Filter by subgraphId - only return records with ID > lastSubgraphId
     return Promise.resolve(
       events.filter((item) => item.subgraphId > lastSubgraphId),
     );

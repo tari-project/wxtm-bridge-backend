@@ -445,7 +445,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/creating-transaction')
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer incorect-token`)
+        .set('Authorization', `Bearer incorrect-token`)
         .send({})
         .expect(401);
 
@@ -589,7 +589,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/transaction-created')
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer incorect-token`)
+        .set('Authorization', `Bearer incorrect-token`)
         .send({})
         .expect(401);
 
@@ -745,7 +745,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/set-error')
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer incorect-token`)
+        .set('Authorization', `Bearer incorrect-token`)
         .send({})
         .expect(401);
 
@@ -916,7 +916,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/executing-transaction')
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer incorect-token`)
+        .set('Authorization', `Bearer incorrect-token`)
         .send({})
         .expect(401);
 
@@ -1077,7 +1077,7 @@ describe('WrapTokenTransactionController', () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/transaction-executed')
         .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer incorect-token`)
+        .set('Authorization', `Bearer incorrect-token`)
         .send({})
         .expect(401);
 

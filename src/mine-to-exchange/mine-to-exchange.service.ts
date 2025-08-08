@@ -180,7 +180,7 @@ export class MineToExchangeService {
         blockHeight,
         timestamp,
         paymentId,
-        status: WrapTokenTransactionStatus.MINING_INCORECT_PAYMENT_ID,
+        status: WrapTokenTransactionStatus.MINING_INCORRECT_PAYMENT_ID,
       });
 
       return;
@@ -196,7 +196,7 @@ export class MineToExchangeService {
         timestamp,
         paymentId,
         status:
-          WrapTokenTransactionStatus.MINING_INCORECT_PAYMENT_ID_AND_AMOUNT,
+          WrapTokenTransactionStatus.MINING_INCORRECT_PAYMENT_ID_AND_AMOUNT,
       });
 
       return;
