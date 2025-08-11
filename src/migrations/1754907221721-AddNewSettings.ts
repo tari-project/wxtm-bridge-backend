@@ -14,6 +14,30 @@ export class AddNewSettings1754907221721 implements MigrationInterface {
       `ALTER TABLE "settings" ADD "batchAmountThreshold" numeric(38,0) NOT NULL DEFAULT '20000000000000000000000'`,
     );
     await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_audits_fromstatus_enum" 
+        ADD VALUE 'mining_incorrect_payment_id'
+      `);
+    await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_audits_fromstatus_enum" 
+        ADD VALUE 'mining_incorrect_payment_id_and_amount'
+      `);
+    await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_audits_tostatus_enum" 
+        ADD VALUE 'mining_incorrect_payment_id'
+      `);
+    await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_audits_tostatus_enum" 
+        ADD VALUE 'mining_incorrect_payment_id_and_amount'
+      `);
+    await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_transactions_status_enum" 
+        ADD VALUE 'mining_incorrect_payment_id'
+      `);
+    await queryRunner.query(`
+        ALTER TYPE "public"."wrap_token_transactions_status_enum" 
+        ADD VALUE 'mining_incorrect_payment_id_and_amount'
+      `);
+    await queryRunner.query(`
       UPDATE "wrap_token_audits" 
       SET "fromStatus" = 'mining_incorrect_payment_id' 
       WHERE "fromStatus" = 'mining_incorect_payment_id'
