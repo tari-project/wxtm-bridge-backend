@@ -3,7 +3,7 @@
 1. **Start Nest application**
 
    ```sh
-   docker compose up app
+   docker compose up wxtm-backend
    ```
 
 2. **Generate package from root directory**
