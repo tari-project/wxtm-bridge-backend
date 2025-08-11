@@ -13,6 +13,36 @@ export class AddNewSettings1754907221721 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "settings" ADD "batchAmountThreshold" numeric(38,0) NOT NULL DEFAULT '20000000000000000000000'`,
     );
+    await queryRunner.query(`
+      UPDATE "wrap_token_audits" 
+      SET "fromStatus" = 'mining_incorrect_payment_id' 
+      WHERE "fromStatus" = 'mining_incorect_payment_id'
+    `);
+    await queryRunner.query(`
+      UPDATE "wrap_token_audits" 
+      SET "fromStatus" = 'mining_incorrect_payment_id_and_amount' 
+      WHERE "fromStatus" = 'mining_incorect_payment_id_and_amount'
+    `);
+    await queryRunner.query(`
+      UPDATE "wrap_token_audits" 
+      SET "toStatus" = 'mining_incorrect_payment_id' 
+      WHERE "toStatus" = 'mining_incorect_payment_id'
+    `);
+    await queryRunner.query(`
+      UPDATE "wrap_token_audits" 
+      SET "toStatus" = 'mining_incorrect_payment_id_and_amount' 
+      WHERE "toStatus" = 'mining_incorect_payment_id_and_amount'
+    `);
+    await queryRunner.query(`
+      UPDATE "wrap_token_transactions" 
+      SET "status" = 'mining_incorrect_payment_id' 
+      WHERE "status" = 'mining_incorect_payment_id'
+    `);
+    await queryRunner.query(`
+      UPDATE "wrap_token_transactions" 
+      SET "status" = 'mining_incorrect_payment_id_and_amount' 
+      WHERE "status" = 'mining_incorect_payment_id_and_amount'
+    `);
     await queryRunner.query(
       `ALTER TYPE "public"."wrap_token_audits_fromstatus_enum" RENAME TO "wrap_token_audits_fromstatus_enum_old"`,
     );
