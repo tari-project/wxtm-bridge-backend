@@ -1994,8 +1994,8 @@
               "safe_transaction_executed",
               "timeout",
               "mining_tokens_received_below_min_amount",
-              "mining_incorect_payment_id",
-              "mining_incorect_payment_id_and_amount"
+              "mining_incorrect_payment_id",
+              "mining_incorrect_payment_id_and_amount"
             ]
           },
           "toStatus": {
@@ -2013,8 +2013,8 @@
               "safe_transaction_executed",
               "timeout",
               "mining_tokens_received_below_min_amount",
-              "mining_incorect_payment_id",
-              "mining_incorect_payment_id_and_amount"
+              "mining_incorrect_payment_id",
+              "mining_incorrect_payment_id_and_amount"
             ]
           },
           "note": {
@@ -2108,8 +2108,8 @@
               "safe_transaction_executed",
               "timeout",
               "mining_tokens_received_below_min_amount",
-              "mining_incorect_payment_id",
-              "mining_incorect_payment_id_and_amount"
+              "mining_incorrect_payment_id",
+              "mining_incorrect_payment_id_and_amount"
             ],
             "type": "string"
           },
@@ -2482,6 +2482,15 @@
               "offline"
             ]
           },
+          "maxBatchSize": {
+            "type": "number"
+          },
+          "maxBatchAgeMs": {
+            "type": "number"
+          },
+          "batchAmountThreshold": {
+            "type": "string"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -2494,6 +2503,9 @@
         "required": [
           "id",
           "wrapTokensServiceStatus",
+          "maxBatchSize",
+          "maxBatchAgeMs",
+          "batchAmountThreshold",
           "createdAt",
           "updatedAt"
         ]
@@ -2507,10 +2519,25 @@
               "online",
               "offline"
             ]
+          },
+          "maxBatchSize": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 50
+          },
+          "maxBatchAgeMs": {
+            "type": "number",
+            "minimum": 60000
+          },
+          "batchAmountThreshold": {
+            "type": "string"
           }
         },
         "required": [
-          "wrapTokensServiceStatus"
+          "wrapTokensServiceStatus",
+          "maxBatchSize",
+          "maxBatchAgeMs",
+          "batchAmountThreshold"
         ]
       },
       "MineToExchangeConfigDTO": {
