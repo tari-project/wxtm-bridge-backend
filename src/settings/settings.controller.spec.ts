@@ -72,6 +72,9 @@ describe('SettingsController', () => {
     it('should return settings for admin user', async () => {
       await factory.create<SettingsEntity>(SettingsEntity.name, {
         wrapTokensServiceStatus: ServiceStatus.ONLINE,
+        maxBatchSize: 25,
+        maxBatchAgeMs: 10800000,
+        batchAmountThreshold: '15000000000000000000000',
       });
 
       const { body } = await request(app.getHttpServer())
@@ -83,6 +86,9 @@ describe('SettingsController', () => {
         expect.objectContaining({
           id: 1,
           wrapTokensServiceStatus: ServiceStatus.ONLINE,
+          maxBatchSize: 25,
+          maxBatchAgeMs: 10800000,
+          batchAmountThreshold: '15000000000000000000000',
         }),
       );
     });
@@ -98,6 +104,9 @@ describe('SettingsController', () => {
   describe('PUT /settings', () => {
     const dto: UpdateSettingReqDTO = {
       wrapTokensServiceStatus: ServiceStatus.ONLINE,
+      maxBatchSize: 20,
+      maxBatchAgeMs: 3600000,
+      batchAmountThreshold: '15000000000000000000000',
     };
     it('should update settings for admin user', async () => {
       const settings = await factory.create<SettingsEntity>(
@@ -121,6 +130,11 @@ describe('SettingsController', () => {
       expect(updatedSettings.wrapTokensServiceStatus).toBe(
         ServiceStatus.ONLINE,
       );
+      expect(updatedSettings.maxBatchSize).toBe(20);
+      expect(updatedSettings.maxBatchAgeMs).toBe(3600000);
+      expect(updatedSettings.batchAmountThreshold).toBe(
+        '15000000000000000000000',
+      );
     });
 
     it('should return 401 for non-admin user', async () => {
@@ -129,6 +143,73 @@ describe('SettingsController', () => {
         .set('Authorization', `Bearer ${userAccessToken}`)
         .send(dto)
         .expect(401);
+    });
+
+    describe('batch settings validation', () => {
+      it('should reject maxBatchSize below minimum (2)', async () => {
+        const invalidDto = {
+          ...dto,
+          maxBatchSize: 1,
+        };
+
+        await request(app.getHttpServer())
+          .put('/settings')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send(invalidDto)
+          .expect(400);
+      });
+
+      it('should reject maxBatchSize above maximum (50)', async () => {
+        const invalidDto = {
+          ...dto,
+          maxBatchSize: 51,
+        };
+
+        await request(app.getHttpServer())
+          .put('/settings')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send(invalidDto)
+          .expect(400);
+      });
+
+      it('should reject maxBatchAgeMs below minimum (60000)', async () => {
+        const invalidDto = {
+          ...dto,
+          maxBatchAgeMs: 59999,
+        };
+
+        await request(app.getHttpServer())
+          .put('/settings')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send(invalidDto)
+          .expect(400);
+      });
+
+      it('should reject batchAmountThreshold below minimum', async () => {
+        const invalidDto = {
+          ...dto,
+          batchAmountThreshold: '999999999999999999999',
+        };
+
+        await request(app.getHttpServer())
+          .put('/settings')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send(invalidDto)
+          .expect(400);
+      });
+
+      it('should reject batchAmountThreshold above maximum', async () => {
+        const invalidDto = {
+          ...dto,
+          batchAmountThreshold: '5000000000000000000000001',
+        };
+
+        await request(app.getHttpServer())
+          .put('/settings')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send(invalidDto)
+          .expect(400);
+      });
     });
   });
 });

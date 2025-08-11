@@ -12,8 +12,8 @@ export enum WrapTokenTransactionStatus {
   TIMEOUT = 'timeout',
 
   MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT = 'mining_tokens_received_below_min_amount',
-  MINING_INCORECT_PAYMENT_ID = 'mining_incorect_payment_id',
-  MINING_INCORECT_PAYMENT_ID_AND_AMOUNT = 'mining_incorect_payment_id_and_amount',
+  MINING_INCORRECT_PAYMENT_ID = 'mining_incorrect_payment_id',
+  MINING_INCORRECT_PAYMENT_ID_AND_AMOUNT = 'mining_incorrect_payment_id_and_amount',
 }
 
 export enum WrapTokenTransactionOrigin {

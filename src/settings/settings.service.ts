@@ -25,11 +25,17 @@ export class SettingsService {
 
   async updateSettings({
     wrapTokensServiceStatus,
+    maxBatchSize,
+    maxBatchAgeMs,
+    batchAmountThreshold,
   }: UpdateSettingReqDTO): Promise<SuccessDTO> {
     const settings = await this.getSettings();
 
     await this.settingsRepository.update(settings.id, {
       wrapTokensServiceStatus,
+      maxBatchSize,
+      maxBatchAgeMs,
+      batchAmountThreshold,
     });
 
     return { success: true };
