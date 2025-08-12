@@ -2,6 +2,7 @@ import { Controller, Get, Put, Body } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { AdminGuard } from '../auth/auth.admin.guard';
+import { AdminOrM2MAuthGuard } from '../auth/auth.admin-or-m2m.guard';
 import { SettingsService } from './settings.service';
 import { SettingsEntity } from './settings.entity';
 import { UpdateSettingReqDTO } from './settings.dto';
@@ -14,7 +15,9 @@ export class SettingsController {
   constructor(private service: SettingsService) {}
 
   @Get()
-  @AdminGuard({ description: 'Get application settings' })
+  @AdminOrM2MAuthGuard({
+    description: 'Get application settings',
+  })
   async getSettings(): Promise<SettingsEntity> {
     return this.service.getSettings();
   }
