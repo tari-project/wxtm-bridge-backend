@@ -65,7 +65,6 @@ describe('SubgraphService tests', () => {
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
-      // Assert that the mock was called
       expect(
         SubgraphClientServiceMock.getPushNotifications,
       ).toHaveBeenCalledWith(0);
@@ -86,13 +85,10 @@ describe('SubgraphService tests', () => {
       await factory.create(TokensUnwrappedEntity.name, { subgraphId: 3 });
       await factory.create(TokensUnwrappedEntity.name, { subgraphId: 4 });
 
-      // Second call should only find new records (after the last ID which should be 4 now)
-      // The mock will filter and return empty array as there are no records > 4
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
-      // We expect no new records since the last ID is 4 and our mock data only goes up to 4
       expect(result).toHaveLength(0);
 
       expect(
@@ -167,7 +163,6 @@ describe('SubgraphService tests', () => {
       expect(initialData).toHaveLength(2);
       expect(initialData.map((d) => d.subgraphId)).toEqual([2, 3]);
 
-      // Run the service - it should only fetch and save record with ID 4
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
