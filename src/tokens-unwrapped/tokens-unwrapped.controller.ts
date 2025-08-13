@@ -24,11 +24,6 @@ import { UpdateTokensUnwrappedDTO } from './tokens-unwrapped.dto';
         AdminGuard({ description: 'Returns unwrapped tokens transaction' }),
       ],
     },
-    updateOneBase: {
-      decorators: [
-        AdminGuard({ description: 'Updates unwrapped tokens transaction' }),
-      ],
-    },
   },
 })
 @ApiTags('tokens-unwrapped')

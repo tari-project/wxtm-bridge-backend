@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SlackModule } from './slack/slack.module';
 import { SettingsModule } from './settings/settings.module';
 import { MineToExchangeModule } from './mine-to-exchange/mine-to-exchange.module';
+import { TokensUnwrappedM2MModule } from './tokens-unwrapped-m2m/tokens-unwrapped-m2m.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MineToExchangeModule } from './mine-to-exchange/mine-to-exchange.module
     SlackModule,
     SettingsModule,
     MineToExchangeModule,
+    TokensUnwrappedM2MModule,
   ],
   providers: [
     {
