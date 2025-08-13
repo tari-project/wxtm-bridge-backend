@@ -37,7 +37,6 @@ export class FixTypoInWrapToken1754907221722 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Reverse the data updates
     await queryRunner.query(`
       UPDATE "wrap_token_transactions" 
       SET "status" = 'mining_incorect_payment_id' 
