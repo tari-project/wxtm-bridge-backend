@@ -1540,9 +1540,6 @@
         "security": [
           {
             "bearer": []
-          },
-          {
-            "bearer": []
           }
         ]
       },
