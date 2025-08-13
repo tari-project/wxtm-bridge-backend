@@ -1357,50 +1357,6 @@
             "bearer": []
           }
         ]
-      },
-      "patch": {
-        "operationId": "updateOneBaseTokensUnwrappedControllerTokensUnwrappedEntity",
-        "summary": "Update a single TokensUnwrappedEntity",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTokensUnwrappedDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokensUnwrappedEntity"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "tokens-unwrapped"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
       }
     },
     "/tokens-unwrapped": {
@@ -2697,21 +2653,6 @@
           "createdAt",
           "updatedAt"
         ]
-      },
-      "UpdateTokensUnwrappedDTO": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "created",
-              "awaiting_confirmation",
-              "confirmed",
-              "tokens_burned",
-              "tokens_minted"
-            ]
-          }
-        }
       },
       "SettingsEntity": {
         "type": "object",
