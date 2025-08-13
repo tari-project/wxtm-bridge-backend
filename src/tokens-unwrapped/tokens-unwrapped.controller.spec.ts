@@ -8,7 +8,6 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
-  getRepository,
 } from '../../test/database';
 import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Auth0Keys } from '../auth/auth.providers';
@@ -18,8 +17,6 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { TokensUnwrappedModule } from './tokens-unwrapped.module';
 import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
-import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
-import { UpdateTokensUnwrappedDTO } from './tokens-unwrapped.dto';
 
 describe('TokensUnwrappedController', () => {
   let app: INestApplication;
