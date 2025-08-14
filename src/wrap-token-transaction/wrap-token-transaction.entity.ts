@@ -3,6 +3,8 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -116,6 +118,20 @@ export class WrapTokenTransactionEntity {
 
   @OneToMany(() => WrapTokenAuditEntity, (entity) => entity.transaction)
   audits: WrapTokenAuditEntity[];
+
+  @ManyToOne(
+    () => WrapTokenTransactionEntity,
+    (entity) => entity.aggregatedTransactions,
+    { nullable: true },
+  )
+  @JoinColumn()
+  transaction?: WrapTokenTransactionEntity;
+
+  @Column({ nullable: true })
+  transactionId?: number;
+
+  @OneToMany(() => WrapTokenTransactionEntity, (entity) => entity.transaction)
+  aggregatedTransactions: WrapTokenTransactionEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
