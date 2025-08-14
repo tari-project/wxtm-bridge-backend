@@ -2180,6 +2180,8 @@
               "created",
               "tokens_sent",
               "tokens_received",
+              "tokens_received_aggregated",
+              "replaced_by_aggregated",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "creating_safe_transaction_unprocessable",
@@ -2199,6 +2201,8 @@
               "created",
               "tokens_sent",
               "tokens_received",
+              "tokens_received_aggregated",
+              "replaced_by_aggregated",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "creating_safe_transaction_unprocessable",
@@ -2294,6 +2298,8 @@
               "created",
               "tokens_sent",
               "tokens_received",
+              "tokens_received_aggregated",
+              "replaced_by_aggregated",
               "tokens_received_with_mismatch",
               "creating_safe_transaction",
               "creating_safe_transaction_unprocessable",
@@ -2348,6 +2354,18 @@
               "$ref": "#/components/schemas/WrapTokenAuditEntity"
             }
           },
+          "transaction": {
+            "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+          },
+          "transactionId": {
+            "type": "number"
+          },
+          "aggregatedTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+            }
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -2372,6 +2390,7 @@
           "origin",
           "isNotificationSent",
           "audits",
+          "aggregatedTransactions",
           "createdAt",
           "updatedAt"
         ]
