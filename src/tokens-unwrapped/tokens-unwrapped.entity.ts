@@ -25,6 +25,9 @@ export class TokensUnwrappedEntity {
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   amount: string;
 
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  nonce: string;
+
   @Column()
   blockNumber: number;
 

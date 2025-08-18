@@ -50,59 +50,25 @@ export class SubgraphClientService {
 
     return data.pushNotifications.map((event) => {
       const decodedData = coder.decode(
-        ['(tuple(address,string),uint256)'],
+        ['(tuple(address,string),uint256,uint256)'],
         event.transactionData,
       );
 
       const from = decodedData[0][0][0];
       const tariAddress = decodedData[0][0][1];
       const amount = decodedData[0][1];
+      const nonce = decodedData[0][2];
 
       return {
         subgraphId: parseInt(event.seqNumber),
         from: from,
         targetTariAddress: tariAddress,
         amount: amount.toString(),
+        nonce: nonce.toString(),
         blockNumber: parseInt(event.blockNumber),
         blockTimestamp: new Date(parseInt(event.timestamp) * 1000),
         transactionHash: event.transactionHash,
       };
     });
-  }
-
-  /** @dev Consider removal of below fn */
-  async getTokensUnwrapped(): Promise<Partial<TokensUnwrappedEntity>[]> {
-    const query = gql`
-      {
-        tokensUnwrappeds(
-          first: 5
-          orderBy: blockTimestamp
-          orderDirection: desc
-        ) {
-          id
-          from
-          targetTariAddress
-          amount
-          blockNumber
-          blockTimestamp
-          transactionHash
-        }
-      }
-    `;
-
-    const data = await request<TokensUnwrappedsResponse>(
-      this.subgraphUrl,
-      query,
-    );
-
-    return data.tokensUnwrappeds.map((token) => ({
-      subgraphId: parseInt(token.id),
-      from: token.from,
-      targetTariAddress: token.targetTariAddress,
-      amount: token.amount,
-      blockNumber: parseInt(token.blockNumber),
-      blockTimestamp: new Date(parseInt(token.blockTimestamp) * 1000),
-      transactionHash: token.transactionHash,
-    }));
   }
 }
