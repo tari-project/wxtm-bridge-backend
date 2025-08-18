@@ -19,6 +19,7 @@ import {
 } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { CreateMiningTransactionParams } from './mine-to-exchange.interface';
 import { SuccessDTO } from '../dto/success.dto';
+import { AggregateTransactionsService } from '../aggregate-transactions/aggregate-transactions.service';
 
 @Injectable()
 export class MineToExchangeService {
@@ -30,6 +31,7 @@ export class MineToExchangeService {
     private readonly configService: ConfigService<IConfig, true>,
     private readonly wrapTokenFeesService: WrapTokenFeesService,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
+    private readonly aggregateTransactionsService: AggregateTransactionsService,
   ) {}
 
   async getConfig(toAddress: string): Promise<MineToExchangeConfigRespDTO> {
@@ -100,33 +102,34 @@ export class MineToExchangeService {
     timestamp,
     paymentId,
     status,
-  }: CreateMiningTransactionParams): Promise<void> {
+  }: CreateMiningTransactionParams): Promise<WrapTokenTransactionEntity> {
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({
         tokenAmount: amount,
       });
 
-    const { paymentId: txPaymentId, id } =
-      await this.wrapTokenTransactionRepository.save({
-        from,
-        to,
-        tokenAmount: amount,
-        feePercentageBps,
-        feeAmount,
-        amountAfterFee,
-        status,
-        origin: WrapTokenTransactionOrigin.MININING,
-        tariPaymentReference: paymentReference,
-        tariBlockHeight: blockHeight,
-        tariTxTimestamp: timestamp,
-        incomingPaymentId: paymentId,
-      });
+    const transaction = await this.wrapTokenTransactionRepository.save({
+      from,
+      to,
+      tokenAmount: amount,
+      feePercentageBps,
+      feeAmount,
+      amountAfterFee,
+      status,
+      origin: WrapTokenTransactionOrigin.MININING,
+      tariPaymentReference: paymentReference,
+      tariBlockHeight: blockHeight,
+      tariTxTimestamp: timestamp,
+      incomingPaymentId: paymentId,
+    });
 
     await this.wrapTokenAuditService.recordTransactionEvent({
-      transactionId: id,
-      paymentId: txPaymentId,
+      transactionId: transaction.id,
+      paymentId: transaction.paymentId,
       toStatus: status,
     });
+
+    return transaction;
   }
 
   private async handleCreateMiningTransaction({
@@ -141,7 +144,7 @@ export class MineToExchangeService {
     const isMinAmount = this.validateMinAmount(amount);
 
     if (to && isMinAmount) {
-      await this.createMiningTransaction({
+      const tokensReceiveidTransaction = await this.createMiningTransaction({
         from,
         to,
         amount,
@@ -152,21 +155,30 @@ export class MineToExchangeService {
         status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
       });
 
+      await this.aggregateTransactionsService.aggregateDustWithMainTransaction(
+        tokensReceiveidTransaction,
+      );
+
       return;
     }
 
     if (to && !isMinAmount) {
-      await this.createMiningTransaction({
-        from,
-        to,
-        amount,
-        paymentReference,
-        blockHeight,
-        timestamp,
-        paymentId,
-        status:
-          WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
-      });
+      const tokensReceivedBelowAmountTransaction =
+        await this.createMiningTransaction({
+          from,
+          to,
+          amount,
+          paymentReference,
+          blockHeight,
+          timestamp,
+          paymentId,
+          status:
+            WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+        });
+
+      await this.aggregateTransactionsService.aggregateDustTransactions(
+        tokensReceivedBelowAmountTransaction.to,
+      );
 
       return;
     }

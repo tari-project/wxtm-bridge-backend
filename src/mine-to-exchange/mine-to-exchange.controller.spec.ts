@@ -25,11 +25,12 @@ import {
   WrapTokenTransactionStatus,
 } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
+import { AggregateTransactionsService } from '../aggregate-transactions/aggregate-transactions.service';
+import { AggregateTransactionsServiceMock } from '../../test/mocks/aggregate-transactions.service.mock';
 
 describe('MineToExchangeController', () => {
   let app: INestApplication;
   let factory: Factory;
-
   const m2mToken = 'test-m2m-auth-token';
 
   beforeAll(async () => {
@@ -52,7 +53,10 @@ describe('MineToExchangeController', () => {
         M2MAuthModule.register({ authToken: m2mToken }),
         MineToExchangeModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(AggregateTransactionsService)
+      .useValue(AggregateTransactionsServiceMock)
+      .compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -64,6 +68,7 @@ describe('MineToExchangeController', () => {
 
   beforeEach(async () => {
     await clearDatabase();
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
@@ -101,7 +106,7 @@ describe('MineToExchangeController', () => {
       timestamp: 1111,
     };
 
-    it('should create a new transaction', async () => {
+    it('should create a new transaction and call aggregateDustWithMainTransaction', async () => {
       const dto: CreateMiningTransactionsDTO = {
         transactions: [transactionDTO],
       };
@@ -132,6 +137,15 @@ describe('MineToExchangeController', () => {
         status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
         origin: WrapTokenTransactionOrigin.MININING,
       });
+
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustWithMainTransaction,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: transactions[0].id,
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        }),
+      );
 
       const audits = await getRepository(WrapTokenAuditEntity).find();
       expect(audits).toHaveLength(1);
@@ -202,7 +216,7 @@ describe('MineToExchangeController', () => {
       });
     });
 
-    it('should create a new transaction with status MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT', async () => {
+    it('should create a new transaction with status MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT and call aggregateDustTransactions', async () => {
       const transactionDTOLowAmount: MiningTransactionDTO = {
         ...transactionDTO,
         amount: '7999999',
@@ -234,6 +248,10 @@ describe('MineToExchangeController', () => {
         status:
           WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
       });
+
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustTransactions,
+      ).toHaveBeenCalledWith(toAddress);
 
       const audits = await getRepository(WrapTokenAuditEntity).find();
       expect(audits).toHaveLength(1);
@@ -273,6 +291,13 @@ describe('MineToExchangeController', () => {
         status: WrapTokenTransactionStatus.MINING_INCORRECT_PAYMENT_ID,
       });
 
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustWithMainTransaction,
+      ).not.toHaveBeenCalled();
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustTransactions,
+      ).not.toHaveBeenCalled();
+
       const audits = await getRepository(WrapTokenAuditEntity).find();
       expect(audits).toHaveLength(1);
       expect(audits[0]).toMatchObject({
@@ -309,6 +334,13 @@ describe('MineToExchangeController', () => {
         incomingPaymentId: null,
         status: WrapTokenTransactionStatus.MINING_INCORRECT_PAYMENT_ID,
       });
+
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustWithMainTransaction,
+      ).not.toHaveBeenCalled();
+      expect(
+        AggregateTransactionsServiceMock.aggregateDustTransactions,
+      ).not.toHaveBeenCalled();
 
       const audits = await getRepository(WrapTokenAuditEntity).find();
       expect(audits).toHaveLength(1);

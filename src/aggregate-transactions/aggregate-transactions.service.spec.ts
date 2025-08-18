@@ -22,6 +22,7 @@ describe('AggregateTransactionsService', () => {
   let service: AggregateTransactionsService;
   let factory: Factory;
   let module: TestingModule;
+  const to = '0x1234567890abcdef1234567890abcdef12345678';
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -60,9 +61,7 @@ describe('AggregateTransactionsService', () => {
     await module.close();
   });
 
-  describe('mineToExchangeTransactions', () => {
-    const to = '0x1234567890abcdef1234567890abcdef12345678';
-
+  describe('aggregateDustTransactions', () => {
     it('create aggregated transaction from dust transactions', async () => {
       const [tx_1, tx_2] = await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
@@ -73,6 +72,7 @@ describe('AggregateTransactionsService', () => {
               WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
             to,
             tokenAmount: '7000000',
+            feePercentageBps: 50,
           },
           {
             origin: WrapTokenTransactionOrigin.MININING,
@@ -80,6 +80,7 @@ describe('AggregateTransactionsService', () => {
               WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
             to,
             tokenAmount: '1000000',
+            feePercentageBps: 50,
           },
         ],
       );
@@ -99,7 +100,7 @@ describe('AggregateTransactionsService', () => {
 
       expect(aggregatedTx).toMatchObject({
         origin: WrapTokenTransactionOrigin.MININING,
-        status: WrapTokenTransactionStatus.TOKENS_RECEIVED_AGGREGATED,
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
         to,
         from: 'aggregated_mining_transactions',
         tokenAmount: '8000000',
@@ -125,7 +126,7 @@ describe('AggregateTransactionsService', () => {
       expect(audits[0]).toMatchObject({
         transactionId: aggregatedTx?.id,
         paymentId: aggregatedTx?.paymentId,
-        toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED_AGGREGATED,
+        toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
       });
     });
 
@@ -219,6 +220,179 @@ describe('AggregateTransactionsService', () => {
             status:
               WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
             tokenAmount: '40',
+            transactionId: null,
+          }),
+        ]),
+      );
+
+      const audits = await getRepository(WrapTokenAuditEntity).find();
+      expect(audits).toHaveLength(0);
+    });
+  });
+
+  describe('aggregateDustWithMainTransaction', () => {
+    it('should aggregate dust transactions with a main transaction', async () => {
+      const mainTx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          origin: WrapTokenTransactionOrigin.MININING,
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          to,
+          tokenAmount: '9000000',
+          feePercentageBps: 50,
+        },
+      );
+
+      const [dust1, dust2] =
+        await factory.createMany<WrapTokenTransactionEntity>(
+          WrapTokenTransactionEntity.name,
+          [
+            {
+              origin: WrapTokenTransactionOrigin.MININING,
+              status:
+                WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+              to,
+              tokenAmount: '1000000',
+              feePercentageBps: 50,
+            },
+            {
+              origin: WrapTokenTransactionOrigin.MININING,
+              status:
+                WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+              to,
+              tokenAmount: '2000000',
+              feePercentageBps: 50,
+            },
+          ],
+        );
+
+      await service.aggregateDustWithMainTransaction(mainTx);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find({
+        relations: ['aggregatedTransactions'],
+      });
+
+      expect(updatedTransactions).toHaveLength(4);
+
+      const aggregatedTx = updatedTransactions.find(
+        (t) =>
+          t.status === WrapTokenTransactionStatus.TOKENS_RECEIVED &&
+          t.transactionId === null,
+      );
+
+      expect(aggregatedTx).toMatchObject({
+        origin: WrapTokenTransactionOrigin.MININING,
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        to,
+        from: 'aggregated_mining_transactions',
+        tokenAmount: '12000000', // 9M + 1M + 2M
+        feeAmount: '60000',
+        amountAfterFee: '11940000',
+        feePercentageBps: 50,
+        aggregatedTransactions: expect.arrayContaining([
+          expect.objectContaining({
+            id: mainTx.id,
+            transactionId: aggregatedTx?.id,
+            status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          }),
+          expect.objectContaining({
+            id: dust1.id,
+            transactionId: aggregatedTx?.id,
+            status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          }),
+          expect.objectContaining({
+            id: dust2.id,
+            transactionId: aggregatedTx?.id,
+            status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          }),
+        ]),
+      });
+
+      const audits = await getRepository(WrapTokenAuditEntity).find();
+      expect(audits).toHaveLength(1);
+      expect(audits[0]).toMatchObject({
+        transactionId: aggregatedTx?.id,
+        paymentId: aggregatedTx?.paymentId,
+        toStatus: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+      });
+    });
+
+    it('should do nothing if no dust transactions exist', async () => {
+      const mainTx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          origin: WrapTokenTransactionOrigin.MININING,
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+          to,
+          tokenAmount: '9000000',
+        },
+      );
+
+      await service.aggregateDustWithMainTransaction(mainTx);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(1);
+      expect(updatedTransactions[0]).toMatchObject({
+        id: mainTx.id,
+        status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        tokenAmount: '9000000',
+        transactionId: null,
+      });
+
+      const audits = await getRepository(WrapTokenAuditEntity).find();
+      expect(audits).toHaveLength(0);
+    });
+
+    it('should handle the case when transaction update fails', async () => {
+      const mainTx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          origin: WrapTokenTransactionOrigin.MININING,
+          status: WrapTokenTransactionStatus.CREATED,
+          to,
+          tokenAmount: '9000000',
+        },
+      );
+
+      const dust_tx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+
+        {
+          origin: WrapTokenTransactionOrigin.MININING,
+          status:
+            WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+          to,
+          tokenAmount: '1000000',
+        },
+      );
+
+      await expect(
+        service.aggregateDustWithMainTransaction(mainTx),
+      ).rejects.toThrow('Failed to apply update: no rows affected');
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: mainTx.id,
+            status: WrapTokenTransactionStatus.CREATED,
+            tokenAmount: '9000000',
+            transactionId: null,
+          }),
+          expect.objectContaining({
+            id: dust_tx.id,
+            status:
+              WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+            tokenAmount: '1000000',
             transactionId: null,
           }),
         ]),

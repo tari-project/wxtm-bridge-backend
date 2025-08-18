@@ -12,6 +12,7 @@ import {
   WrapTokenTransactionOrigin,
   WrapTokenTransactionStatus,
 } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { verifyUpdateApplied } from '../helpers/verifyUpdateApplied';
 
 @Injectable()
 export class AggregateTransactionsService {
@@ -34,6 +35,19 @@ export class AggregateTransactionsService {
     }, ethers.BigNumber.from(0));
 
     return ethers.utils.formatUnits(totalAmount, 0);
+  }
+
+  private checkSameFeePercentageBps(
+    entities: WrapTokenTransactionEntity[],
+  ): void {
+    const firstFee = entities[0].feePercentageBps;
+    for (const entity of entities) {
+      if (entity.feePercentageBps !== firstFee) {
+        throw new Error(
+          'Not all entities have the same feePercentageBps value',
+        );
+      }
+    }
   }
 
   private isMinAmountReached(tokenAmount: string): boolean {
@@ -63,6 +77,8 @@ export class AggregateTransactionsService {
       return;
     }
 
+    this.checkSameFeePercentageBps(dustTransactions);
+
     const tokenAmount = this.calculateCumulativeAmount(dustTransactions);
 
     if (!this.isMinAmountReached(tokenAmount)) {
@@ -81,7 +97,7 @@ export class AggregateTransactionsService {
               from: 'aggregated_mining_transactions',
               to,
               origin: WrapTokenTransactionOrigin.MININING,
-              status: WrapTokenTransactionStatus.TOKENS_RECEIVED_AGGREGATED,
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
               tokenAmount,
               feeAmount,
               amountAfterFee,
@@ -90,7 +106,95 @@ export class AggregateTransactionsService {
           );
 
           for (const dustTransaction of dustTransactions) {
-            await entityManager.update(
+            const updateResult = await entityManager.update(
+              WrapTokenTransactionEntity,
+              {
+                id: dustTransaction.id,
+                status:
+                  WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+              },
+              {
+                status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+                transactionId: transaction.id,
+              },
+            );
+
+            verifyUpdateApplied(updateResult);
+          }
+
+          return transaction;
+        },
+      );
+
+    await this.wrapTokenAuditService.recordTransactionEvent({
+      transactionId: aggregatedTransaction.id,
+      paymentId: aggregatedTransaction.paymentId,
+      toStatus: aggregatedTransaction.status,
+    });
+  }
+
+  async aggregateDustWithMainTransaction(
+    tokensReceivedTransaction: WrapTokenTransactionEntity,
+  ): Promise<void> {
+    const dustTransactions = await this.wrapTokenTransactionRepository.find({
+      where: {
+        origin: WrapTokenTransactionOrigin.MININING,
+        status:
+          WrapTokenTransactionStatus.MINING_TOKENS_RECEIVED_BELOW_MIN_AMOUNT,
+        to: tokensReceivedTransaction.to,
+      },
+    });
+
+    if (dustTransactions.length === 0) {
+      return;
+    }
+
+    this.checkSameFeePercentageBps([
+      ...dustTransactions,
+      tokensReceivedTransaction,
+    ]);
+
+    const tokenAmount = this.calculateCumulativeAmount([
+      tokensReceivedTransaction,
+      ...dustTransactions,
+    ]);
+
+    const { amountAfterFee, feeAmount, feePercentageBps } =
+      this.wrapTokenFeesService.calculateFee({ tokenAmount });
+
+    const aggregatedTransaction =
+      await this.wrapTokenTransactionRepository.manager.transaction(
+        async (entityManager) => {
+          const transaction = await entityManager.save(
+            WrapTokenTransactionEntity,
+            {
+              from: 'aggregated_mining_transactions',
+              to: tokensReceivedTransaction.to,
+              origin: WrapTokenTransactionOrigin.MININING,
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+              tokenAmount,
+              feeAmount,
+              amountAfterFee,
+              feePercentageBps,
+            },
+          );
+
+          const updateResult = await entityManager.update(
+            WrapTokenTransactionEntity,
+            {
+              id: tokensReceivedTransaction.id,
+              status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+            },
+            {
+              status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+              transactionId: transaction.id,
+            },
+          );
+
+          verifyUpdateApplied(updateResult);
+
+          for (const dustTransaction of dustTransactions) {
+            const updateDustTransactionsResult = await entityManager.update(
               WrapTokenTransactionEntity,
               dustTransaction.id,
               {
@@ -98,11 +202,17 @@ export class AggregateTransactionsService {
                 transactionId: transaction.id,
               },
             );
+
+            verifyUpdateApplied(updateDustTransactionsResult);
           }
 
           return transaction;
         },
       );
+
+    if (!aggregatedTransaction) {
+      return;
+    }
 
     await this.wrapTokenAuditService.recordTransactionEvent({
       transactionId: aggregatedTransaction.id,
