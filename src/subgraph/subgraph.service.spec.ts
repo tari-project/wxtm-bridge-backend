@@ -104,6 +104,7 @@ describe('SubgraphService tests', () => {
           from: '0xaaaf0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '1b1F8934h12kj34j15h12k3k5j1j32h123ffaalla9442HJ',
           amount: '66600000000000000',
+          nonce: '0',
           blockNumber: 8173000,
           blockTimestamp: new Date(),
           transactionHash:
@@ -114,6 +115,7 @@ describe('SubgraphService tests', () => {
           from: '0xbbbf0e896a78a1848e4fa25ce901108f0d61c7f4',
           targetTariAddress: '2v2F8934h12kj34j15h12k3k5j1j32h123ffaalla9333FF',
           amount: '88800000000000000',
+          nonce: '1',
           blockNumber: 8173000,
           blockTimestamp: new Date(),
           transactionHash:
@@ -143,6 +145,7 @@ describe('SubgraphService tests', () => {
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla939666',
           amount: '20000000000000000',
+          nonce: '2',
           blockNumber: 8172949,
           blockTimestamp: new Date(),
           transactionHash:
@@ -153,6 +156,7 @@ describe('SubgraphService tests', () => {
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla9392BC',
           amount: '10000000000000000',
+          nonce: '3',
           blockNumber: 8172930,
           blockTimestamp: new Date(),
           transactionHash:

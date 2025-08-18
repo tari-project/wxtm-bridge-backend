@@ -36,6 +36,7 @@ describe('SubgraphClientService', () => {
       [
         ['0xuser1', 'tariAddress1'], // tuple(address,string)
         { toString: () => '1000000000000000000' }, // uint256 amount
+        { toString: () => '123456789' }, // uint256 nonce
       ],
     ];
 
@@ -82,6 +83,7 @@ describe('SubgraphClientService', () => {
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',
+        nonce: '123456789',
         blockNumber: 12345678,
         blockTimestamp: new Date(blockTimestampSeconds * 1000),
         transactionHash: '0xhash1',
