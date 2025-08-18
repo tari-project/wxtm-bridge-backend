@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { gql, request } from 'graphql-request';
-import {
-  TokensUnwrappedsResponse,
-  PushNotificationsResponse,
-} from '../subgraph/types';
+import { PushNotificationsResponse } from '../subgraph/types';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 import { IConfig } from '../config/config.interface';
 import { ethers } from 'ethers';
