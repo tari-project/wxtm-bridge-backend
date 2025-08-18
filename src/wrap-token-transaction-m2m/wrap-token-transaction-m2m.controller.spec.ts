@@ -89,21 +89,6 @@ describe('WrapTokenTransactionController', () => {
         .expect(401);
     });
 
-    it('returns all transactions with valid M2M auth token', async () => {
-      await factory.createMany<WrapTokenTransactionEntity>(
-        WrapTokenTransactionEntity.name,
-        3,
-      );
-
-      const { body } = await request(app.getHttpServer())
-        .get('/wrap-token-transactions-m2m')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${m2mToken}`)
-        .expect(200);
-
-      expect(body).toHaveLength(3);
-    });
-
     it('accepts M2M token in state-machine-auth header', async () => {
       await factory.createMany<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
@@ -117,6 +102,66 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toHaveLength(3);
+    });
+
+    it('returns all transactions with valid M2M auth token', async () => {
+      const [tx_1, tx_2] = await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        2,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .expect(200);
+
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: tx_1.id, aggregatedTransactions: [] }),
+          expect.objectContaining({ id: tx_2.id, aggregatedTransactions: [] }),
+        ]),
+      );
+    });
+
+    it('returns aggregated transaction', async () => {
+      const aggegatedTx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+      );
+      const [tx_1, tx_2] = await factory.createMany<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        2,
+        { transactionId: aggegatedTx.id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get('/wrap-token-transactions-m2m')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .expect(200);
+
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: aggegatedTx.id,
+            transactionId: null,
+            aggregatedTransactions: expect.arrayContaining([
+              expect.objectContaining({
+                id: tx_1.id,
+                transactionId: aggegatedTx.id,
+              }),
+              expect.objectContaining({
+                id: tx_2.id,
+                transactionId: aggegatedTx.id,
+              }),
+            ]),
+          }),
+          expect.objectContaining({ id: tx_1.id, aggregatedTransactions: [] }),
+          expect.objectContaining({ id: tx_2.id, aggregatedTransactions: [] }),
+        ]),
+      );
     });
   });
 
