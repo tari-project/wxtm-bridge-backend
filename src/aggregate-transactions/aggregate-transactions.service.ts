@@ -81,9 +81,18 @@ export class AggregateTransactionsService {
 
     const tokenAmount = this.calculateCumulativeAmount(dustTransactions);
 
-    if (!this.isMinAmountReached(tokenAmount)) {
+    //TODO replace after testing
+    if (
+      !this.isMinAmountReached(tokenAmount) &&
+      dustTransactions[0].to !== '0x3685B67A9d50cC4d70Cf1e35bfab945F64DA3113'
+    ) {
       return;
     }
+
+    //TODO replace after testing
+    // if (!this.isMinAmountReached(tokenAmount)) {
+    //   return;
+    // }
 
     const { amountAfterFee, feeAmount, feePercentageBps } =
       this.wrapTokenFeesService.calculateFee({ tokenAmount });

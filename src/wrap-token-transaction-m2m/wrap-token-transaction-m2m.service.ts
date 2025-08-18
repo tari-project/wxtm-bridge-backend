@@ -17,6 +17,7 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
+import { verifyUpdateApplied } from '../helpers/verifyUpdateApplied';
 
 @Injectable()
 export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapTokenTransactionEntity> {
@@ -44,9 +45,14 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         ? WrapTokenTransactionStatus.TOKENS_RECEIVED
         : WrapTokenTransactionStatus.TOKENS_RECEIVED_WITH_MISMATCH;
 
-    await this.repo.update(
+    const updateResults = await this.repo.update(
       {
         id,
+        status: In([
+          WrapTokenTransactionStatus.CREATED,
+          WrapTokenTransactionStatus.TOKENS_SENT,
+          WrapTokenTransactionStatus.TIMEOUT,
+        ]),
       },
       {
         tariTxTimestamp: timestamp,
@@ -57,6 +63,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         status: newStatus,
       },
     );
+    verifyUpdateApplied(updateResults);
 
     await this.wrapTokenAuditService.recordTransactionEvent({
       transactionId: id,
@@ -116,14 +123,16 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         );
       }
 
-      await this.repo.update(
+      const updateResults = await this.repo.update(
         {
           id: transaction.id,
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
         },
         {
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
         },
       );
+      verifyUpdateApplied(updateResults);
 
       await this.wrapTokenAuditService.recordTransactionEvent({
         transactionId: transaction.id,
@@ -158,9 +167,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         );
       }
 
-      await this.repo.update(
+      const updateResults = await this.repo.update(
         {
           id: transaction.id,
+          status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
         },
         {
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
@@ -169,6 +179,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           safeAddress: walletTransaction.safeAddress,
         },
       );
+      verifyUpdateApplied(updateResults);
 
       await this.wrapTokenAuditService.recordTransactionEvent({
         transactionId: transaction.id,
@@ -204,14 +215,16 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         );
       }
 
-      await this.repo.update(
+      const updateResults = await this.repo.update(
         {
           id: transaction.id,
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
         },
         {
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
         },
       );
+      verifyUpdateApplied(updateResults);
 
       await this.wrapTokenAuditService.recordTransactionEvent({
         transactionId: transaction.id,
@@ -247,15 +260,17 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         );
       }
 
-      await this.repo.update(
+      const updateResults = await this.repo.update(
         {
           id: transaction.id,
+          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
         },
         {
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
           transactionHash: walletTransaction.transactionHash,
         },
       );
+      verifyUpdateApplied(updateResults);
 
       await this.wrapTokenAuditService.recordTransactionEvent({
         transactionId: transaction.id,
