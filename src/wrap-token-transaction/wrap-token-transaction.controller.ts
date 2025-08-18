@@ -13,6 +13,9 @@ import { WrapTokenTransactionEntity } from './wrap-token-transaction.entity';
       audits: {
         eager: true,
       },
+      aggregatedTransactions: {
+        eager: true,
+      },
     },
   },
   routes: {
