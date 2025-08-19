@@ -37,7 +37,7 @@ export class TokensUnwrappedEntity {
   @Column({
     type: 'enum',
     enum: TokensUnwrappedStatus,
-    default: TokensUnwrappedStatus.TOKENS_BURNED,
+    default: TokensUnwrappedStatus.CREATED,
   })
   status: TokensUnwrappedStatus;
 

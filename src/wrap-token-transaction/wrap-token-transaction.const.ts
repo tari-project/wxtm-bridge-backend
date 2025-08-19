@@ -2,6 +2,7 @@ export enum WrapTokenTransactionStatus {
   CREATED = 'created',
   TOKENS_SENT = 'tokens_sent',
   TOKENS_RECEIVED = 'tokens_received',
+  REPLACED_BY_AGGREGATED = 'replaced_by_aggregated',
   TOKENS_RECEIVED_WITH_MISMATCH = 'tokens_received_with_mismatch',
   CREATING_SAFE_TRANSACTION = 'creating_safe_transaction',
   CREATING_SAFE_TRANSACTION_UNPROCESSABLE = 'creating_safe_transaction_unprocessable',

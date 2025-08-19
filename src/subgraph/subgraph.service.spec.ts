@@ -15,6 +15,7 @@ import { SubgraphService } from './subgraph.service';
 import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 import { SubgraphClientServiceMock } from '../../test/mocks/subgraph.mock';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
+import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 
 describe('SubgraphService tests', () => {
   let factory: Factory;
@@ -78,7 +79,9 @@ describe('SubgraphService tests', () => {
 
       expect(data).toHaveLength(3);
       expect(data[0].subgraphId).toEqual(2);
+      expect(data[0].status).toEqual(TokensUnwrappedStatus.CREATED);
       expect(data[2].subgraphId).toEqual(4);
+      expect(data[2].status).toEqual(TokensUnwrappedStatus.CREATED);
     });
     it('should save new records without duplicates', async () => {
       await factory.create(TokensUnwrappedEntity.name, { subgraphId: 2 });

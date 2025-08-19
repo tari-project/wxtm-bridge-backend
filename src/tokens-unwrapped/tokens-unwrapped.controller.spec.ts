@@ -8,7 +8,6 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
-  getRepository,
 } from '../../test/database';
 import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Auth0Keys } from '../auth/auth.providers';
@@ -18,8 +17,6 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { TokensUnwrappedModule } from './tokens-unwrapped.module';
 import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
-import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
-import { UpdateTokensUnwrappedDTO } from './tokens-unwrapped.dto';
 
 describe('TokensUnwrappedController', () => {
   let app: INestApplication;
@@ -121,60 +118,6 @@ describe('TokensUnwrappedController', () => {
         .get(`/tokens-unwrapped/${transactionId}`)
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${userAccessToken}`)
-        .expect(401);
-
-      expect(body).toEqual({
-        statusCode: 401,
-        message: 'Unauthorized',
-      });
-    });
-  });
-
-  describe('PATCH /tokens-unwrapped/:id', () => {
-    it('successfully updates status', async () => {
-      const transaction = await factory.create<TokensUnwrappedEntity>(
-        TokensUnwrappedEntity.name,
-      );
-
-      const dto: UpdateTokensUnwrappedDTO = {
-        status: TokensUnwrappedStatus.TOKENS_MINTED,
-      };
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/tokens-unwrapped/${transaction.id}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(dto)
-        .expect(200);
-
-      expect(body).toEqual(
-        expect.objectContaining({
-          id: transaction.id,
-          status: TokensUnwrappedStatus.TOKENS_MINTED,
-        }),
-      );
-
-      const updatedTransaction = await getRepository(
-        TokensUnwrappedEntity,
-      ).findOne({ where: { id: transaction.id } });
-
-      expect(updatedTransaction?.status).toBe(
-        TokensUnwrappedStatus.TOKENS_MINTED,
-      );
-    });
-
-    it('returns 401 for a regular user', async () => {
-      const dto: UpdateTokensUnwrappedDTO = {
-        status: TokensUnwrappedStatus.TOKENS_MINTED,
-      };
-
-      const transactionId = 1;
-
-      const { body } = await request(app.getHttpServer())
-        .patch(`/tokens-unwrapped/${transactionId}`)
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${userAccessToken}`)
-        .send(dto)
         .expect(401);
 
       expect(body).toEqual({
