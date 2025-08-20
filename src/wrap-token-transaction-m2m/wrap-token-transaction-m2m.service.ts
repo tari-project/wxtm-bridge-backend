@@ -103,6 +103,45 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     };
   }
 
+  private validateRegularAndAggregateTransactions(
+    transaction: WrapTokenTransactionEntity,
+  ) {
+    if (transaction.aggregatedTransactions.length === 0) {
+      if (
+        !transaction.tariPaymentReference ||
+        !transaction.tariBlockHeight ||
+        !transaction.tariTxTimestamp
+      ) {
+        throw new BadRequestException(
+          `Transaction with paymentId ${transaction.paymentId} has incomplete Tari data`,
+        );
+      }
+
+      return;
+    }
+
+    transaction.aggregatedTransactions.forEach((aggregatedTransaction) => {
+      if (
+        !aggregatedTransaction.tariPaymentReference ||
+        !aggregatedTransaction.tariBlockHeight ||
+        !aggregatedTransaction.tariTxTimestamp
+      ) {
+        throw new BadRequestException(
+          `Aggregated transaction with paymentId ${aggregatedTransaction.paymentId} has incomplete Tari data`,
+        );
+      }
+
+      if (
+        aggregatedTransaction.status !==
+        WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED
+      ) {
+        throw new BadRequestException(
+          `Aggregated transaction with paymentId ${aggregatedTransaction.paymentId} is not in REPLACED_BY_AGGREGATED status`,
+        );
+      }
+    });
+  }
+
   async updateToCreatingTransaction({
     walletTransactions,
   }: CreatingTransactionRequestDTO): Promise<SuccessDTO> {
@@ -111,10 +150,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
-          tariPaymentReference: Not(IsNull()),
-          tariBlockHeight: Not(IsNull()),
-          tariTxTimestamp: Not(IsNull()),
         },
+        relations: ['aggregatedTransactions'],
       });
 
       if (!transaction) {
@@ -122,6 +159,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
       }
+      this.validateRegularAndAggregateTransactions(transaction);
 
       const updateResults = await this.repo.update(
         {
@@ -155,10 +193,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
         where: {
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
-          tariPaymentReference: Not(IsNull()),
-          tariBlockHeight: Not(IsNull()),
-          tariTxTimestamp: Not(IsNull()),
         },
+        relations: ['aggregatedTransactions'],
       });
 
       if (!transaction) {
@@ -166,6 +202,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
       }
+      this.validateRegularAndAggregateTransactions(transaction);
 
       const updateResults = await this.repo.update(
         {
@@ -203,10 +240,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
           safeTxHash: Not(IsNull()),
-          tariPaymentReference: Not(IsNull()),
-          tariBlockHeight: Not(IsNull()),
-          tariTxTimestamp: Not(IsNull()),
         },
+        relations: ['aggregatedTransactions'],
       });
 
       if (!transaction) {
@@ -214,6 +249,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
       }
+      this.validateRegularAndAggregateTransactions(transaction);
 
       const updateResults = await this.repo.update(
         {
@@ -248,10 +284,8 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           paymentId: walletTransaction.paymentId,
           status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
           safeTxHash: Not(IsNull()),
-          tariPaymentReference: Not(IsNull()),
-          tariBlockHeight: Not(IsNull()),
-          tariTxTimestamp: Not(IsNull()),
         },
+        relations: ['aggregatedTransactions'],
       });
 
       if (!transaction) {
@@ -259,6 +293,7 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           `Transaction with paymentId ${walletTransaction.paymentId} not found`,
         );
       }
+      this.validateRegularAndAggregateTransactions(transaction);
 
       const updateResults = await this.repo.update(
         {
