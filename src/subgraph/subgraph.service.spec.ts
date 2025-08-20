@@ -190,13 +190,10 @@ describe('SubgraphService tests', () => {
 
       const initialData = await getRepository(TokensUnwrappedEntity).find();
       expect(initialData).toHaveLength(2);
-      expect(initialData.map((d) => d.nonce)).toEqual([
-      2, 3
-        
-      ]);
+      expect(initialData.map((d) => d.nonce)).toEqual([2, 3]);
       expect(initialData.map((d) => d.subgraphId)).toEqual([
         '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
-        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3'
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3',
       ]);
 
       const result = await service.onEventReceived(
