@@ -2486,7 +2486,7 @@
             "type": "number"
           },
           "subgraphId": {
-            "type": "number"
+            "type": "string"
           },
           "from": {
             "type": "string"
@@ -2498,7 +2498,7 @@
             "type": "string"
           },
           "nonce": {
-            "type": "string"
+            "type": "number"
           },
           "blockNumber": {
             "type": "number"
