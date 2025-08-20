@@ -13,8 +13,11 @@ export class TokensUnwrappedEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'integer' })
-  subgraphId: number;
+  @Column({ unique: true })
+  subgraphId: string;
+
+  @Column({ type: 'integer', unique: true })
+  nonce: number;
 
   @Column()
   from: string;
@@ -24,9 +27,6 @@ export class TokensUnwrappedEntity {
 
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   amount: string;
-
-  @Column({ type: 'numeric', precision: 38, scale: 0 })
-  nonce: string;
 
   @Column()
   blockNumber: number;
