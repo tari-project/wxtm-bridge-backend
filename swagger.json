@@ -2488,6 +2488,9 @@
           "subgraphId": {
             "type": "string"
           },
+          "nonce": {
+            "type": "number"
+          },
           "from": {
             "type": "string"
           },
@@ -2496,9 +2499,6 @@
           },
           "amount": {
             "type": "string"
-          },
-          "nonce": {
-            "type": "number"
           },
           "blockNumber": {
             "type": "number"
@@ -2532,10 +2532,10 @@
         "required": [
           "id",
           "subgraphId",
+          "nonce",
           "from",
           "targetTariAddress",
           "amount",
-          "nonce",
           "blockNumber",
           "blockTimestamp",
           "transactionHash",
