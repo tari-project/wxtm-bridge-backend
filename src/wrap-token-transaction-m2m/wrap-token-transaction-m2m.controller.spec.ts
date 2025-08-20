@@ -486,6 +486,60 @@ describe('WrapTokenTransactionController', () => {
       );
     });
 
+    it('should work with aggregated transactions', async () => {
+      const aggregating_tx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.TOKENS_RECEIVED,
+        },
+      );
+
+      await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          tariBlockHeight: 12345,
+          tariPaymentReference: 'ref-123',
+          tariTxTimestamp: 1747209999,
+          transactionId: aggregating_tx.id,
+        },
+      );
+
+      const dto: CreatingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: aggregating_tx.paymentId,
+          },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/creating-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: aggregating_tx.id,
+            status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+            safeTxHash: null,
+            safeNonce: null,
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+    });
+
     it('should not be accessible with an incorrect token', async () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/creating-transaction')
@@ -624,6 +678,64 @@ describe('WrapTokenTransactionController', () => {
           safeNonce: 1,
           safeAddress: '0x1234567890abcdef1234567890abcdef12345678',
         }),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+    });
+
+    it('should work with aggregated transactions', async () => {
+      const aggregating_tx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+        },
+      );
+
+      await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          tariBlockHeight: 12345,
+          tariPaymentReference: 'ref-123',
+          tariTxTimestamp: 1747209999,
+          transactionId: aggregating_tx.id,
+        },
+      );
+
+      const dto: TransactionCreatedRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: aggregating_tx.paymentId,
+            safeTxHash: 'tx_hash',
+            safeNonce: 1,
+            safeAddress: '0x1234567890abcdef1234567890abcdef12345678',
+          },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-created')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: aggregating_tx.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+            safeTxHash: 'tx_hash',
+            safeNonce: 1,
+            safeAddress: '0x1234567890abcdef1234567890abcdef12345678',
+          }),
+        ]),
       );
 
       const auditRecords = await getRepository(WrapTokenAuditEntity).find();
@@ -957,6 +1069,60 @@ describe('WrapTokenTransactionController', () => {
       );
     });
 
+    it('should work with aggregated transactions', async () => {
+      const aggregated_tx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+          safeTxHash: 'hash123',
+        },
+      );
+
+      await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          tariBlockHeight: 12345,
+          tariPaymentReference: 'ref-123',
+          tariTxTimestamp: 1747209999,
+          transactionId: aggregated_tx.id,
+        },
+      );
+
+      const dto: CreatingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: aggregated_tx.paymentId,
+          },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/executing-transaction')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: aggregated_tx.id,
+            status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+            safeTxHash: 'hash123',
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
+    });
+
     it('should not be accessible with an incorrect token', async () => {
       const { body } = await request(app.getHttpServer())
         .patch('/wrap-token-transactions-m2m/executing-transaction')
@@ -1116,6 +1282,60 @@ describe('WrapTokenTransactionController', () => {
 
       const auditRecords = await getRepository(WrapTokenAuditEntity).find();
       expect(auditRecords).toHaveLength(2);
+    });
+
+    it('should work with aggregated transactions', async () => {
+      const aggregated_tx = await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+          safeTxHash: 'hash123',
+        },
+      );
+
+      await factory.create<WrapTokenTransactionEntity>(
+        WrapTokenTransactionEntity.name,
+        {
+          status: WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+          tariBlockHeight: 12345,
+          tariPaymentReference: 'ref-123',
+          tariTxTimestamp: 1747209999,
+          transactionId: aggregated_tx.id,
+        },
+      );
+
+      const dto: CreatingTransactionRequestDTO = {
+        walletTransactions: [
+          {
+            paymentId: aggregated_tx.paymentId,
+          },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .patch('/wrap-token-transactions-m2m/transaction-executed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      const updatedTransactions = await getRepository(
+        WrapTokenTransactionEntity,
+      ).find();
+
+      expect(updatedTransactions).toHaveLength(2);
+      expect(updatedTransactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: aggregated_tx.id,
+            status: WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+            safeTxHash: 'hash123',
+          }),
+        ]),
+      );
+
+      const auditRecords = await getRepository(WrapTokenAuditEntity).find();
+      expect(auditRecords).toHaveLength(1);
     });
 
     it('should not be accessible with an incorrect token', async () => {
