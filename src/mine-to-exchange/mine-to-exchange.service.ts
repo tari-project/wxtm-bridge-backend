@@ -141,13 +141,7 @@ export class MineToExchangeService {
     timestamp,
   }: MiningTransactionDTO) {
     const to = this.parseUserPaymentId(paymentId);
-    //TODO
-    // const isMinAmount = this.validateMinAmount(amount);
-
-    //TODO replace after testing
-    const isMinAmount =
-      this.validateMinAmount(amount) ||
-      to === '0x214B2d3eb47e24896b9A3852Ef7469e6aa2895b0';
+    const isMinAmount = this.validateMinAmount(amount);
 
     if (to && isMinAmount) {
       const tokensReceiveidTransaction = await this.createMiningTransaction({
