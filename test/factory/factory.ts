@@ -59,6 +59,7 @@ export const getFactory = async (): Promise<Factory> => {
         'TokensUnwrappedEntity.amount',
         (n) => `${n}000000000000000000`,
       ),
+      nonce: factory.sequence('TokensUnwrappedEntity.nonce', (n) => n),
       blockNumber: factory.sequence(
         'TokensUnwrappedEntity.blockNumber',
         (n) => n + 1000000,

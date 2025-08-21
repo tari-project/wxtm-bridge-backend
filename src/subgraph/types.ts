@@ -1,32 +1,6 @@
-export type OwnershipTransferred = {
+export type TokensUnwrappedRecord = {
   id: string;
-  previousOwner: string;
-  newOwner: string;
-  blockNumber: string;
-  blockTimestamp: string;
-  transactionHash: string;
-};
-
-export type OwnershipTransfersResponse = {
-  ownershipTransferreds: OwnershipTransferred[];
-};
-
-export type TokensUnwrapped = {
-  id: string;
-  from: string;
-  targetTariAddress: string;
-  amount: string;
-  blockNumber: string;
-  blockTimestamp: string;
-  transactionHash: string;
-};
-
-export type TokensUnwrappedsResponse = {
-  tokensUnwrappeds: TokensUnwrapped[];
-};
-
-export type PushNotification = {
-  id: string;
+  nonce: string;
   signature: string;
   contract: string;
   timestamp: string;
@@ -34,10 +8,9 @@ export type PushNotification = {
   blockNumber: string;
   transactionHash: string;
   logIndex: string;
-  seqNumber: string;
   transactionData: string;
 };
 
-export type PushNotificationsResponse = {
-  pushNotifications: PushNotification[];
+export type TokensUnwrappedRecordsResponse = {
+  tokensUnwrappedRecords: TokensUnwrappedRecord[];
 };

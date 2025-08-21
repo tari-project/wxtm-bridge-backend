@@ -44,9 +44,10 @@ describe('SubgraphClientService', () => {
       .mockReturnValue(mockDecodedData);
 
     const mockResponse = {
-      pushNotifications: [
+      tokensUnwrappedRecords: [
         {
-          id: '1',
+          id: '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
+          nonce: '42',
           signature: 'TokensUnwrapped',
           contract: '0xcontract1',
           timestamp: blockTimestampSeconds.toString(),
@@ -54,7 +55,6 @@ describe('SubgraphClientService', () => {
           blockNumber: '12345678',
           transactionHash: '0xhash1',
           logIndex: '0',
-          seqNumber: '42',
           transactionData: '0xabcdef1234567890',
         },
       ],
@@ -64,21 +64,23 @@ describe('SubgraphClientService', () => {
 
     const subgraphUrl = config().subgraph.url;
 
-    const result = await service.getPushNotifications(10);
+    const result = await service.getTokensUnwrappedRecords(10);
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       subgraphUrl,
-      expect.stringContaining('pushNotifications'),
+      expect.stringContaining('tokensUnwrappedRecords'),
     );
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       expect.any(String),
-      expect.stringContaining('seqNumber_gt: 10'),
+      expect.stringContaining('nonce_gt: 10'),
     );
 
     expect(result).toEqual([
       {
-        subgraphId: 42,
+        subgraphId:
+          '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
+        nonce: 42,
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',

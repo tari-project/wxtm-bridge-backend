@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { gql, request } from 'graphql-request';
-import {
-  TokensUnwrappedsResponse,
-  PushNotificationsResponse,
-} from '../subgraph/types';
+import { TokensUnwrappedRecordsResponse } from '../subgraph/types';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 import { IConfig } from '../config/config.interface';
 import { ethers } from 'ethers';
@@ -17,17 +14,18 @@ export class SubgraphClientService {
     this.subgraphUrl = this.configService.get('subgraph', { infer: true }).url;
   }
 
-  async getPushNotifications(
+  async getTokensUnwrappedRecords(
     lastRecord: number,
   ): Promise<Partial<TokensUnwrappedEntity>[]> {
     const query = gql`
       {
-        pushNotifications(
-          where: { seqNumber_gt: ${lastRecord}, signature: "TokensUnwrapped" }
-          orderBy: seqNumber
+        tokensUnwrappedRecords(
+          where: { nonce_gt: ${lastRecord}, signature: "TokensUnwrapped" }
+          orderBy: nonce
           first: 1000
         ) {
           id
+          nonce
           signature
           contract
           timestamp
@@ -35,20 +33,19 @@ export class SubgraphClientService {
           blockNumber
           transactionHash
           logIndex
-          seqNumber
           transactionData
         }
       }
     `;
 
-    const data = await request<PushNotificationsResponse>(
+    const data = await request<TokensUnwrappedRecordsResponse>(
       this.subgraphUrl,
       query,
     );
 
     const coder = new ethers.utils.AbiCoder();
 
-    return data.pushNotifications.map((event) => {
+    return data.tokensUnwrappedRecords.map((event) => {
       const decodedData = coder.decode(
         ['(tuple(address,string),uint256)'],
         event.transactionData,
@@ -59,7 +56,8 @@ export class SubgraphClientService {
       const amount = decodedData[0][1];
 
       return {
-        subgraphId: parseInt(event.seqNumber),
+        subgraphId: event.id,
+        nonce: parseInt(event.nonce),
         from: from,
         targetTariAddress: tariAddress,
         amount: amount.toString(),
@@ -68,41 +66,5 @@ export class SubgraphClientService {
         transactionHash: event.transactionHash,
       };
     });
-  }
-
-  /** @dev Consider removal of below fn */
-  async getTokensUnwrapped(): Promise<Partial<TokensUnwrappedEntity>[]> {
-    const query = gql`
-      {
-        tokensUnwrappeds(
-          first: 5
-          orderBy: blockTimestamp
-          orderDirection: desc
-        ) {
-          id
-          from
-          targetTariAddress
-          amount
-          blockNumber
-          blockTimestamp
-          transactionHash
-        }
-      }
-    `;
-
-    const data = await request<TokensUnwrappedsResponse>(
-      this.subgraphUrl,
-      query,
-    );
-
-    return data.tokensUnwrappeds.map((token) => ({
-      subgraphId: parseInt(token.id),
-      from: token.from,
-      targetTariAddress: token.targetTariAddress,
-      amount: token.amount,
-      blockNumber: parseInt(token.blockNumber),
-      blockTimestamp: new Date(parseInt(token.blockTimestamp) * 1000),
-      transactionHash: token.transactionHash,
-    }));
   }
 }
