@@ -16,7 +16,7 @@ export class TokensUnwrappedEntity {
   @Column({ unique: true })
   subgraphId: string;
 
-  @Column({ type: 'integer', unique: true })
+  @Column({ unique: true })
   nonce: number;
 
   @Column()
