@@ -347,7 +347,9 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
           note: walletTransaction.error,
         });
 
-        await this.transactionEvaluationService.evaluateErrors(transaction.id);
+        await this.transactionEvaluationService.evaluateWrapTokenErrors(
+          transaction.id,
+        );
       }
     }
 

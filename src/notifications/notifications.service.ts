@@ -70,7 +70,7 @@ export class NotificationsService {
     await this.snsClient.send(command);
   }
 
-  async sendTransactionUnprocessableNotification(
+  async sendWrapTokensTransactionUnprocessableNotification(
     transactionId: number,
   ): Promise<SuccessDTO> {
     const domain = this.configService.get('domain', {
@@ -78,7 +78,24 @@ export class NotificationsService {
     });
 
     await this.emitNotification({
-      message: `Transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+      message: `Wrap transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
+
+  async sendTokensUnwrappedUnprocessableNotification(
+    transactionId: number,
+  ): Promise<SuccessDTO> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.emitNotification({
+      message: `Unwrap transaction unprocessible: https://admin.${domain}/tokens-unwrapped/edit/${transactionId}`,
       origin: 'Processor',
     });
 

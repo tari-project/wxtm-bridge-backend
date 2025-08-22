@@ -15,6 +15,8 @@ import { NotificationsServiceMock } from '../../test/mocks/notifications.service
 import { TransactionEvaluationModule } from './transaction-evaluation.module';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
+import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 
 describe('TransactionEvaluationService', () => {
   let service: TransactionEvaluationService;
@@ -57,7 +59,7 @@ describe('TransactionEvaluationService', () => {
     await module.close();
   });
 
-  describe('evaluateErrors', () => {
+  describe('evaluateWrapTokenErrors', () => {
     it('should update status to CREATING_SAFE_TRANSACTION_UNPROCESSABLE when transaction has TOKENS_RECEIVED status and errors', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
@@ -68,7 +70,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -84,7 +86,7 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -98,7 +100,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -113,10 +115,10 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledTimes(1);
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -136,7 +138,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -151,10 +153,10 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledTimes(1);
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -172,7 +174,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -186,7 +188,78 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
+      ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('evaluateTokensUnwrappedErrors', () => {
+    it('should update status to UNPROCESSABLE when transaction has 5 or more errors', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          error: [
+            { code: 'ERR_1', message: 'Error 1' },
+            { code: 'ERR_2', message: 'Error 2' },
+            { code: 'ERR_3', message: 'Error 3' },
+            { code: 'ERR_4', message: 'Error 4' },
+            { code: 'ERR_5', message: 'Error 5' },
+          ],
+          isErrorNotificationSent: false,
+        },
+      );
+
+      await service.evaluateTokensUnwrappedErrors(transaction.id);
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          status: TokensUnwrappedStatus.UNPROCESSABLE,
+          isErrorNotificationSent: true,
+        }),
+      );
+
+      expect(
+        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+      ).toHaveBeenCalledWith(transaction.id);
+    });
+
+    it('should not update status when transaction has fewer than 5 errors', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          error: [
+            { code: 'ERR_1', message: 'Error 1' },
+            { code: 'ERR_2', message: 'Error 2' },
+            { code: 'ERR_3', message: 'Error 3' },
+          ],
+          isErrorNotificationSent: false,
+          status: TokensUnwrappedStatus.CREATED,
+        },
+      );
+
+      await service.evaluateTokensUnwrappedErrors(transaction.id);
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          status: TokensUnwrappedStatus.CREATED,
+        }),
+      );
+
+      expect(
+        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
       ).not.toHaveBeenCalled();
     });
   });

@@ -836,13 +836,13 @@ describe('WrapTokenTransactionController', () => {
       );
 
       expect(
-        TransactionEvaluationServiceMock.evaluateErrors,
+        TransactionEvaluationServiceMock.evaluateWrapTokenErrors,
       ).toHaveBeenCalledTimes(2);
       expect(
-        TransactionEvaluationServiceMock.evaluateErrors,
+        TransactionEvaluationServiceMock.evaluateWrapTokenErrors,
       ).toHaveBeenCalledWith(tx1.id);
       expect(
-        TransactionEvaluationServiceMock.evaluateErrors,
+        TransactionEvaluationServiceMock.evaluateWrapTokenErrors,
       ).toHaveBeenCalledWith(tx2.id);
     });
 
@@ -894,7 +894,7 @@ describe('WrapTokenTransactionController', () => {
       expect(auditRecords).toHaveLength(0);
 
       expect(
-        TransactionEvaluationServiceMock.evaluateErrors,
+        TransactionEvaluationServiceMock.evaluateWrapTokenErrors,
       ).not.toHaveBeenCalled();
     });
 
