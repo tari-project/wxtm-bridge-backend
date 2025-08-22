@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { gql, request } from 'graphql-request';
-import { TokensUnwrappedRecordsResponse } from '../subgraph/types';
-import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
-import { IConfig } from '../config/config.interface';
+import { TokensUnwrappedDecoded } from './subgraph-client.types';
+import { TokensUnwrappedRecordsResponse } from '../subgraph/subgraph.types';
 import { ethers } from 'ethers';
+
+import { IConfig } from '../config/config.interface';
 
 @Injectable()
 export class SubgraphClientService {
@@ -16,7 +17,7 @@ export class SubgraphClientService {
 
   async getTokensUnwrappedRecords(
     lastRecord: number,
-  ): Promise<Partial<TokensUnwrappedEntity>[]> {
+  ): Promise<TokensUnwrappedDecoded[]> {
     const query = gql`
       {
         tokensUnwrappedRecords(
@@ -51,19 +52,22 @@ export class SubgraphClientService {
         event.transactionData,
       );
 
-      const from = decodedData[0][0][0];
-      const tariAddress = decodedData[0][0][1];
-      const amount = decodedData[0][1];
+      const from: string = decodedData[0][0][0];
+      const tariAddress: string = decodedData[0][0][1];
+      const amount: string = decodedData[0][1];
 
       return {
         subgraphId: event.id,
         nonce: parseInt(event.nonce),
+        signature: event.signature,
+        contract: event.contract,
         from: from,
         targetTariAddress: tariAddress,
-        amount: amount.toString(),
+        amount: amount,
+        transactionHash: event.transactionHash,
+        blockHash: event.blockHash,
         blockNumber: parseInt(event.blockNumber),
         blockTimestamp: new Date(parseInt(event.timestamp) * 1000),
-        transactionHash: event.transactionHash,
       };
     });
   }
