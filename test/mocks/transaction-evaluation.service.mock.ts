@@ -5,5 +5,6 @@ type TransactionEvaluationServiceMock = {
 };
 
 export const TransactionEvaluationServiceMock = {
-  evaluateErrors: jest.fn(),
+  evaluateWrapTokenErrors: jest.fn(),
+  evaluateTokensUnwrappedErrors: jest.fn(),
 } satisfies Partial<TransactionEvaluationServiceMock>;
