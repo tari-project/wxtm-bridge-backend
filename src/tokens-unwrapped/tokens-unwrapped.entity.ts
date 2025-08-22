@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Generated,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
 
@@ -12,6 +14,10 @@ import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
 export class TokensUnwrappedEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Generated('uuid')
+  @Column({ unique: true })
+  paymentId: string;
 
   @Column({ unique: true })
   subgraphId: string;
@@ -29,6 +35,15 @@ export class TokensUnwrappedEntity {
   amount: string;
 
   @Column()
+  feePercentageBps: number;
+
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  feeAmount: string;
+
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  amountAfterFee: string;
+
+  @Column()
   blockNumber: number;
 
   @Column()
@@ -43,6 +58,22 @@ export class TokensUnwrappedEntity {
     default: TokensUnwrappedStatus.CREATED,
   })
   status: TokensUnwrappedStatus;
+
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'object',
+      additionalProperties: {
+        type: 'string',
+      },
+    },
+    default: [],
+  })
+  @Column({ type: 'jsonb', default: [] })
+  error: Record<string, string>[];
+
+  @Column({ default: false })
+  isErrorNotificationSent: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
