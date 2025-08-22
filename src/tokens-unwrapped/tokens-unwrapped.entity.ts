@@ -35,15 +35,6 @@ export class TokensUnwrappedEntity {
   amount: string;
 
   @Column()
-  feePercentageBps: number;
-
-  @Column({ type: 'numeric', precision: 38, scale: 0 })
-  feeAmount: string;
-
-  @Column({ type: 'numeric', precision: 38, scale: 0 })
-  amountAfterFee: string;
-
-  @Column()
   blockNumber: number;
 
   @Column()
