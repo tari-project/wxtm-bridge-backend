@@ -3,22 +3,22 @@ import { ConfigModule } from '@nestjs/config';
 import { utils } from 'ethers';
 
 import config from '../config/config';
-import { WrapTokenFeesService } from './wrap-token-fees.service';
-import { WrapTokenFeesModule } from './wrap-token-fees.module';
+import { TokenFeesService } from './token-fees.service';
+import { TokenFeesModule } from './token-fees.module';
 
-describe('WrapTokenFeesService tests', () => {
+describe('TokenFeesService tests', () => {
   let module: TestingModule;
-  let service: WrapTokenFeesService;
+  let service: TokenFeesService;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [config], isGlobal: true }),
-        WrapTokenFeesModule,
+        TokenFeesModule,
       ],
     }).compile();
 
-    service = module.get(WrapTokenFeesService);
+    service = module.get(TokenFeesService);
   });
 
   beforeEach(async () => {
@@ -29,11 +29,24 @@ describe('WrapTokenFeesService tests', () => {
     await module.close();
   });
 
-  describe('calculateFee', () => {
+  describe('calculateWrapFee', () => {
     it('should correctly calculate fee', () => {
       const tokenAmount = utils.parseUnits('100', 6).toString();
 
-      const result = service.calculateFee({
+      const result = service.calculateWrapFee({
+        tokenAmount,
+      });
+
+      expect(utils.formatUnits(result.feeAmount, 6)).toEqual('0.5');
+      expect(utils.formatUnits(result.amountAfterFee, 6)).toEqual('99.5');
+    });
+  });
+
+  describe('calculateUnwrapFee', () => {
+    it('should correctly calculate fee', () => {
+      const tokenAmount = utils.parseUnits('100', 6).toString();
+
+      const result = service.calculateUnwrapFee({
         tokenAmount,
       });
 
