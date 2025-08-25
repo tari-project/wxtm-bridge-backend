@@ -35,6 +35,22 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
     };
   }
 
+  async updateToConfirmed(paymentId: string): Promise<SuccessDTO> {
+    await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      },
+      {
+        status: TokensUnwrappedStatus.CONFIRMED,
+      },
+    );
+
+    return {
+      success: true,
+    };
+  }
+
   async setCurrentError({
     paymentId,
     error,
