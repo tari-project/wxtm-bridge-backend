@@ -3,9 +3,12 @@ export const events = [
     subgraphId:
       '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
     nonce: '2',
+    signature: 'TokensUnwrapped',
+    contract: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
     from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
     targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla939666',
     amount: '20000000000000000',
+    blockHash: '0x9032102',
     blockNumber: '8172949',
     blockTimestamp: '1745332032',
     transactionHash:
@@ -15,9 +18,12 @@ export const events = [
     subgraphId:
       '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3',
     nonce: '3',
+    signature: 'TokensUnwrapped',
+    contract: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
     from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
     targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla9392BC',
     amount: '10000000000000000',
+    blockHash: '0x9032103',
     blockNumber: '8172930',
     blockTimestamp: '1745332833',
     transactionHash:
@@ -27,9 +33,12 @@ export const events = [
     subgraphId:
       '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-4',
     nonce: '4',
+    signature: 'TokensUnwrapped',
+    contract: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
     from: '0x999f0e896a78a1848e4fa25ce901108f0d61c7f3',
     targetTariAddress: '2v1F8934h12kj34j15h12k3k5j1j32h123ffaalla93a888',
     amount: '50000000000000000',
+    blockHash: '0x9032104',
     blockNumber: '8172999',
     blockTimestamp: '1745333934',
     transactionHash:

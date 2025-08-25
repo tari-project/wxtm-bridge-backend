@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { gql, request } from 'graphql-request';
 import { TokensUnwrappedDecoded } from './subgraph-client.types';
-import { TokensUnwrappedRecordsResponse } from '../subgraph/subgraph.types';
+import { TokensUnwrappedRecordsResponse } from './subgraph-client.types';
 import { ethers } from 'ethers';
 
 import { IConfig } from '../config/config.interface';
@@ -60,7 +60,7 @@ export class SubgraphClientService {
         subgraphId: event.id,
         nonce: parseInt(event.nonce),
         signature: event.signature,
-        contract: event.contract,
+        contractAddress: event.contract,
         from: from,
         targetTariAddress: tariAddress,
         amount: amount,

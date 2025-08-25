@@ -29,7 +29,7 @@ export class TokensUnwrappedEntity {
   signature: string;
 
   @Column()
-  contract: string;
+  contractAddress: string;
 
   @Column()
   from: string;

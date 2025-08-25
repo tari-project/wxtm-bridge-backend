@@ -48,8 +48,11 @@ export const getFactory = async (): Promise<Factory> => {
     factory.define(TokensUnwrappedEntity.name, TokensUnwrappedEntity, {
       subgraphId: factory.sequence(
         'TokensUnwrappedEntity.subgraphId',
-        (n) => n,
+        (n) => `0xsubgraph${n}`,
       ),
+      nonce: factory.sequence('TokensUnwrappedEntity.nonce', (n) => n),
+      signature: 'TokensUnwrapped',
+      contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
       from: factory.sequence('TokensUnwrappedEntity.from', (n) => `0x${n}`),
       targetTariAddress: factory.sequence(
         'TokensUnwrappedEntity.targetTariAddress',
@@ -59,7 +62,20 @@ export const getFactory = async (): Promise<Factory> => {
         'TokensUnwrappedEntity.amount',
         (n) => `${n}000000000000000000`,
       ),
-      nonce: factory.sequence('TokensUnwrappedEntity.nonce', (n) => n),
+      feePercentageBps: 50,
+      feeAmount: factory.sequence(
+        'TokensUnwrappedEntity.feeAmount',
+        (n) => `${n}00000000000000`,
+      ),
+      amountAfterFee: factory.sequence(
+        'TokensUnwrappedEntity.amountAfterFee',
+        (n) => `${n}000000000000000000`,
+      ),
+      blockHash: factory.sequence(
+        'TokensUnwrappedEntity.blockHash',
+        (n) => `0xblock${n}`,
+      ),
+
       blockNumber: factory.sequence(
         'TokensUnwrappedEntity.blockNumber',
         (n) => n + 1000000,

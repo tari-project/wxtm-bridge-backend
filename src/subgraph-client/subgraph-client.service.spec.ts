@@ -35,7 +35,7 @@ describe('SubgraphClientService', () => {
     const mockDecodedData = [
       [
         ['0xuser1', 'tariAddress1'], // tuple(address,string)
-        { toString: () => '1000000000000000000' }, // uint256 amount
+        '1000000000000000000', // uint256 amount
       ],
     ];
 
@@ -49,9 +49,9 @@ describe('SubgraphClientService', () => {
           id: '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
           nonce: '42',
           signature: 'TokensUnwrapped',
-          contract: '0xcontract1',
+          contract: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           timestamp: blockTimestampSeconds.toString(),
-          blockHash: '0xblockhash1',
+          blockHash: '0x9032102',
           blockNumber: '12345678',
           transactionHash: '0xhash1',
           logIndex: '0',
@@ -81,9 +81,12 @@ describe('SubgraphClientService', () => {
         subgraphId:
           '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
         nonce: 42,
+        signature: 'TokensUnwrapped',
+        contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',
+        blockHash: '0x9032102',
         blockNumber: 12345678,
         blockTimestamp: new Date(blockTimestampSeconds * 1000),
         transactionHash: '0xhash1',
