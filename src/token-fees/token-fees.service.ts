@@ -14,16 +14,7 @@ export class TokenFeesService {
       infer: true,
     });
 
-    const amount = BigNumber.from(tokenAmount);
-
-    const feeAmount = amount.mul(wrapTokenFeePercentageBps).div(10000);
-    const amountAfterFee = amount.sub(feeAmount);
-
-    return {
-      feeAmount: feeAmount.toString(),
-      amountAfterFee: amountAfterFee.toString(),
-      feePercentageBps: wrapTokenFeePercentageBps,
-    };
+    return this.calculateFee(tokenAmount, wrapTokenFeePercentageBps);
   }
 
   calculateUnwrapFee({
@@ -33,15 +24,22 @@ export class TokenFeesService {
       infer: true,
     });
 
+    return this.calculateFee(tokenAmount, tokensUnwrapFeePercentageBps);
+  }
+
+  private calculateFee(
+    tokenAmount: string,
+    feePercentageBps: number,
+  ): CalculateFeeResponse {
     const amount = BigNumber.from(tokenAmount);
 
-    const feeAmount = amount.mul(tokensUnwrapFeePercentageBps).div(10000);
+    const feeAmount = amount.mul(feePercentageBps).div(10000);
     const amountAfterFee = amount.sub(feeAmount);
 
     return {
       feeAmount: feeAmount.toString(),
       amountAfterFee: amountAfterFee.toString(),
-      feePercentageBps: tokensUnwrapFeePercentageBps,
+      feePercentageBps,
     };
   }
 }

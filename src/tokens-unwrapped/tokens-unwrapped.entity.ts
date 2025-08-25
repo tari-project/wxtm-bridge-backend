@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Generated,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
+import { TokensUnwrappedAuditEntity } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 
 @Entity('tokens_unwrapped')
 export class TokensUnwrappedEntity {
@@ -83,6 +85,9 @@ export class TokensUnwrappedEntity {
 
   @Column({ default: false })
   isErrorNotificationSent: boolean;
+
+  @OneToMany(() => TokensUnwrappedAuditEntity, (entity) => entity.transaction)
+  audits: TokensUnwrappedAuditEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

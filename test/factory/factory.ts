@@ -7,6 +7,7 @@ import { UserEntity } from '../../src/user/user.entity';
 import { WrapTokenTransactionEntity } from '../../src/wrap-token-transaction/wrap-token-transaction.entity';
 import { TokensUnwrappedEntity } from '../../src/tokens-unwrapped/tokens-unwrapped.entity';
 import { WrapTokenAuditEntity } from '../../src/wrap-token-audit/wrap-token-audit.entity';
+import { TokensUnwrappedAuditEntity } from '../../src/tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 import { SettingsEntity } from '../../src/settings/settings.entity';
 
 export type Factory = typeof factory;
@@ -58,18 +59,15 @@ export const getFactory = async (): Promise<Factory> => {
         'TokensUnwrappedEntity.targetTariAddress',
         (n) => `tari${n}`,
       ),
-      amount: factory.sequence(
-        'TokensUnwrappedEntity.amount',
-        (n) => `${n}000000000000000000`,
-      ),
+      amount: factory.sequence('TokensUnwrappedEntity.amount', (n) => `${n}`),
       feePercentageBps: 50,
       feeAmount: factory.sequence(
         'TokensUnwrappedEntity.feeAmount',
-        (n) => `${n}00000000000000`,
+        (n) => `${n}`,
       ),
       amountAfterFee: factory.sequence(
         'TokensUnwrappedEntity.amountAfterFee',
-        (n) => `${n}000000000000000000`,
+        (n) => `${n}`,
       ),
       blockHash: factory.sequence(
         'TokensUnwrappedEntity.blockHash',
@@ -78,7 +76,7 @@ export const getFactory = async (): Promise<Factory> => {
 
       blockNumber: factory.sequence(
         'TokensUnwrappedEntity.blockNumber',
-        (n) => n + 1000000,
+        (n) => n,
       ),
       blockTimestamp: factory.sequence(
         'TokensUnwrappedEntity.blockTimestamp',
@@ -96,6 +94,18 @@ export const getFactory = async (): Promise<Factory> => {
       ),
       transactionId: factory.assoc(WrapTokenTransactionEntity.name, 'id'),
     });
+
+    factory.define(
+      TokensUnwrappedAuditEntity.name,
+      TokensUnwrappedAuditEntity,
+      {
+        paymentId: factory.sequence(
+          'TokensUnwrappedAuditEntity.paymentId',
+          () => uuidv4(),
+        ),
+        transactionId: factory.assoc(TokensUnwrappedEntity.name, 'id'),
+      },
+    );
 
     factory.define(SettingsEntity.name, SettingsEntity, {});
 
