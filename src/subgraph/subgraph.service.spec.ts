@@ -80,6 +80,18 @@ describe('SubgraphService tests', () => {
       expect(result[1].nonce).toEqual(3);
       expect(result[2].nonce).toEqual(4);
 
+      expect(result[0].feePercentageBps).toEqual(50);
+      expect(result[1].feePercentageBps).toEqual(50);
+      expect(result[2].feePercentageBps).toEqual(50);
+
+      expect(result[0].feeAmount).toEqual('100000000000000');
+      expect(result[1].feeAmount).toEqual('50000000000000');
+      expect(result[2].feeAmount).toEqual('250000000000000');
+
+      expect(result[0].amountAfterFee).toEqual('19900000000000000');
+      expect(result[1].amountAfterFee).toEqual('9950000000000000');
+      expect(result[2].amountAfterFee).toEqual('49750000000000000');
+
       const data = await getRepository(TokensUnwrappedEntity).find({
         order: { nonce: 'ASC' },
       });
@@ -92,6 +104,18 @@ describe('SubgraphService tests', () => {
       expect(data[0].status).toEqual(TokensUnwrappedStatus.CREATED);
       expect(data[2].nonce).toEqual(4);
       expect(data[2].status).toEqual(TokensUnwrappedStatus.CREATED);
+
+      expect(data[0].feePercentageBps).toEqual(50);
+      expect(data[1].feePercentageBps).toEqual(50);
+      expect(data[2].feePercentageBps).toEqual(50);
+
+      expect(data[0].feeAmount).toEqual('100000000000000');
+      expect(data[1].feeAmount).toEqual('50000000000000');
+      expect(data[2].feeAmount).toEqual('250000000000000');
+
+      expect(data[0].amountAfterFee).toEqual('19900000000000000');
+      expect(data[1].amountAfterFee).toEqual('9950000000000000');
+      expect(data[2].amountAfterFee).toEqual('49750000000000000');
     });
     it('should save new records without duplicates', async () => {
       await factory.create(TokensUnwrappedEntity.name, { nonce: 2 });
@@ -239,6 +263,17 @@ describe('SubgraphService tests', () => {
 
       expect(finalData).toHaveLength(3);
       expect(finalData.map((d) => d.nonce)).toEqual([2, 3, 4]);
+      expect(finalData.map((d) => d.feePercentageBps)).toEqual([50, 50, 50]);
+      expect(finalData.map((d) => d.feeAmount)).toEqual([
+        '100000000000000',
+        '50000000000000',
+        '250000000000000',
+      ]);
+      expect(finalData.map((d) => d.amountAfterFee)).toEqual([
+        '19900000000000000',
+        '9950000000000000',
+        '49750000000000000',
+      ]);
     });
   });
 });

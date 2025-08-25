@@ -44,14 +44,14 @@ describe('TokenFeesService tests', () => {
 
   describe('calculateUnwrapFee', () => {
     it('should correctly calculate fee', () => {
-      const tokenAmount = utils.parseUnits('100', 6).toString();
+      const tokenAmount = utils.parseUnits('100', 18).toString();
 
       const result = service.calculateUnwrapFee({
         tokenAmount,
       });
 
-      expect(utils.formatUnits(result.feeAmount, 6)).toEqual('0.5');
-      expect(utils.formatUnits(result.amountAfterFee, 6)).toEqual('99.5');
+      expect(utils.formatUnits(result.feeAmount, 18)).toEqual('0.5');
+      expect(utils.formatUnits(result.amountAfterFee, 18)).toEqual('99.5');
     });
   });
 });

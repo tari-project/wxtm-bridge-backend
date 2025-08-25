@@ -30,7 +30,7 @@ export class SubgraphService {
       await this.subgraphClientService.getTokensUnwrappedRecords(lastNonce);
 
     const tokensWithFees = tokensUnwrapped.map((token) => {
-      const { amountAfterFee, feeAmount, feePercentageBps } =
+      const { feeAmount, amountAfterFee, feePercentageBps } =
         this.tokenFeesService.calculateUnwrapFee({
           tokenAmount: token.amount,
         });
