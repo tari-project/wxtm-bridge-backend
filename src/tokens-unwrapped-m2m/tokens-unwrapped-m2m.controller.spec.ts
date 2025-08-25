@@ -202,6 +202,89 @@ describe('TokensUnwrappedM2MController', () => {
     });
   });
 
+  describe('PATCH /tokens-unwrapped-m2m/confirmed', () => {
+    it('returns 401 with invalid M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/confirmed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer invalid-token')
+        .send({})
+        .expect(401);
+    });
+
+    it('updates transaction from AWAITING_CONFIRMATION to CONFIRMED', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        },
+      );
+
+      const dto: UpdateTokensUnwrappedStatusDTO = {
+        paymentId: transaction.paymentId,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/confirmed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CONFIRMED,
+        }),
+      );
+    });
+
+    it('does not update transaction if status is not AWAITING_CONFIRMATION', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CREATED,
+        },
+      );
+
+      const dto: UpdateTokensUnwrappedStatusDTO = {
+        paymentId: transaction.paymentId,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/confirmed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const unchangedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(unchangedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CREATED,
+        }),
+      );
+    });
+  });
+
   describe('PATCH /tokens-unwrapped-m2m/set-error', () => {
     it('returns 401 with invalid M2M auth token', async () => {
       await request(app.getHttpServer())

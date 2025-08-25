@@ -49,6 +49,16 @@ export class TokensUnwrappedM2MController
     return this.service.updateToAwaitingConfirmation(paymentId);
   }
 
+  @Patch('confirmed')
+  @M2MAuthGuard({
+    description: 'Update to transaction to confirmed',
+  })
+  updateToConfirmed(
+    @Body() { paymentId }: UpdateTokensUnwrappedStatusDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToConfirmed(paymentId);
+  }
+
   @Patch('set-error')
   @M2MAuthGuard({
     description: 'Set error on unwrapped tokens transaction',
