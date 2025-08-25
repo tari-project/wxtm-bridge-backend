@@ -15,7 +15,7 @@ import {
 } from './wrap-token.dto';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
-import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
+import { TokenFeesService } from '../token-fees/token-fees.service';
 import { ConfigService } from '@nestjs/config';
 import { IConfig } from '../config/config.interface';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
@@ -29,7 +29,7 @@ export class WrapTokenService {
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
     @InjectRepository(SettingsEntity)
     private readonly settingsRepository: Repository<SettingsEntity>,
-    private readonly wrapTokenFeesService: WrapTokenFeesService,
+    private readonly tokenFeesService: TokenFeesService,
     private readonly configService: ConfigService<IConfig, true>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
   ) {}
@@ -47,7 +47,7 @@ export class WrapTokenService {
     }
 
     const { amountAfterFee, feeAmount, feePercentageBps } =
-      this.wrapTokenFeesService.calculateFee({
+      this.tokenFeesService.calculateWrapFee({
         tokenAmount,
       });
 

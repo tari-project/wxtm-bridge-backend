@@ -22,6 +22,7 @@ export interface ISubgraph {
 
 export interface IFees {
   wrapTokenFeePercentageBps: number;
+  tokensUnwrapFeePercentageBps: number;
 }
 
 export interface IBlockchain {

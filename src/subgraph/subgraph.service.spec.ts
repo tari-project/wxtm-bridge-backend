@@ -76,11 +76,13 @@ describe('SubgraphService tests', () => {
 
       expect(result).toHaveLength(3);
 
-      expect(result[0].nonce).toEqual('2');
-      expect(result[1].nonce).toEqual('3');
-      expect(result[2].nonce).toEqual('4');
+      expect(result[0].nonce).toEqual(2);
+      expect(result[1].nonce).toEqual(3);
+      expect(result[2].nonce).toEqual(4);
 
-      const data = await getRepository(TokensUnwrappedEntity).find();
+      const data = await getRepository(TokensUnwrappedEntity).find({
+        order: { nonce: 'ASC' },
+      });
 
       expect(data).toHaveLength(3);
       expect(data[0].subgraphId).toEqual(
@@ -111,11 +113,14 @@ describe('SubgraphService tests', () => {
           {
             subgraphId:
               '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-5',
-            nonce: '5',
+            nonce: 5,
+            signature: 'TokensUnwrapped',
+            contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
             from: '0xaaaf0e896a78a1848e4fa25ce901108f0d61c7f3',
             targetTariAddress:
               '1b1F8934h12kj34j15h12k3k5j1j32h123ffaalla9442HJ',
             amount: '66600000000000000',
+            blockHash: '0x9032102',
             blockNumber: 8173000,
             blockTimestamp: new Date(),
             transactionHash:
@@ -124,11 +129,14 @@ describe('SubgraphService tests', () => {
           {
             subgraphId:
               '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-8',
-            nonce: '8',
+            nonce: 8,
+            signature: 'TokensUnwrapped',
+            contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
             from: '0xbbbf0e896a78a1848e4fa25ce901108f0d61c7f4',
             targetTariAddress:
               '2v2F8934h12kj34j15h12k3k5j1j32h123ffaalla9333FF',
             amount: '88800000000000000',
+            blockHash: '0x9032105',
             blockNumber: 8173000,
             blockTimestamp: new Date(),
             transactionHash:
@@ -148,8 +156,8 @@ describe('SubgraphService tests', () => {
       expect(result2[1].subgraphId).toEqual(
         '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-8',
       );
-      expect(result2[0].nonce).toEqual('5');
-      expect(result2[1].nonce).toEqual('8');
+      expect(result2[0].nonce).toEqual(5);
+      expect(result2[1].nonce).toEqual(8);
 
       const data = await getRepository(TokensUnwrappedEntity).find({
         order: { nonce: 'ASC' },
@@ -164,9 +172,15 @@ describe('SubgraphService tests', () => {
           subgraphId:
             '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
           nonce: 2,
+          signature: 'TokensUnwrapped',
+          contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla939666',
           amount: '20000000000000000',
+          feePercentageBps: 50,
+          feeAmount: '100000000000000',
+          amountAfterFee: '19900000000000000',
+          blockHash: '0x9032106',
           blockNumber: 8172949,
           blockTimestamp: new Date(),
           transactionHash:
@@ -176,9 +190,15 @@ describe('SubgraphService tests', () => {
           subgraphId:
             '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3',
           nonce: 3,
+          signature: 'TokensUnwrapped',
+          contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla9392BC',
           amount: '10000000000000000',
+          feePercentageBps: 50,
+          feeAmount: '50000000000000',
+          amountAfterFee: '9950000000000000',
+          blockHash: '0x9032107',
           blockNumber: 8172930,
           blockTimestamp: new Date(),
           transactionHash:
@@ -188,7 +208,10 @@ describe('SubgraphService tests', () => {
 
       await getRepository(TokensUnwrappedEntity).save(initialRecords);
 
-      const initialData = await getRepository(TokensUnwrappedEntity).find();
+      const initialData = await getRepository(TokensUnwrappedEntity).find({
+        order: { nonce: 'ASC' },
+      });
+
       expect(initialData).toHaveLength(2);
       expect(initialData.map((d) => d.nonce)).toEqual([2, 3]);
       expect(initialData.map((d) => d.subgraphId)).toEqual([
@@ -204,7 +227,7 @@ describe('SubgraphService tests', () => {
       expect(result[0].subgraphId).toEqual(
         '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-4',
       );
-      expect(result[0].nonce).toEqual('4');
+      expect(result[0].nonce).toEqual(4);
 
       expect(
         SubgraphClientServiceMock.getTokensUnwrappedRecords,

@@ -26,6 +26,12 @@ export class TokensUnwrappedEntity {
   nonce: number;
 
   @Column()
+  signature: string;
+
+  @Column()
+  contractAddress: string;
+
+  @Column()
   from: string;
 
   @Column()
@@ -33,6 +39,18 @@ export class TokensUnwrappedEntity {
 
   @Column({ type: 'numeric', precision: 38, scale: 0 })
   amount: string;
+
+  @Column()
+  feePercentageBps: number;
+
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  feeAmount: string;
+
+  @Column({ type: 'numeric', precision: 38, scale: 0 })
+  amountAfterFee: string;
+
+  @Column({ unique: true })
+  blockHash: string;
 
   @Column()
   blockNumber: number;
