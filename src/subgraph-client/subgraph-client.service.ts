@@ -63,7 +63,7 @@ export class SubgraphClientService {
         contractAddress: event.contract,
         from: from,
         targetTariAddress: tariAddress,
-        amount: amount,
+        amount: amount.toString(),
         transactionHash: event.transactionHash,
         blockHash: event.blockHash,
         blockNumber: parseInt(event.blockNumber),
