@@ -6,6 +6,7 @@ export class CreateTokensUnwrappedAudit1756137029079
   name = 'CreateTokensUnwrappedAudit1756137029079';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM "tokens_unwrapped"`);
     await queryRunner.query(
       `CREATE TYPE "public"."tokens_unwrapped_audits_fromstatus_enum" AS ENUM('created', 'awaiting_confirmation', 'confirmed', 'confirmed_awaiting_approval', 'sending_tokens', 'tokens_sent', 'unprocessable')`,
     );
