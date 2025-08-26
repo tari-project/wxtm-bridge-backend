@@ -4,8 +4,10 @@ import { Repository } from 'typeorm';
 import { EventBridgeEvent } from 'aws-lambda';
 import { SubgraphClientService } from '../subgraph-client/subgraph-client.service';
 import { TokenFeesService } from '../token-fees/token-fees.service';
+import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
 
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
+import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 
 @Injectable()
 export class SubgraphService {
@@ -14,6 +16,7 @@ export class SubgraphService {
     private tokensUnwrappedRepository: Repository<TokensUnwrappedEntity>,
     private subgraphClientService: SubgraphClientService,
     private readonly tokenFeesService: TokenFeesService,
+    private readonly tokensUnwrappedAuditService: TokensUnwrappedAuditService,
   ) {}
 
   async onEventReceived(
@@ -45,6 +48,14 @@ export class SubgraphService {
 
     const savedTokens =
       await this.tokensUnwrappedRepository.save(tokensWithFees);
+
+    for (const token of savedTokens) {
+      await this.tokensUnwrappedAuditService.recordTransactionEvent({
+        transactionId: token.id,
+        paymentId: token.paymentId,
+        toStatus: TokensUnwrappedStatus.CREATED,
+      });
+    }
 
     return savedTokens;
   }

@@ -8,6 +8,7 @@ import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.cons
 import { TokensUnwrappedSetErrorDTO } from './tokens-unwrapped-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
+import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
 
 @Injectable()
 export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappedEntity> {
@@ -15,20 +16,37 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
     @InjectRepository(TokensUnwrappedEntity)
     repo: Repository<TokensUnwrappedEntity>,
     private readonly transactionEvaluationService: TransactionEvaluationService,
+    private readonly tokensUnwrappedAuditService: TokensUnwrappedAuditService,
   ) {
     super(repo);
   }
 
   async updateToAwaitingConfirmation(paymentId: string): Promise<SuccessDTO> {
-    await this.repo.update(
-      {
+    const transaction = await this.repo.findOne({
+      where: {
         paymentId,
         status: TokensUnwrappedStatus.CREATED,
       },
-      {
-        status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-      },
-    );
+    });
+
+    if (transaction) {
+      await this.repo.update(
+        {
+          paymentId,
+          status: TokensUnwrappedStatus.CREATED,
+        },
+        {
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        },
+      );
+
+      await this.tokensUnwrappedAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId,
+        fromStatus: TokensUnwrappedStatus.CREATED,
+        toStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      });
+    }
 
     return {
       success: true,
@@ -36,15 +54,31 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
   }
 
   async updateToConfirmed(paymentId: string): Promise<SuccessDTO> {
-    await this.repo.update(
-      {
+    const transaction = await this.repo.findOne({
+      where: {
         paymentId,
         status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
       },
-      {
-        status: TokensUnwrappedStatus.CONFIRMED,
-      },
-    );
+    });
+
+    if (transaction) {
+      await this.repo.update(
+        {
+          paymentId,
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        },
+        {
+          status: TokensUnwrappedStatus.CONFIRMED,
+        },
+      );
+
+      await this.tokensUnwrappedAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId,
+        fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        toStatus: TokensUnwrappedStatus.CONFIRMED,
+      });
+    }
 
     return {
       success: true,
