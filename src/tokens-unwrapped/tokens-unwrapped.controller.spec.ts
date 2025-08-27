@@ -8,6 +8,7 @@ import {
   TestDatabaseModule,
   initializeDatabase,
   clearDatabase,
+  getRepository,
 } from '../../test/database';
 import { setMiddlewares } from '../helpers/setMiddlewares';
 import { Auth0Keys } from '../auth/auth.providers';
@@ -17,6 +18,7 @@ import { Factory, getFactory } from '../../test/factory/factory';
 import { TokensUnwrappedModule } from './tokens-unwrapped.module';
 import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
+import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
 
 describe('TokensUnwrappedController', () => {
   let app: INestApplication;
@@ -116,6 +118,79 @@ describe('TokensUnwrappedController', () => {
 
       const { body } = await request(app.getHttpServer())
         .get(`/tokens-unwrapped/${transactionId}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+  });
+
+  describe('PATCH /tokens-unwrapped/approve/:id', () => {
+    it('should approve transaction with status CONFIRMED_AWAITING_APPROVAL', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/tokens-unwrapped/approve/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual({
+        ...transaction,
+        status: TokensUnwrappedStatus.CONFIRMED,
+        approvingUserId: admin.id,
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('should not approve transaction with status other than CONFIRMED_AWAITING_APPROVAL', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CREATED,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/tokens-unwrapped/approve/${transaction.id}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({ success: false });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({ where: { id: transaction.id } });
+
+      expect(updatedTransaction).toEqual({
+        ...transaction,
+        status: TokensUnwrappedStatus.CREATED,
+        approvingUserId: null,
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('returns 401 for a regular user', async () => {
+      const transactionId = 1;
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/tokens-unwrapped/approve/${transactionId}`)
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${userAccessToken}`)
         .expect(401);

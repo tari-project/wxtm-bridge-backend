@@ -33,4 +33,12 @@ export class UpdateSettingReqDTO {
     max: '5000000000000000000000000',
   })
   batchAmountThreshold: string;
+
+  @IsNotEmpty()
+  @IsNumberString()
+  @IsMinMaxNumberString({
+    min: '1000000000000000000',
+    max: '900000000000000000000000',
+  })
+  unwrapManualApprovalThreshold: string;
 }

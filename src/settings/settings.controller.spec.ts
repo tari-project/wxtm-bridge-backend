@@ -169,7 +169,9 @@ describe('SettingsController', () => {
       maxBatchSize: 20,
       maxBatchAgeMs: 3600000,
       batchAmountThreshold: '15000000000000000000000',
+      unwrapManualApprovalThreshold: '200000000000000000000000',
     };
+
     it('should update settings for admin user', async () => {
       const settings = await factory.create<SettingsEntity>(
         SettingsEntity.name,
@@ -196,6 +198,9 @@ describe('SettingsController', () => {
       expect(updatedSettings.maxBatchAgeMs).toBe(3600000);
       expect(updatedSettings.batchAmountThreshold).toBe(
         '15000000000000000000000',
+      );
+      expect(updatedSettings.unwrapManualApprovalThreshold).toBe(
+        '200000000000000000000000',
       );
     });
 

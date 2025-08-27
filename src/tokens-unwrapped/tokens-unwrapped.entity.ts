@@ -6,11 +6,14 @@ import {
   UpdateDateColumn,
   Generated,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
 import { TokensUnwrappedAuditEntity } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity('tokens_unwrapped')
 export class TokensUnwrappedEntity {
@@ -88,6 +91,13 @@ export class TokensUnwrappedEntity {
 
   @OneToMany(() => TokensUnwrappedAuditEntity, (entity) => entity.transaction)
   audits: TokensUnwrappedAuditEntity[];
+
+  @ManyToOne(() => UserEntity, (entity) => entity.id, { nullable: true })
+  @JoinColumn()
+  approvingUser?: UserEntity;
+
+  @Column({ nullable: true })
+  approvingUserId?: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -22,6 +22,8 @@ import {
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 import { TransactionEvaluationServiceMock } from '../../test/mocks/transaction-evaluation.service.mock';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
+import { SettingsEntity } from '../settings/settings.entity';
+import { TokensUnwrappedAuditEntity } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 
 describe('TokensUnwrappedM2MController', () => {
   let app: INestApplication;
@@ -213,10 +215,15 @@ describe('TokensUnwrappedM2MController', () => {
     });
 
     it('updates transaction from AWAITING_CONFIRMATION to CONFIRMED', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        unwrapManualApprovalThreshold: '100',
+      });
+
       const transaction = await factory.create<TokensUnwrappedEntity>(
         TokensUnwrappedEntity.name,
         {
           status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+          amountAfterFee: '99',
         },
       );
 
@@ -246,6 +253,71 @@ describe('TokensUnwrappedM2MController', () => {
           status: TokensUnwrappedStatus.CONFIRMED,
         }),
       );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
+
+      expect(auditRecords[0]).toMatchObject({
+        transactionId: updatedTransaction?.id,
+        paymentId: updatedTransaction?.paymentId,
+        fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        toStatus: TokensUnwrappedStatus.CONFIRMED,
+      });
+    });
+
+    it('updates transaction from AWAITING_CONFIRMATION to CONFIRMED_AWAITING_APPROVAL when amountAfterFee exceeds the manual approval threshold', async () => {
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        unwrapManualApprovalThreshold: '100',
+      });
+
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+          amountAfterFee: '100',
+        },
+      );
+
+      const dto: UpdateTokensUnwrappedStatusDTO = {
+        paymentId: transaction.paymentId,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/confirmed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
+        }),
+      );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
+
+      expect(auditRecords[0]).toMatchObject({
+        transactionId: updatedTransaction?.id,
+        paymentId: updatedTransaction?.paymentId,
+        fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        toStatus: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
+      });
     });
 
     it('does not update transaction if status is not AWAITING_CONFIRMATION', async () => {
