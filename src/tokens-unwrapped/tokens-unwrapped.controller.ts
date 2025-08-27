@@ -1,10 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Crud, CrudController } from '@dataui/crud';
 
 import { AdminGuard } from '../auth/auth.admin.guard';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
 import { TokensUnwrappedService } from './tokens-unwrapped.service';
+import { SuccessDTO } from '../dto/success.dto';
+import { UserId } from '../decorators/user-id.decorator';
 
 @Crud({
   model: { type: TokensUnwrappedEntity },
@@ -36,4 +38,15 @@ export class TokensUnwrappedController
   implements CrudController<TokensUnwrappedEntity>
 {
   constructor(public service: TokensUnwrappedService) {}
+
+  @Patch('approve/:id')
+  @AdminGuard({
+    description: 'Approve unwrapped tokens transaction',
+  })
+  approveTransaction(
+    @Param('id') id: string,
+    @UserId() userId: number,
+  ): Promise<SuccessDTO> {
+    return this.service.approveTransaction(Number(id), userId);
+  }
 }

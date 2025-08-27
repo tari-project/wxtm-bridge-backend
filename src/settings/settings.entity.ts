@@ -42,6 +42,14 @@ export class SettingsEntity {
   })
   batchAmountThreshold: string;
 
+  @Column({
+    type: 'numeric',
+    precision: 38,
+    scale: 0,
+    default: '100000000000000000000000', // 100_000 tokens
+  })
+  unwrapManualApprovalThreshold: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

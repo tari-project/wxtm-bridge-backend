@@ -9,12 +9,15 @@ import { TokensUnwrappedSetErrorDTO } from './tokens-unwrapped-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
 import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
+import { SettingsEntity } from '../settings/settings.entity';
 
 @Injectable()
 export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappedEntity> {
   constructor(
     @InjectRepository(TokensUnwrappedEntity)
     repo: Repository<TokensUnwrappedEntity>,
+    @InjectRepository(SettingsEntity)
+    private readonly settingsRepository: Repository<SettingsEntity>,
     private readonly transactionEvaluationService: TransactionEvaluationService,
     private readonly tokensUnwrappedAuditService: TokensUnwrappedAuditService,
   ) {
@@ -53,6 +56,22 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
     };
   }
 
+  private async getConfirmedTransactionStatus(
+    transaction: TokensUnwrappedEntity,
+  ): Promise<TokensUnwrappedStatus> {
+    const { unwrapManualApprovalThreshold } =
+      await this.settingsRepository.findOneByOrFail({ id: 1 });
+
+    if (
+      BigInt(transaction.amountAfterFee) >=
+      BigInt(unwrapManualApprovalThreshold)
+    ) {
+      return TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL;
+    }
+
+    return TokensUnwrappedStatus.CONFIRMED;
+  }
+
   async updateToConfirmed(paymentId: string): Promise<SuccessDTO> {
     const transaction = await this.repo.findOne({
       where: {
@@ -62,13 +81,14 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
     });
 
     if (transaction) {
+      const status = await this.getConfirmedTransactionStatus(transaction);
       await this.repo.update(
         {
           paymentId,
           status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
         },
         {
-          status: TokensUnwrappedStatus.CONFIRMED,
+          status,
         },
       );
 
@@ -76,8 +96,10 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
         transactionId: transaction.id,
         paymentId,
         fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-        toStatus: TokensUnwrappedStatus.CONFIRMED,
+        toStatus: status,
       });
+
+      //TODO send notification that transaction requires manual approval
     }
 
     return {
