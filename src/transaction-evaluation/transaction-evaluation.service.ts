@@ -7,6 +7,7 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 import { NotificationsService } from '../notifications/notifications.service';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
+import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
 
 @Injectable()
 export class TransactionEvaluationService {
@@ -18,6 +19,7 @@ export class TransactionEvaluationService {
     @InjectRepository(TokensUnwrappedEntity)
     private readonly tokensUnwrappedRepository: Repository<TokensUnwrappedEntity>,
     private readonly notificationService: NotificationsService,
+    private readonly tokensUnwrappedAuditService: TokensUnwrappedAuditService,
   ) {}
 
   private async evaluateProposeSafeTransactionErrors(
@@ -137,6 +139,13 @@ export class TransactionEvaluationService {
           isErrorNotificationSent: true,
         },
       );
+
+      await this.tokensUnwrappedAuditService.recordTransactionEvent({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: TokensUnwrappedStatus.UNPROCESSABLE,
+      });
 
       if (!transaction.isErrorNotificationSent) {
         await this.notificationService.sendTokensUnwrappedUnprocessableNotification(

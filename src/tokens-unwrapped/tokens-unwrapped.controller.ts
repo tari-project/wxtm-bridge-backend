@@ -8,6 +8,13 @@ import { TokensUnwrappedService } from './tokens-unwrapped.service';
 
 @Crud({
   model: { type: TokensUnwrappedEntity },
+  query: {
+    join: {
+      audits: {
+        eager: true,
+      },
+    },
+  },
   routes: {
     only: ['getManyBase', 'getOneBase'],
     getManyBase: {
