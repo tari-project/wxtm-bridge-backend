@@ -13,6 +13,8 @@ import { TransactionEvaluationService } from './transaction-evaluation.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationsServiceMock } from '../../test/mocks/notifications.service.mock';
 import { TransactionEvaluationModule } from './transaction-evaluation.module';
+import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
+import { TokensUnwrappedAuditServiceMock } from '../../test/mocks/tokens-unwrapped-audit.service.mock';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
@@ -40,6 +42,8 @@ describe('TransactionEvaluationService', () => {
     })
       .overrideProvider(NotificationsService)
       .useValue(NotificationsServiceMock)
+      .overrideProvider(TokensUnwrappedAuditService)
+      .useValue(TokensUnwrappedAuditServiceMock)
       .compile();
 
     service = module.get<TransactionEvaluationService>(
@@ -52,6 +56,7 @@ describe('TransactionEvaluationService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    TokensUnwrappedAuditServiceMock.recordTransactionEvent.mockClear();
     await clearDatabase();
   });
 
@@ -229,6 +234,18 @@ describe('TransactionEvaluationService', () => {
       expect(
         NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
+
+      expect(
+        TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+      ).toHaveBeenCalledWith({
+        transactionId: transaction.id,
+        paymentId: transaction.paymentId,
+        fromStatus: transaction.status,
+        toStatus: TokensUnwrappedStatus.UNPROCESSABLE,
+      });
     });
 
     it('should not update status when transaction has fewer than 5 errors', async () => {

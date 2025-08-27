@@ -5,6 +5,7 @@ import { TransactionEvaluationService } from './transaction-evaluation.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
+import { TokensUnwrappedAuditModule } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.enti
       WrapTokenTransactionEntity,
       TokensUnwrappedEntity,
     ]),
+    TokensUnwrappedAuditModule,
     NotificationsModule,
   ],
   providers: [TransactionEvaluationService],
