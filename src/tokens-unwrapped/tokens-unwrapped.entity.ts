@@ -89,6 +89,18 @@ export class TokensUnwrappedEntity {
   @Column({ default: false })
   isErrorNotificationSent: boolean;
 
+  @Column({ nullable: true })
+  temporaryTransactionId?: string;
+
+  @Column({ nullable: true })
+  tariTxTimestamp?: number;
+
+  @Column({ nullable: true })
+  tariBlockHeight?: number;
+
+  @Column({ nullable: true, unique: true })
+  tariPaymentReference?: string;
+
   @OneToMany(() => TokensUnwrappedAuditEntity, (entity) => entity.transaction)
   audits: TokensUnwrappedAuditEntity[];
 

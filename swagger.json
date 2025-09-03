@@ -1698,7 +1698,7 @@
     "/tokens-unwrapped-m2m/awaiting-confirmation": {
       "patch": {
         "operationId": "updateToAwaitingConfirmation",
-        "summary": "Update to transaction to awaiting confirmation",
+        "summary": "Update transaction to awaiting confirmation",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1741,7 +1741,7 @@
     "/tokens-unwrapped-m2m/confirmed": {
       "patch": {
         "operationId": "updateToConfirmed",
-        "summary": "Update to transaction to confirmed",
+        "summary": "Update transaction to confirmed",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1749,6 +1749,92 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateTokensUnwrappedStatusDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "tokens-unwrapped-m2m"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/init-send-tokens": {
+      "patch": {
+        "operationId": "updateToInitSendTokens",
+        "summary": "Update transaction to init send tokens",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTokensUnwrappedStatusDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "tokens-unwrapped-m2m"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/sending-tokens": {
+      "patch": {
+        "operationId": "updateToSendingTokens",
+        "summary": "Update transaction to sending tokens",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSendingTokensDTO"
               }
             }
           }
@@ -2793,6 +2879,7 @@
               "awaiting_confirmation",
               "confirmed",
               "confirmed_awaiting_approval",
+              "init_send_tokens",
               "sending_tokens",
               "tokens_sent",
               "unprocessable"
@@ -2805,6 +2892,7 @@
               "awaiting_confirmation",
               "confirmed",
               "confirmed_awaiting_approval",
+              "init_send_tokens",
               "sending_tokens",
               "tokens_sent",
               "unprocessable"
@@ -2905,6 +2993,7 @@
               "awaiting_confirmation",
               "confirmed",
               "confirmed_awaiting_approval",
+              "init_send_tokens",
               "sending_tokens",
               "tokens_sent",
               "unprocessable"
@@ -2913,6 +3002,18 @@
           },
           "isErrorNotificationSent": {
             "type": "boolean"
+          },
+          "temporaryTransactionId": {
+            "type": "string"
+          },
+          "tariTxTimestamp": {
+            "type": "number"
+          },
+          "tariBlockHeight": {
+            "type": "number"
+          },
+          "tariPaymentReference": {
+            "type": "string"
           },
           "audits": {
             "type": "array",
@@ -3119,6 +3220,21 @@
         },
         "required": [
           "paymentId"
+        ]
+      },
+      "UpdateSendingTokensDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "temporaryTransactionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId",
+          "temporaryTransactionId"
         ]
       },
       "TokensUnwrappedSetErrorDTO": {
