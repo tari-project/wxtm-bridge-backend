@@ -8,6 +8,7 @@ import { TokensUnwrappedM2MService } from './tokens-unwrapped-m2m.service';
 import { SuccessDTO } from '../dto/success.dto';
 import {
   TokensUnwrappedSetErrorDTO,
+  UpdateSendingTokensDTO,
   UpdateTokensUnwrappedStatusDTO,
 } from './tokens-unwrapped-m2m.dto';
 
@@ -41,7 +42,7 @@ export class TokensUnwrappedM2MController
 
   @Patch('awaiting-confirmation')
   @M2MAuthGuard({
-    description: 'Update to transaction to awaiting confirmation',
+    description: 'Update transaction to awaiting confirmation',
   })
   updateToAwaitingConfirmation(
     @Body() { paymentId }: UpdateTokensUnwrappedStatusDTO,
@@ -51,12 +52,32 @@ export class TokensUnwrappedM2MController
 
   @Patch('confirmed')
   @M2MAuthGuard({
-    description: 'Update to transaction to confirmed',
+    description: 'Update transaction to confirmed',
   })
   updateToConfirmed(
     @Body() { paymentId }: UpdateTokensUnwrappedStatusDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToConfirmed(paymentId);
+  }
+
+  @Patch('init-send-tokens')
+  @M2MAuthGuard({
+    description: 'Update transaction to init send tokens',
+  })
+  updateToInitSendTokens(
+    @Body() { paymentId }: UpdateTokensUnwrappedStatusDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToInitSendTokens(paymentId);
+  }
+
+  @Patch('sending-tokens')
+  @M2MAuthGuard({
+    description: 'Update transaction to sending tokens',
+  })
+  updateToSendingTokens(
+    @Body() dto: UpdateSendingTokensDTO,
+  ): Promise<SuccessDTO> {
+    return this.service.updateToSendingTokens(dto);
   }
 
   @Patch('set-error')

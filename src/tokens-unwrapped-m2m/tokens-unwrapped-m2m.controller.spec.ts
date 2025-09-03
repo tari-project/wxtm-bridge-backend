@@ -18,6 +18,7 @@ import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import {
   TokensUnwrappedSetErrorDTO,
   UpdateTokensUnwrappedStatusDTO,
+  UpdateSendingTokensDTO,
 } from './tokens-unwrapped-m2m.dto';
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 import { TransactionEvaluationServiceMock } from '../../test/mocks/transaction-evaluation.service.mock';
@@ -352,6 +353,239 @@ describe('TokensUnwrappedM2MController', () => {
           id: transaction.id,
           paymentId: transaction.paymentId,
           status: TokensUnwrappedStatus.CREATED,
+        }),
+      );
+    });
+  });
+
+  describe('PATCH /tokens-unwrapped-m2m/init-send-tokens', () => {
+    it('returns 401 with invalid M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/init-send-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer invalid-token')
+        .send({})
+        .expect(401);
+    });
+
+    it('updates transaction from CONFIRMED to INIT_SEND_TOKENS', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CONFIRMED,
+        },
+      );
+
+      const dto: UpdateTokensUnwrappedStatusDTO = {
+        paymentId: transaction.paymentId,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/init-send-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        }),
+      );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
+
+      expect(auditRecords[0]).toMatchObject({
+        transactionId: updatedTransaction?.id,
+        paymentId: updatedTransaction?.paymentId,
+        fromStatus: TokensUnwrappedStatus.CONFIRMED,
+        toStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+      });
+    });
+
+    it('does not update transaction if status is not CONFIRMED', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CREATED,
+        },
+      );
+
+      const dto: UpdateTokensUnwrappedStatusDTO = {
+        paymentId: transaction.paymentId,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/init-send-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const unchangedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(unchangedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CREATED,
+        }),
+      );
+    });
+  });
+
+  describe('PATCH /tokens-unwrapped-m2m/sending-tokens', () => {
+    it('returns 401 with invalid M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/sending-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer invalid-token')
+        .send({})
+        .expect(401);
+    });
+
+    it('updates transaction from INIT_SEND_TOKENS to SENDING_TOKENS with temporaryTransactionId', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        },
+      );
+
+      const dto: UpdateSendingTokensDTO = {
+        paymentId: transaction.paymentId,
+        temporaryTransactionId: '12345',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/sending-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.SENDING_TOKENS,
+          temporaryTransactionId: '12345',
+        }),
+      );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
+
+      expect(auditRecords[0]).toMatchObject({
+        transactionId: updatedTransaction?.id,
+        paymentId: updatedTransaction?.paymentId,
+        fromStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        toStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+      });
+    });
+
+    it('does not update transaction if status is not INIT_SEND_TOKENS', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CONFIRMED,
+        },
+      );
+
+      const dto: UpdateSendingTokensDTO = {
+        paymentId: transaction.paymentId,
+        temporaryTransactionId: '12345',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/sending-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const unchangedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(unchangedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CONFIRMED,
+          temporaryTransactionId: null,
+        }),
+      );
+    });
+
+    it('does not update transaction if temporaryTransactionId is already set', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+          temporaryTransactionId: 'existing-id',
+        },
+      );
+
+      const dto: UpdateSendingTokensDTO = {
+        paymentId: transaction.paymentId,
+        temporaryTransactionId: '12345',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/sending-tokens')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const unchangedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(unchangedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+          temporaryTransactionId: 'existing-id',
         }),
       );
     });
