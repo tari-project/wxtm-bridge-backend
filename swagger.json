@@ -1867,6 +1867,49 @@
         ]
       }
     },
+    "/tokens-unwrapped-m2m/tokens-sent": {
+      "patch": {
+        "operationId": "updateToTokensSent",
+        "summary": "Update transaction to tokens sent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateToTokensSentDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "tokens-unwrapped-m2m"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/tokens-unwrapped-m2m/set-error": {
       "patch": {
         "operationId": "setCurrentError",
@@ -3235,6 +3278,29 @@
         "required": [
           "paymentId",
           "temporaryTransactionId"
+        ]
+      },
+      "UpdateToTokensSentDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "tariTxTimestamp": {
+            "type": "number"
+          },
+          "tariBlockHeight": {
+            "type": "number"
+          },
+          "tariPaymentReference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId",
+          "tariTxTimestamp",
+          "tariBlockHeight",
+          "tariPaymentReference"
         ]
       },
       "TokensUnwrappedSetErrorDTO": {

@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumberString, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class UpdateTokensUnwrappedStatusDTO {
   @IsUUID()
@@ -26,4 +32,18 @@ export class UpdateSendingTokensDTO extends UpdateTokensUnwrappedStatusDTO {
   @IsNumberString()
   @IsNotEmpty()
   temporaryTransactionId: string;
+}
+
+export class UpdateToTokensSentDTO extends UpdateTokensUnwrappedStatusDTO {
+  @IsNumber()
+  @IsNotEmpty()
+  tariTxTimestamp: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  tariBlockHeight: number;
+
+  @IsString()
+  @IsNotEmpty()
+  tariPaymentReference: string;
 }

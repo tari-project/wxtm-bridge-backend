@@ -19,6 +19,7 @@ import {
   TokensUnwrappedSetErrorDTO,
   UpdateTokensUnwrappedStatusDTO,
   UpdateSendingTokensDTO,
+  UpdateToTokensSentDTO,
 } from './tokens-unwrapped-m2m.dto';
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 import { TransactionEvaluationServiceMock } from '../../test/mocks/transaction-evaluation.service.mock';
@@ -606,6 +607,116 @@ describe('TokensUnwrappedM2MController', () => {
           paymentId: transaction.paymentId,
           status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
           temporaryTransactionId: 'existing-id',
+        }),
+      );
+    });
+  });
+
+  describe('PATCH /tokens-unwrapped-m2m/tokens-sent', () => {
+    it('returns 401 with invalid M2M auth token', async () => {
+      await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/tokens-sent')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer invalid-token')
+        .send({})
+        .expect(401);
+    });
+
+    it('updates transaction from SENDING_TOKENS to TOKENS_SENT with Tari transaction details', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.SENDING_TOKENS,
+          temporaryTransactionId: '12345',
+        },
+      );
+
+      const dto: UpdateToTokensSentDTO = {
+        paymentId: transaction.paymentId,
+        tariTxTimestamp: 1630000000,
+        tariBlockHeight: 123456,
+        tariPaymentReference: 'tari-payment-ref-123',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/tokens-sent')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(200);
+
+      expect(body).toEqual({ success: true });
+
+      const updatedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(updatedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.TOKENS_SENT,
+          temporaryTransactionId: 'n/a',
+          tariTxTimestamp: 1630000000,
+          tariBlockHeight: 123456,
+          tariPaymentReference: 'tari-payment-ref-123',
+        }),
+      );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
+
+      expect(auditRecords[0]).toMatchObject({
+        transactionId: updatedTransaction?.id,
+        paymentId: updatedTransaction?.paymentId,
+        fromStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+        toStatus: TokensUnwrappedStatus.TOKENS_SENT,
+      });
+    });
+
+    it('does not update transaction if status is not SENDING_TOKENS', async () => {
+      const transaction = await factory.create<TokensUnwrappedEntity>(
+        TokensUnwrappedEntity.name,
+        {
+          status: TokensUnwrappedStatus.CONFIRMED,
+        },
+      );
+
+      const dto: UpdateToTokensSentDTO = {
+        paymentId: transaction.paymentId,
+        tariTxTimestamp: 1630000000,
+        tariBlockHeight: 123456,
+        tariPaymentReference: 'tari-payment-ref-123',
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .patch('/tokens-unwrapped-m2m/tokens-sent')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${m2mToken}`)
+        .send(dto)
+        .expect(400);
+
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
+
+      const unchangedTransaction = await getRepository(
+        TokensUnwrappedEntity,
+      ).findOne({
+        where: { id: transaction.id },
+      });
+
+      expect(unchangedTransaction).toEqual(
+        expect.objectContaining({
+          id: transaction.id,
+          paymentId: transaction.paymentId,
+          status: TokensUnwrappedStatus.CONFIRMED,
         }),
       );
     });

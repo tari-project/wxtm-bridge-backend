@@ -10,6 +10,7 @@ import {
   TokensUnwrappedSetErrorDTO,
   UpdateSendingTokensDTO,
   UpdateTokensUnwrappedStatusDTO,
+  UpdateToTokensSentDTO,
 } from './tokens-unwrapped-m2m.dto';
 
 @Crud({
@@ -78,6 +79,14 @@ export class TokensUnwrappedM2MController
     @Body() dto: UpdateSendingTokensDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToSendingTokens(dto);
+  }
+
+  @Patch('tokens-sent')
+  @M2MAuthGuard({
+    description: 'Update transaction to tokens sent',
+  })
+  updateToTokensSent(@Body() dto: UpdateToTokensSentDTO): Promise<SuccessDTO> {
+    return this.service.updateToTokensSent(dto);
   }
 
   @Patch('set-error')
