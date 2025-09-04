@@ -8,6 +8,7 @@ import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.cons
 import {
   TokensUnwrappedSetErrorDTO,
   UpdateSendingTokensDTO,
+  UpdateToTokensSentDTO,
 } from './tokens-unwrapped-m2m.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
@@ -192,6 +193,52 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       paymentId,
       fromStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
       toStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+    });
+
+    return {
+      success: true,
+    };
+  }
+
+  async updateToTokensSent({
+    paymentId,
+    tariBlockHeight,
+    tariTxTimestamp,
+    tariPaymentReference,
+  }: UpdateToTokensSentDTO): Promise<SuccessDTO> {
+    const transaction = await this.repo.findOne({
+      where: {
+        paymentId,
+        status: TokensUnwrappedStatus.SENDING_TOKENS,
+      },
+    });
+
+    if (!transaction) {
+      throw new BadRequestException(
+        `Transaction with paymentId ${paymentId} not found`,
+      );
+    }
+
+    const updateResult = await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.SENDING_TOKENS,
+      },
+      {
+        status: TokensUnwrappedStatus.TOKENS_SENT,
+        temporaryTransactionId: 'n/a',
+        tariTxTimestamp,
+        tariBlockHeight,
+        tariPaymentReference,
+      },
+    );
+    verifyUpdateApplied(updateResult);
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+      toStatus: TokensUnwrappedStatus.TOKENS_SENT,
     });
 
     return {
