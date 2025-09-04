@@ -19,6 +19,7 @@ import { TokensUnwrappedModule } from './tokens-unwrapped.module';
 import { UserEntity } from '../user/user.entity';
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
 import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
+import { UserUnwrappedTransactionStatus } from './tokens-unwrapped.dto';
 
 describe('TokensUnwrappedController', () => {
   let app: INestApplication;
@@ -127,6 +128,130 @@ describe('TokensUnwrappedController', () => {
         message: 'Unauthorized',
       });
     });
+  });
+
+  describe('GET /tokens-unwrapped/transactions', () => {
+    it('returns transactions for the specified Tari address', async () => {
+      const tariAddress =
+        'f4e6b6a1d2a3e5c8f9b0d1e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c';
+      const otherTariAddress =
+        'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2';
+
+      const [transaction_1, transaction_2] =
+        await factory.createMany<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          3,
+          [
+            {
+              targetTariAddress: tariAddress,
+              status: TokensUnwrappedStatus.CREATED,
+              transactionHash: '0x1234567890abcdef',
+            },
+            {
+              targetTariAddress: tariAddress,
+              status: TokensUnwrappedStatus.TOKENS_SENT,
+            },
+            {
+              targetTariAddress: otherTariAddress,
+              status: TokensUnwrappedStatus.CREATED,
+            },
+          ],
+        );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/tokens-unwrapped/transactions?tariAddress=${tariAddress}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        transactions: expect.arrayContaining([
+          {
+            paymentId: transaction_1.paymentId,
+            destinationAddress: transaction_1.targetTariAddress,
+            amount: transaction_1.amount,
+            amountAfterFee: transaction_1.amountAfterFee,
+            feeAmount: transaction_1.feeAmount,
+            createdAt: transaction_1.createdAt.toISOString(),
+            status: UserUnwrappedTransactionStatus.PENDING,
+            transactionHash: transaction_1.transactionHash,
+          },
+          {
+            paymentId: transaction_2.paymentId,
+            destinationAddress: transaction_2.targetTariAddress,
+            amount: transaction_2.amount,
+            amountAfterFee: transaction_2.amountAfterFee,
+            feeAmount: transaction_2.feeAmount,
+            createdAt: transaction_2.createdAt.toISOString(),
+            status: UserUnwrappedTransactionStatus.SUCCESS,
+            transactionHash: transaction_2.transactionHash,
+          },
+        ]),
+      });
+    });
+
+    it('returns an empty array when no transactions exist for the Tari address', async () => {
+      const tariAddress = 'non_existent_tari_address';
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/tokens-unwrapped/transactions?tariAddress=${tariAddress}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        transactions: [],
+      });
+    });
+
+    it.each([
+      [TokensUnwrappedStatus.CREATED, UserUnwrappedTransactionStatus.PENDING],
+      [
+        TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        UserUnwrappedTransactionStatus.PENDING,
+      ],
+      [
+        TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
+        UserUnwrappedTransactionStatus.PENDING,
+      ],
+      [
+        TokensUnwrappedStatus.CONFIRMED,
+        UserUnwrappedTransactionStatus.PROCESSING,
+      ],
+      [
+        TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        UserUnwrappedTransactionStatus.PROCESSING,
+      ],
+      [
+        TokensUnwrappedStatus.SENDING_TOKENS,
+        UserUnwrappedTransactionStatus.PROCESSING,
+      ],
+      [
+        TokensUnwrappedStatus.TOKENS_SENT,
+        UserUnwrappedTransactionStatus.SUCCESS,
+      ],
+      [
+        TokensUnwrappedStatus.UNPROCESSABLE,
+        UserUnwrappedTransactionStatus.ERROR,
+      ],
+    ])(
+      'maps transaction status %s to user status %s',
+      async (txStatus, expectedUserStatus) => {
+        const tariAddress =
+          'f4e6b6a1d2a3e5c8f9b0d1e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c';
+
+        await factory.create<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          {
+            targetTariAddress: tariAddress,
+            status: txStatus,
+          },
+        );
+
+        const { body } = await request(app.getHttpServer())
+          .get(`/tokens-unwrapped/transactions?tariAddress=${tariAddress}`)
+          .expect(200);
+
+        expect(body.transactions).toHaveLength(1);
+        expect(body.transactions[0].status).toBe(expectedUserStatus);
+      },
+    );
   });
 
   describe('PATCH /tokens-unwrapped/approve/:id', () => {
