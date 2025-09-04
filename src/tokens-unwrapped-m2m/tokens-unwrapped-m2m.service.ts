@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
@@ -13,6 +13,7 @@ import { SuccessDTO } from '../dto/success.dto';
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
 import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
 import { SettingsEntity } from '../settings/settings.entity';
+import { verifyUpdateApplied } from '../helpers/verifyUpdateApplied';
 
 @Injectable()
 export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappedEntity> {
@@ -35,24 +36,29 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       },
     });
 
-    if (transaction) {
-      await this.repo.update(
-        {
-          paymentId,
-          status: TokensUnwrappedStatus.CREATED,
-        },
-        {
-          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-        },
+    if (!transaction) {
+      throw new BadRequestException(
+        `Transaction with paymentId ${paymentId} not found`,
       );
-
-      await this.tokensUnwrappedAuditService.recordTransactionEvent({
-        transactionId: transaction.id,
-        paymentId,
-        fromStatus: TokensUnwrappedStatus.CREATED,
-        toStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-      });
     }
+
+    const updateResults = await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.CREATED,
+      },
+      {
+        status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      },
+    );
+    verifyUpdateApplied(updateResults);
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: TokensUnwrappedStatus.CREATED,
+      toStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+    });
 
     return {
       success: true,
@@ -83,27 +89,30 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       },
     });
 
-    if (transaction) {
-      const status = await this.getConfirmedTransactionStatus(transaction);
-      await this.repo.update(
-        {
-          paymentId,
-          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-        },
-        {
-          status,
-        },
+    if (!transaction) {
+      throw new BadRequestException(
+        `Transaction with paymentId ${paymentId} not found`,
       );
-
-      await this.tokensUnwrappedAuditService.recordTransactionEvent({
-        transactionId: transaction.id,
-        paymentId,
-        fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
-        toStatus: status,
-      });
-
-      //TODO send notification that transaction requires manual approval
     }
+
+    const status = await this.getConfirmedTransactionStatus(transaction);
+    const updateResults = await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      },
+      {
+        status,
+      },
+    );
+    verifyUpdateApplied(updateResults);
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      toStatus: status,
+    });
 
     return {
       success: true,
@@ -118,24 +127,29 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       },
     });
 
-    if (transaction) {
-      await this.repo.update(
-        {
-          paymentId,
-          status: TokensUnwrappedStatus.CONFIRMED,
-        },
-        {
-          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-        },
+    if (!transaction) {
+      throw new BadRequestException(
+        `Transaction with paymentId ${paymentId} not found`,
       );
-
-      await this.tokensUnwrappedAuditService.recordTransactionEvent({
-        transactionId: transaction.id,
-        paymentId,
-        fromStatus: TokensUnwrappedStatus.CONFIRMED,
-        toStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-      });
     }
+
+    const updateResults = await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.CONFIRMED,
+      },
+      {
+        status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+      },
+    );
+    verifyUpdateApplied(updateResults);
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: TokensUnwrappedStatus.CONFIRMED,
+      toStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+    });
 
     return {
       success: true,
@@ -154,26 +168,31 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       },
     });
 
-    if (transaction) {
-      await this.repo.update(
-        {
-          paymentId,
-          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-          temporaryTransactionId: IsNull(),
-        },
-        {
-          status: TokensUnwrappedStatus.SENDING_TOKENS,
-          temporaryTransactionId,
-        },
+    if (!transaction) {
+      throw new BadRequestException(
+        `Transaction with paymentId ${paymentId} not found`,
       );
-
-      await this.tokensUnwrappedAuditService.recordTransactionEvent({
-        transactionId: transaction.id,
-        paymentId,
-        fromStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-        toStatus: TokensUnwrappedStatus.SENDING_TOKENS,
-      });
     }
+
+    const updateResult = await this.repo.update(
+      {
+        paymentId,
+        status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        temporaryTransactionId: IsNull(),
+      },
+      {
+        status: TokensUnwrappedStatus.SENDING_TOKENS,
+        temporaryTransactionId,
+      },
+    );
+    verifyUpdateApplied(updateResult);
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId,
+      fromStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+      toStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+    });
 
     return {
       success: true,

@@ -185,9 +185,13 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const unchangedTransaction = await getRepository(
         TokensUnwrappedEntity,
@@ -338,9 +342,13 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const unchangedTransaction = await getRepository(
         TokensUnwrappedEntity,
@@ -433,9 +441,13 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const unchangedTransaction = await getRepository(
         TokensUnwrappedEntity,
@@ -531,9 +543,13 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const unchangedTransaction = await getRepository(
         TokensUnwrappedEntity,
@@ -570,9 +586,13 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(200);
+        .expect(400);
 
-      expect(body).toEqual({ success: true });
+      expect(body).toEqual({
+        error: 'Bad Request',
+        message: `Transaction with paymentId ${transaction.paymentId} not found`,
+        statusCode: 400,
+      });
 
       const unchangedTransaction = await getRepository(
         TokensUnwrappedEntity,
