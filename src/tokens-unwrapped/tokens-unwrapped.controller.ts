@@ -19,7 +19,7 @@ import { GetUserUnwrappedTransactionsRespDTO } from './tokens-unwrapped.dto';
     },
   },
   routes: {
-    only: ['getManyBase', 'getOneBase'],
+    only: ['getManyBase', 'getOneBase', 'updateOneBase'],
     getManyBase: {
       decorators: [
         AdminGuard({ description: 'Returns unwrapped tokens transactions' }),
@@ -29,6 +29,9 @@ import { GetUserUnwrappedTransactionsRespDTO } from './tokens-unwrapped.dto';
       decorators: [
         AdminGuard({ description: 'Returns unwrapped tokens transaction' }),
       ],
+    },
+    updateOneBase: {
+      decorators: [AdminGuard({ description: 'Reset processor status' })],
     },
   },
 })
