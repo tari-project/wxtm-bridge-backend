@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
@@ -8,6 +8,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
+import { SetTransactionToUnprocessableParams } from './transaction-evaluation.interface';
 
 @Injectable()
 export class TransactionEvaluationService {
@@ -121,6 +122,40 @@ export class TransactionEvaluationService {
     await this.evaluateRemainingWrapTokenTransactionErrors(transaction);
   }
 
+  private async setTransactionToUnprocessable({
+    transaction,
+    unprocessableStatus,
+    errorThreshold,
+  }: SetTransactionToUnprocessableParams): Promise<void> {
+    if (transaction.error.length < errorThreshold) {
+      return;
+    }
+
+    await this.tokensUnwrappedRepository.update(
+      {
+        id: transaction.id,
+        status: transaction.status,
+      },
+      {
+        status: unprocessableStatus,
+        isErrorNotificationSent: true,
+      },
+    );
+
+    await this.tokensUnwrappedAuditService.recordTransactionEvent({
+      transactionId: transaction.id,
+      paymentId: transaction.paymentId,
+      fromStatus: transaction.status,
+      toStatus: unprocessableStatus,
+    });
+
+    if (!transaction.isErrorNotificationSent) {
+      await this.notificationService.sendTokensUnwrappedUnprocessableNotification(
+        transaction.id,
+      );
+    }
+  }
+
   async evaluateTokensUnwrappedErrors(id: number): Promise<void> {
     const transaction = await this.tokensUnwrappedRepository.findOneOrFail({
       where: {
@@ -128,30 +163,41 @@ export class TransactionEvaluationService {
       },
     });
 
-    if (transaction.error.length >= this.maxErrorsThreshold) {
-      await this.tokensUnwrappedRepository.update(
-        {
-          id: transaction.id,
-          status: Not(TokensUnwrappedStatus.UNPROCESSABLE),
-        },
-        {
-          status: TokensUnwrappedStatus.UNPROCESSABLE,
-          isErrorNotificationSent: true,
-        },
-      );
+    switch (transaction.status) {
+      case TokensUnwrappedStatus.CREATED:
+        await this.setTransactionToUnprocessable({
+          transaction,
+          unprocessableStatus: TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+          errorThreshold: 1,
+        });
 
-      await this.tokensUnwrappedAuditService.recordTransactionEvent({
-        transactionId: transaction.id,
-        paymentId: transaction.paymentId,
-        fromStatus: transaction.status,
-        toStatus: TokensUnwrappedStatus.UNPROCESSABLE,
-      });
+        break;
 
-      if (!transaction.isErrorNotificationSent) {
-        await this.notificationService.sendTokensUnwrappedUnprocessableNotification(
-          transaction.id,
-        );
-      }
+      case TokensUnwrappedStatus.AWAITING_CONFIRMATION:
+        await this.setTransactionToUnprocessable({
+          transaction,
+          unprocessableStatus:
+            TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+          errorThreshold: 1,
+        });
+        break;
+
+      case TokensUnwrappedStatus.CONFIRMED:
+      case TokensUnwrappedStatus.INIT_SEND_TOKENS:
+        await this.setTransactionToUnprocessable({
+          transaction,
+          unprocessableStatus: TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+          errorThreshold: 1,
+        });
+        break;
+
+      case TokensUnwrappedStatus.SENDING_TOKENS:
+        await this.setTransactionToUnprocessable({
+          transaction,
+          unprocessableStatus:
+            TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
+          errorThreshold: 1,
+        });
     }
   }
 }

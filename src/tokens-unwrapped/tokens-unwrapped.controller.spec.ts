@@ -227,7 +227,19 @@ describe('TokensUnwrappedController', () => {
         UserUnwrappedTransactionStatus.SUCCESS,
       ],
       [
-        TokensUnwrappedStatus.UNPROCESSABLE,
+        TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+        UserUnwrappedTransactionStatus.ERROR,
+      ],
+      [
+        TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+        UserUnwrappedTransactionStatus.ERROR,
+      ],
+      [
+        TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+        UserUnwrappedTransactionStatus.ERROR,
+      ],
+      [
+        TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
         UserUnwrappedTransactionStatus.ERROR,
       ],
     ])(
@@ -325,5 +337,103 @@ describe('TokensUnwrappedController', () => {
         message: 'Unauthorized',
       });
     });
+  });
+
+  describe('PATCH /tokens-unwrapped/:id', () => {
+    it('returns 401 for a regular user', async () => {
+      const transactionId = 1;
+
+      const { body } = await request(app.getHttpServer())
+        .patch(`/tokens-unwrapped/${transactionId}`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+
+    it.each([
+      [
+        TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+        TokensUnwrappedStatus.CREATED,
+      ],
+      [
+        TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+        TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+      ],
+      [
+        TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+        TokensUnwrappedStatus.CONFIRMED,
+      ],
+      [
+        TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
+        TokensUnwrappedStatus.SENDING_TOKENS,
+      ],
+    ])(
+      'should change status %s to %s and clear error fields',
+      async (currentStatus, expectedStatus) => {
+        const transaction = await factory.create<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          {
+            status: currentStatus,
+            error: [{ message: 'Some error occurred' }],
+            isErrorNotificationSent: true,
+          },
+        );
+
+        await request(app.getHttpServer())
+          .patch(`/tokens-unwrapped/${transaction.id}`)
+          .set('Content-Type', 'application/json')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send({})
+          .expect(200);
+
+        const updatedTransaction = await getRepository(
+          TokensUnwrappedEntity,
+        ).findOneOrFail({ where: { id: transaction.id } });
+
+        expect(updatedTransaction.status).toEqual(expectedStatus);
+        expect(updatedTransaction.error).toEqual([]);
+        expect(updatedTransaction.isErrorNotificationSent).toEqual(false);
+      },
+    );
+
+    it.each([
+      [TokensUnwrappedStatus.CREATED],
+      [TokensUnwrappedStatus.AWAITING_CONFIRMATION],
+      [TokensUnwrappedStatus.CONFIRMED],
+      [TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL],
+      [TokensUnwrappedStatus.INIT_SEND_TOKENS],
+      [TokensUnwrappedStatus.SENDING_TOKENS],
+      [TokensUnwrappedStatus.TOKENS_SENT],
+    ])(
+      'leaves transaction unchanged if current status %s',
+      async (currentStatus) => {
+        const transaction = await factory.create<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          {
+            status: currentStatus,
+            error: [{ message: 'Some error occurred' }],
+            isErrorNotificationSent: true,
+          },
+        );
+
+        await request(app.getHttpServer())
+          .patch(`/tokens-unwrapped/${transaction.id}`)
+          .set('Content-Type', 'application/json')
+          .set('Authorization', `Bearer ${adminAccessToken}`)
+          .send({})
+          .expect(200);
+
+        const updatedTransaction = await getRepository(
+          TokensUnwrappedEntity,
+        ).findOneOrFail({ where: { id: transaction.id } });
+
+        expect(updatedTransaction).toEqual(transaction);
+      },
+    );
   });
 });

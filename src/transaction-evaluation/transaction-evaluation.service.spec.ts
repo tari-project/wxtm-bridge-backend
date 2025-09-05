@@ -199,85 +199,73 @@ describe('TransactionEvaluationService', () => {
   });
 
   describe('evaluateTokensUnwrappedErrors', () => {
-    it('should update status to UNPROCESSABLE when transaction has 5 or more errors', async () => {
-      const transaction = await factory.create<TokensUnwrappedEntity>(
-        TokensUnwrappedEntity.name,
-        {
-          error: [
-            { code: 'ERR_1', message: 'Error 1' },
-            { code: 'ERR_2', message: 'Error 2' },
-            { code: 'ERR_3', message: 'Error 3' },
-            { code: 'ERR_4', message: 'Error 4' },
-            { code: 'ERR_5', message: 'Error 5' },
-          ],
-          isErrorNotificationSent: false,
-        },
-      );
+    it.each([
+      {
+        initialStatus: TokensUnwrappedStatus.CREATED,
+        expectedStatus: TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        expectedStatus:
+          TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.CONFIRMED,
+        expectedStatus: TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        expectedStatus: TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+        expectedStatus: TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
+      },
+    ])(
+      'should update status to $expectedStatus when transaction status is $initialStatus and has an error',
+      async ({ initialStatus, expectedStatus }) => {
+        const transaction = await factory.create<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          {
+            error: [{ code: 'ERR_1', message: 'Error 1' }],
+            isErrorNotificationSent: false,
+            status: initialStatus,
+          },
+        );
 
-      await service.evaluateTokensUnwrappedErrors(transaction.id);
+        await service.evaluateTokensUnwrappedErrors(transaction.id);
 
-      const updatedTransaction = await getRepository(
-        TokensUnwrappedEntity,
-      ).findOne({ where: { id: transaction.id } });
+        const updatedTransaction = await getRepository(
+          TokensUnwrappedEntity,
+        ).findOne({ where: { id: transaction.id } });
 
-      expect(updatedTransaction).toEqual(
-        expect.objectContaining({
-          id: transaction.id,
-          status: TokensUnwrappedStatus.UNPROCESSABLE,
-          isErrorNotificationSent: true,
-        }),
-      );
+        expect(updatedTransaction).toEqual(
+          expect.objectContaining({
+            id: transaction.id,
+            status: expectedStatus,
+            isErrorNotificationSent: true,
+          }),
+        );
 
-      expect(
-        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
-      ).toHaveBeenCalledTimes(1);
-      expect(
-        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
-      ).toHaveBeenCalledWith(transaction.id);
+        expect(
+          NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+        ).toHaveBeenCalledTimes(1);
+        expect(
+          NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+        ).toHaveBeenCalledWith(transaction.id);
 
-      expect(
-        TokensUnwrappedAuditServiceMock.recordTransactionEvent,
-      ).toHaveBeenCalledTimes(1);
-      expect(
-        TokensUnwrappedAuditServiceMock.recordTransactionEvent,
-      ).toHaveBeenCalledWith({
-        transactionId: transaction.id,
-        paymentId: transaction.paymentId,
-        fromStatus: transaction.status,
-        toStatus: TokensUnwrappedStatus.UNPROCESSABLE,
-      });
-    });
-
-    it('should not update status when transaction has fewer than 5 errors', async () => {
-      const transaction = await factory.create<TokensUnwrappedEntity>(
-        TokensUnwrappedEntity.name,
-        {
-          error: [
-            { code: 'ERR_1', message: 'Error 1' },
-            { code: 'ERR_2', message: 'Error 2' },
-            { code: 'ERR_3', message: 'Error 3' },
-          ],
-          isErrorNotificationSent: false,
-          status: TokensUnwrappedStatus.CREATED,
-        },
-      );
-
-      await service.evaluateTokensUnwrappedErrors(transaction.id);
-
-      const updatedTransaction = await getRepository(
-        TokensUnwrappedEntity,
-      ).findOne({ where: { id: transaction.id } });
-
-      expect(updatedTransaction).toEqual(
-        expect.objectContaining({
-          id: transaction.id,
-          status: TokensUnwrappedStatus.CREATED,
-        }),
-      );
-
-      expect(
-        NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
-      ).not.toHaveBeenCalled();
-    });
+        expect(
+          TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+        ).toHaveBeenCalledTimes(1);
+        expect(
+          TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+        ).toHaveBeenCalledWith({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: expectedStatus,
+        });
+      },
+    );
   });
 });

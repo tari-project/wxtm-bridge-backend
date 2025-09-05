@@ -1384,6 +1384,51 @@
             "bearer": []
           }
         ]
+      },
+      "patch": {
+        "operationId": "updateOneBaseTokensUnwrappedControllerTokensUnwrappedEntity",
+        "summary": "Reset processor status",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokensUnwrappedEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensUnwrappedEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/tokens-unwrapped": {
@@ -2862,26 +2907,32 @@
             "type": "string",
             "enum": [
               "created",
+              "created_unprocessable",
               "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
               "confirmed",
               "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
               "init_send_tokens",
               "sending_tokens",
-              "tokens_sent",
-              "unprocessable"
+              "sending_tokens_unprocessable",
+              "tokens_sent"
             ]
           },
           "toStatus": {
             "type": "string",
             "enum": [
               "created",
+              "created_unprocessable",
               "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
               "confirmed",
               "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
               "init_send_tokens",
               "sending_tokens",
-              "tokens_sent",
-              "unprocessable"
+              "sending_tokens_unprocessable",
+              "tokens_sent"
             ]
           },
           "note": {
@@ -2976,13 +3027,16 @@
           "status": {
             "enum": [
               "created",
+              "created_unprocessable",
               "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
               "confirmed",
               "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
               "init_send_tokens",
               "sending_tokens",
-              "tokens_sent",
-              "unprocessable"
+              "sending_tokens_unprocessable",
+              "tokens_sent"
             ],
             "type": "string"
           },

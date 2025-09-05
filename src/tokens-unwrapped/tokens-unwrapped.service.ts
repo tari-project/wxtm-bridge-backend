@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
+import { CrudRequest } from '@dataui/crud';
 
 import { TokensUnwrappedEntity } from './tokens-unwrapped.entity';
 import { TokensUnwrappedStatus } from './tokens-unwrapped.const';
@@ -38,7 +39,10 @@ export class TokensUnwrappedService extends TypeOrmCrudService<TokensUnwrappedEn
     switch (status) {
       case TokensUnwrappedStatus.TOKENS_SENT:
         return UserUnwrappedTransactionStatus.SUCCESS;
-      case TokensUnwrappedStatus.UNPROCESSABLE:
+      case TokensUnwrappedStatus.CREATED_UNPROCESSABLE:
+      case TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE:
+      case TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE:
+      case TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE:
         return UserUnwrappedTransactionStatus.ERROR;
       case TokensUnwrappedStatus.CONFIRMED:
       case TokensUnwrappedStatus.INIT_SEND_TOKENS:
@@ -70,5 +74,42 @@ export class TokensUnwrappedService extends TypeOrmCrudService<TokensUnwrappedEn
         transactionHash: transaction.transactionHash,
       })),
     };
+  }
+
+  async updateOne(req: CrudRequest): Promise<TokensUnwrappedEntity> {
+    const transaction = await super.getOne(req);
+
+    switch (transaction.status) {
+      case TokensUnwrappedStatus.CREATED_UNPROCESSABLE:
+        return super.updateOne(req, {
+          status: TokensUnwrappedStatus.CREATED,
+          error: [],
+          isErrorNotificationSent: false,
+        });
+
+      case TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE:
+        return super.updateOne(req, {
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+          error: [],
+          isErrorNotificationSent: false,
+        });
+
+      case TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE:
+        return super.updateOne(req, {
+          status: TokensUnwrappedStatus.CONFIRMED,
+          error: [],
+          isErrorNotificationSent: false,
+        });
+
+      case TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE:
+        return super.updateOne(req, {
+          status: TokensUnwrappedStatus.SENDING_TOKENS,
+          error: [],
+          isErrorNotificationSent: false,
+        });
+
+      default:
+        return transaction;
+    }
   }
 }
