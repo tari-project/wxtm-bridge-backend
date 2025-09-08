@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
@@ -165,7 +165,6 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       where: {
         paymentId,
         status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-        temporaryTransactionId: IsNull(),
       },
     });
 
@@ -179,7 +178,6 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       {
         paymentId,
         status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-        temporaryTransactionId: IsNull(),
       },
       {
         status: TokensUnwrappedStatus.SENDING_TOKENS,
