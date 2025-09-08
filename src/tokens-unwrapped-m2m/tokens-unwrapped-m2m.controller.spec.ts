@@ -568,7 +568,7 @@ describe('TokensUnwrappedM2MController', () => {
       );
     });
 
-    it('does not update transaction if temporaryTransactionId is already set', async () => {
+    it('update transaction even if temporaryTransactionId is already set', async () => {
       const transaction = await factory.create<TokensUnwrappedEntity>(
         TokensUnwrappedEntity.name,
         {
@@ -587,28 +587,29 @@ describe('TokensUnwrappedM2MController', () => {
         .set('Content-Type', 'application/json')
         .set('Authorization', `Bearer ${m2mToken}`)
         .send(dto)
-        .expect(400);
+        .expect(200);
 
-      expect(body).toEqual({
-        error: 'Bad Request',
-        message: `Transaction with paymentId ${transaction.paymentId} not found`,
-        statusCode: 400,
-      });
+      expect(body).toEqual({ success: true });
 
-      const unchangedTransaction = await getRepository(
+      const updatedTransaction = await getRepository(
         TokensUnwrappedEntity,
       ).findOne({
         where: { id: transaction.id },
       });
 
-      expect(unchangedTransaction).toEqual(
+      expect(updatedTransaction).toEqual(
         expect.objectContaining({
           id: transaction.id,
           paymentId: transaction.paymentId,
-          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
-          temporaryTransactionId: 'existing-id',
+          status: TokensUnwrappedStatus.SENDING_TOKENS,
+          temporaryTransactionId: '12345',
         }),
       );
+
+      const auditRecords = await getRepository(
+        TokensUnwrappedAuditEntity,
+      ).find();
+      expect(auditRecords).toHaveLength(1);
     });
   });
 
