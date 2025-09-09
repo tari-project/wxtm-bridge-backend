@@ -21,6 +21,7 @@ import { SlackModule } from './slack/slack.module';
 import { SettingsModule } from './settings/settings.module';
 import { MineToExchangeModule } from './mine-to-exchange/mine-to-exchange.module';
 import { TokensUnwrappedM2MModule } from './tokens-unwrapped-m2m/tokens-unwrapped-m2m.module';
+import { PaymentWalletBalanceModule } from './payment-wallet-balance/payment-wallet-balance.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { TokensUnwrappedM2MModule } from './tokens-unwrapped-m2m/tokens-unwrappe
     SettingsModule,
     MineToExchangeModule,
     TokensUnwrappedM2MModule,
+    PaymentWalletBalanceModule,
   ],
   providers: [
     {
