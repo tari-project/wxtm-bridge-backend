@@ -4,6 +4,7 @@ import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.enti
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 import { TokensUnwrappedAuditEntity } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 import { SettingsEntity } from '../settings/settings.entity';
+import { PaymentWalletBalanceEntity } from '../payment-wallet-balance/payment-wallet-balance.entity';
 
 export const entities = [
   UserEntity,
@@ -12,4 +13,5 @@ export const entities = [
   WrapTokenAuditEntity,
   TokensUnwrappedAuditEntity,
   SettingsEntity,
+  PaymentWalletBalanceEntity,
 ];

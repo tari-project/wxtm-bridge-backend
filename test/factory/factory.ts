@@ -9,6 +9,7 @@ import { TokensUnwrappedEntity } from '../../src/tokens-unwrapped/tokens-unwrapp
 import { WrapTokenAuditEntity } from '../../src/wrap-token-audit/wrap-token-audit.entity';
 import { TokensUnwrappedAuditEntity } from '../../src/tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 import { SettingsEntity } from '../../src/settings/settings.entity';
+import { PaymentWalletBalanceEntity } from '../../src/payment-wallet-balance/payment-wallet-balance.entity';
 
 export type Factory = typeof factory;
 export let factoryCached: Factory | undefined;
@@ -108,6 +109,11 @@ export const getFactory = async (): Promise<Factory> => {
     );
 
     factory.define(SettingsEntity.name, SettingsEntity, {});
+    factory.define(
+      PaymentWalletBalanceEntity.name,
+      PaymentWalletBalanceEntity,
+      {},
+    );
 
     factoryCached = factory;
   }

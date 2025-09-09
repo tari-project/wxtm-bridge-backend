@@ -2201,6 +2201,47 @@
           }
         ]
       }
+    },
+    "/payment-wallet-balance": {
+      "patch": {
+        "operationId": "setBalance",
+        "summary": "Set payment wallet balance",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWalletBalanceDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["payment-wallet-balance"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -3296,6 +3337,29 @@
           }
         },
         "required": ["error", "paymentId"]
+      },
+      "PaymentWalletBalanceDTO": {
+        "type": "object",
+        "properties": {
+          "availableBalance": {
+            "type": "string"
+          },
+          "pendingOutgoingBalance": {
+            "type": "string"
+          },
+          "pendingIncomingBalance": {
+            "type": "string"
+          },
+          "timelockedBalance": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "availableBalance",
+          "pendingOutgoingBalance",
+          "pendingIncomingBalance",
+          "timelockedBalance"
+        ]
       }
     }
   }
