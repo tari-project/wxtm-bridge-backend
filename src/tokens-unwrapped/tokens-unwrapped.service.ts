@@ -72,6 +72,7 @@ export class TokensUnwrappedService extends TypeOrmCrudService<TokensUnwrappedEn
         status: this.getUserTransactionStatus(transaction.status),
         createdAt: transaction.createdAt,
         transactionHash: transaction.transactionHash,
+        blockTimestamp: transaction.blockTimestamp,
       })),
     };
   }
