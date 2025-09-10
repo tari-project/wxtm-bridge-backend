@@ -51,14 +51,18 @@ describe('SubgraphService tests', () => {
 
   describe('onEventReceived', () => {
     it('should handle empty tokens list', async () => {
-      SubgraphClientServiceMock.getPushNotifications.mockResolvedValueOnce([]);
+      SubgraphClientServiceMock.getTokensUnwrappedRecords.mockResolvedValueOnce(
+        [],
+      );
 
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
       expect(result).toHaveLength(0);
-      expect(SubgraphClientServiceMock.getPushNotifications).toHaveBeenCalled();
+      expect(
+        SubgraphClientServiceMock.getTokensUnwrappedRecords,
+      ).toHaveBeenCalled();
     });
 
     it('should save and read recorded tokens unwrap events', async () => {
@@ -67,26 +71,56 @@ describe('SubgraphService tests', () => {
       );
 
       expect(
-        SubgraphClientServiceMock.getPushNotifications,
-      ).toHaveBeenCalledWith(0);
+        SubgraphClientServiceMock.getTokensUnwrappedRecords,
+      ).toHaveBeenCalledWith(-1);
 
       expect(result).toHaveLength(3);
-      expect(result[0].subgraphId).toEqual('2');
-      expect(result[1].subgraphId).toEqual('3');
-      expect(result[2].subgraphId).toEqual('4');
 
-      const data = await getRepository(TokensUnwrappedEntity).find();
+      expect(result[0].nonce).toEqual(2);
+      expect(result[1].nonce).toEqual(3);
+      expect(result[2].nonce).toEqual(4);
+
+      expect(result[0].feePercentageBps).toEqual(50);
+      expect(result[1].feePercentageBps).toEqual(50);
+      expect(result[2].feePercentageBps).toEqual(50);
+
+      expect(result[0].feeAmount).toEqual('100000000000000');
+      expect(result[1].feeAmount).toEqual('50000000000000');
+      expect(result[2].feeAmount).toEqual('250000000000000');
+
+      expect(result[0].amountAfterFee).toEqual('19900000000000000');
+      expect(result[1].amountAfterFee).toEqual('9950000000000000');
+      expect(result[2].amountAfterFee).toEqual('49750000000000000');
+
+      const data = await getRepository(TokensUnwrappedEntity).find({
+        order: { nonce: 'ASC' },
+      });
 
       expect(data).toHaveLength(3);
-      expect(data[0].subgraphId).toEqual(2);
+      expect(data[0].subgraphId).toEqual(
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
+      );
+      expect(data[0].nonce).toEqual(2);
       expect(data[0].status).toEqual(TokensUnwrappedStatus.CREATED);
-      expect(data[2].subgraphId).toEqual(4);
+      expect(data[2].nonce).toEqual(4);
       expect(data[2].status).toEqual(TokensUnwrappedStatus.CREATED);
+
+      expect(data[0].feePercentageBps).toEqual(50);
+      expect(data[1].feePercentageBps).toEqual(50);
+      expect(data[2].feePercentageBps).toEqual(50);
+
+      expect(data[0].feeAmount).toEqual('100000000000000');
+      expect(data[1].feeAmount).toEqual('50000000000000');
+      expect(data[2].feeAmount).toEqual('250000000000000');
+
+      expect(data[0].amountAfterFee).toEqual('19900000000000000');
+      expect(data[1].amountAfterFee).toEqual('9950000000000000');
+      expect(data[2].amountAfterFee).toEqual('49750000000000000');
     });
     it('should save new records without duplicates', async () => {
-      await factory.create(TokensUnwrappedEntity.name, { subgraphId: 2 });
-      await factory.create(TokensUnwrappedEntity.name, { subgraphId: 3 });
-      await factory.create(TokensUnwrappedEntity.name, { subgraphId: 4 });
+      await factory.create(TokensUnwrappedEntity.name, { nonce: 2 });
+      await factory.create(TokensUnwrappedEntity.name, { nonce: 3 });
+      await factory.create(TokensUnwrappedEntity.name, { nonce: 4 });
 
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
@@ -95,64 +129,100 @@ describe('SubgraphService tests', () => {
       expect(result).toHaveLength(0);
 
       expect(
-        SubgraphClientServiceMock.getPushNotifications,
+        SubgraphClientServiceMock.getTokensUnwrappedRecords,
       ).toHaveBeenCalledWith(4);
 
-      SubgraphClientServiceMock.getPushNotifications.mockResolvedValueOnce([
-        {
-          subgraphId: 5,
-          from: '0xaaaf0e896a78a1848e4fa25ce901108f0d61c7f3',
-          targetTariAddress: '1b1F8934h12kj34j15h12k3k5j1j32h123ffaalla9442HJ',
-          amount: '66600000000000000',
-          blockNumber: 8173000,
-          blockTimestamp: new Date(),
-          transactionHash:
-            '0xaaaab651962001cd8ba6f64be6c9bd1569df63f961cda1f6e4ea0c7cbb145aaa',
-        },
-        {
-          subgraphId: 8,
-          from: '0xbbbf0e896a78a1848e4fa25ce901108f0d61c7f4',
-          targetTariAddress: '2v2F8934h12kj34j15h12k3k5j1j32h123ffaalla9333FF',
-          amount: '88800000000000000',
-          blockNumber: 8173000,
-          blockTimestamp: new Date(),
-          transactionHash:
-            '0xccccb651962001cd8ba6f64be6c9bd1569df63f961cda1f6e4ea0c7cbb145bbb',
-        },
-      ]);
+      SubgraphClientServiceMock.getTokensUnwrappedRecords.mockResolvedValueOnce(
+        [
+          {
+            subgraphId:
+              '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-5',
+            nonce: 5,
+            signature: 'TokensUnwrapped',
+            contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
+            from: '0xaaaf0e896a78a1848e4fa25ce901108f0d61c7f3',
+            targetTariAddress:
+              '1b1F8934h12kj34j15h12k3k5j1j32h123ffaalla9442HJ',
+            amount: '66600000000000000',
+            blockHash: '0x9032102',
+            blockNumber: 8173000,
+            blockTimestamp: new Date(),
+            transactionHash:
+              '0xaaaab651962001cd8ba6f64be6c9bd1569df63f961cda1f6e4ea0c7cbb145aaa',
+          },
+          {
+            subgraphId:
+              '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-8',
+            nonce: 8,
+            signature: 'TokensUnwrapped',
+            contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
+            from: '0xbbbf0e896a78a1848e4fa25ce901108f0d61c7f4',
+            targetTariAddress:
+              '2v2F8934h12kj34j15h12k3k5j1j32h123ffaalla9333FF',
+            amount: '88800000000000000',
+            blockHash: '0x9032105',
+            blockNumber: 8173000,
+            blockTimestamp: new Date(),
+            transactionHash:
+              '0xccccb651962001cd8ba6f64be6c9bd1569df63f961cda1f6e4ea0c7cbb145bbb',
+          },
+        ],
+      );
 
       const result2 = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
       expect(result2).toHaveLength(2);
-      expect(result2[0].subgraphId).toEqual(5);
-      expect(result2[1].subgraphId).toEqual(8);
+      expect(result2[0].subgraphId).toEqual(
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-5',
+      );
+      expect(result2[1].subgraphId).toEqual(
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-8',
+      );
+      expect(result2[0].nonce).toEqual(5);
+      expect(result2[1].nonce).toEqual(8);
 
       const data = await getRepository(TokensUnwrappedEntity).find({
-        order: { subgraphId: 'ASC' },
+        order: { nonce: 'ASC' },
       });
 
       expect(data).toHaveLength(5);
-      expect(data.map((d) => d.subgraphId)).toEqual([2, 3, 4, 5, 8]);
+      expect(data.map((d) => d.nonce)).toEqual([2, 3, 4, 5, 8]);
     });
     it('should properly handle the case where some records are already saved', async () => {
       const initialRecords = [
         {
-          subgraphId: 2,
+          subgraphId:
+            '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
+          nonce: 2,
+          signature: 'TokensUnwrapped',
+          contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla939666',
           amount: '20000000000000000',
+          feePercentageBps: 50,
+          feeAmount: '100000000000000',
+          amountAfterFee: '19900000000000000',
+          blockHash: '0x9032106',
           blockNumber: 8172949,
           blockTimestamp: new Date(),
           transactionHash:
             '0x349722eabb3e135b18882cecdc2c86f177332c4cb0503c27eb910b4a32d27a0d',
         },
         {
-          subgraphId: 3,
+          subgraphId:
+            '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3',
+          nonce: 3,
+          signature: 'TokensUnwrapped',
+          contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           from: '0x226f0e896a78a1848e4fa25ce901108f0d61c7f3',
           targetTariAddress: '3a1F8934h12kj34j15h12k3k5j1j32h123ffaalla9392BC',
           amount: '10000000000000000',
+          feePercentageBps: 50,
+          feeAmount: '50000000000000',
+          amountAfterFee: '9950000000000000',
+          blockHash: '0x9032107',
           blockNumber: 8172930,
           blockTimestamp: new Date(),
           transactionHash:
@@ -162,27 +232,48 @@ describe('SubgraphService tests', () => {
 
       await getRepository(TokensUnwrappedEntity).save(initialRecords);
 
-      const initialData = await getRepository(TokensUnwrappedEntity).find();
+      const initialData = await getRepository(TokensUnwrappedEntity).find({
+        order: { nonce: 'ASC' },
+      });
+
       expect(initialData).toHaveLength(2);
-      expect(initialData.map((d) => d.subgraphId)).toEqual([2, 3]);
+      expect(initialData.map((d) => d.nonce)).toEqual([2, 3]);
+      expect(initialData.map((d) => d.subgraphId)).toEqual([
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-2',
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-3',
+      ]);
 
       const result = await service.onEventReceived(
         {} as unknown as EventBridgeEvent<any, any>,
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].subgraphId).toEqual('4');
+      expect(result[0].subgraphId).toEqual(
+        '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-4',
+      );
+      expect(result[0].nonce).toEqual(4);
 
       expect(
-        SubgraphClientServiceMock.getPushNotifications,
+        SubgraphClientServiceMock.getTokensUnwrappedRecords,
       ).toHaveBeenCalledWith(3);
 
       const finalData = await getRepository(TokensUnwrappedEntity).find({
-        order: { subgraphId: 'ASC' },
+        order: { nonce: 'ASC' },
       });
 
       expect(finalData).toHaveLength(3);
-      expect(finalData.map((d) => d.subgraphId)).toEqual([2, 3, 4]);
+      expect(finalData.map((d) => d.nonce)).toEqual([2, 3, 4]);
+      expect(finalData.map((d) => d.feePercentageBps)).toEqual([50, 50, 50]);
+      expect(finalData.map((d) => d.feeAmount)).toEqual([
+        '100000000000000',
+        '50000000000000',
+        '250000000000000',
+      ]);
+      expect(finalData.map((d) => d.amountAfterFee)).toEqual([
+        '19900000000000000',
+        '9950000000000000',
+        '49750000000000000',
+      ]);
     });
   });
 });

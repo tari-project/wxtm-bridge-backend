@@ -21,9 +21,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "security": [
           {
             "bearer": []
@@ -99,9 +97,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "security": [
           {
             "bearer": []
@@ -257,9 +253,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "security": [
           {
             "bearer": []
@@ -294,9 +288,7 @@
             }
           }
         },
-        "tags": [
-          "wrap-token"
-        ]
+        "tags": ["wrap-token"]
       }
     },
     "/wrap-token/transactions": {
@@ -325,9 +317,7 @@
             }
           }
         },
-        "tags": [
-          "wrap-token"
-        ]
+        "tags": ["wrap-token"]
       }
     },
     "/wrap-token/params": {
@@ -347,9 +337,7 @@
             }
           }
         },
-        "tags": [
-          "wrap-token"
-        ]
+        "tags": ["wrap-token"]
       }
     },
     "/wrap-token/status": {
@@ -369,9 +357,7 @@
             }
           }
         },
-        "tags": [
-          "wrap-token"
-        ]
+        "tags": ["wrap-token"]
       }
     },
     "/wrap-token/tokens-sent/{paymentId}": {
@@ -410,9 +396,7 @@
             }
           }
         },
-        "tags": [
-          "wrap-token"
-        ]
+        "tags": ["wrap-token"]
       }
     },
     "/wrap-token-transactions/{id}": {
@@ -483,9 +467,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions"
-        ],
+        "tags": ["wrap-token-transactions"],
         "security": [
           {
             "bearer": []
@@ -530,9 +512,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions"
-        ],
+        "tags": ["wrap-token-transactions"],
         "security": [
           {
             "bearer": []
@@ -688,9 +668,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions"
-        ],
+        "tags": ["wrap-token-transactions"],
         "security": [
           {
             "bearer": []
@@ -728,9 +706,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -771,9 +747,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -814,9 +788,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -857,9 +829,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -900,9 +870,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -943,9 +911,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -986,9 +952,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -1067,9 +1031,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -1228,9 +1190,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wrap-token-transactions-m2m"
-        ],
+        "tags": ["wrap-token-transactions-m2m"],
         "security": [
           {
             "bearer": []
@@ -1271,9 +1231,78 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "notifications"
+        "tags": ["notifications"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped/transactions": {
+      "get": {
+        "operationId": "getUserTransactions",
+        "summary": "Get all unwrapped transactions by target Tari address",
+        "parameters": [
+          {
+            "name": "tariAddress",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserUnwrappedTransactionsRespDTO"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["tokens-unwrapped"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped/approve/{id}": {
+      "patch": {
+        "operationId": "approveTransaction",
+        "summary": "Approve unwrapped tokens transaction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped"],
         "security": [
           {
             "bearer": []
@@ -1349,9 +1378,52 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "tokens-unwrapped"
+        "tags": ["tokens-unwrapped"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateOneBaseTokensUnwrappedControllerTokensUnwrappedEntity",
+        "summary": "Reset processor status",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokensUnwrappedEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensUnwrappedEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped"],
         "security": [
           {
             "bearer": []
@@ -1507,9 +1579,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "tokens-unwrapped"
-        ],
+        "tags": ["tokens-unwrapped"],
         "security": [
           {
             "bearer": []
@@ -1537,9 +1607,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "security": [
           {
             "bearer": []
@@ -1575,9 +1643,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "security": [
           {
             "bearer": []
@@ -1611,9 +1677,7 @@
             }
           }
         },
-        "tags": [
-          "mine-to-exchange"
-        ]
+        "tags": ["mine-to-exchange"]
       }
     },
     "/mine-to-exchange/transactions": {
@@ -1646,10 +1710,254 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "mine-to-exchange"
-        ],
+        "tags": ["mine-to-exchange"],
         "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/awaiting-confirmation": {
+      "patch": {
+        "operationId": "updateToAwaitingConfirmation",
+        "summary": "Update transaction to awaiting confirmation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTokensUnwrappedStatusDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/confirmed": {
+      "patch": {
+        "operationId": "updateToConfirmed",
+        "summary": "Update transaction to confirmed",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTokensUnwrappedStatusDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/init-send-tokens": {
+      "patch": {
+        "operationId": "updateToInitSendTokens",
+        "summary": "Update transaction to init send tokens",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTokensUnwrappedStatusDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/sending-tokens": {
+      "patch": {
+        "operationId": "updateToSendingTokens",
+        "summary": "Update transaction to sending tokens",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSendingTokensDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/tokens-sent": {
+      "patch": {
+        "operationId": "updateToTokensSent",
+        "summary": "Update transaction to tokens sent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateToTokensSentDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/tokens-unwrapped-m2m/set-error": {
+      "patch": {
+        "operationId": "setCurrentError",
+        "summary": "Set error on unwrapped tokens transaction",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokensUnwrappedSetErrorDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
           {
             "bearer": []
           }
@@ -1724,9 +2032,7 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "tokens-unwrapped-m2m"
-        ],
+        "tags": ["tokens-unwrapped-m2m"],
         "security": [
           {
             "bearer": []
@@ -1885,9 +2191,48 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "tokens-unwrapped-m2m"
-        ],
+        "tags": ["tokens-unwrapped-m2m"],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/payment-wallet-balance": {
+      "patch": {
+        "operationId": "setBalance",
+        "summary": "Set payment wallet balance",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWalletBalanceDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["payment-wallet-balance"],
         "security": [
           {
             "bearer": []
@@ -1924,9 +2269,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "isAdmin"
-        ]
+        "required": ["isAdmin"]
       },
       "GetManyUserEntityResponseDto": {
         "type": "object",
@@ -1950,13 +2293,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "data",
-          "count",
-          "total",
-          "page",
-          "pageCount"
-        ]
+        "required": ["data", "count", "total", "page", "pageCount"]
       },
       "UserEntity": {
         "type": "object",
@@ -1979,13 +2316,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "auth0Id",
-          "isAdmin",
-          "createdAt",
-          "updatedAt"
-        ]
+        "required": ["id", "auth0Id", "isAdmin", "createdAt", "updatedAt"]
       },
       "CreateWrapTokenReqDTO": {
         "type": "object",
@@ -2006,11 +2337,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "from",
-          "to",
-          "tokenAmount"
-        ]
+        "required": ["from", "to", "tokenAmount"]
       },
       "CreateWrapTokenRespDTO": {
         "type": "object",
@@ -2019,9 +2346,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "paymentId"
-        ]
+        "required": ["paymentId"]
       },
       "UserTransactionDTO": {
         "type": "object",
@@ -2079,9 +2404,7 @@
             }
           }
         },
-        "required": [
-          "transactions"
-        ]
+        "required": ["transactions"]
       },
       "GetWrapTokenParamsRespDTO": {
         "type": "object",
@@ -2093,25 +2416,17 @@
             "type": "number"
           }
         },
-        "required": [
-          "coldWalletAddress",
-          "wrapTokenFeePercentageBps"
-        ]
+        "required": ["coldWalletAddress", "wrapTokenFeePercentageBps"]
       },
       "GetWrapTokenServiceStatusRespDTO": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "online",
-              "offline"
-            ]
+            "enum": ["online", "offline"]
           }
         },
-        "required": [
-          "status"
-        ]
+        "required": ["status"]
       },
       "UpdateToTokensSentReqDTO": {
         "type": "object",
@@ -2131,9 +2446,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "success"
-        ]
+        "required": ["success"]
       },
       "GetManyWrapTokenTransactionEntityResponseDto": {
         "type": "object",
@@ -2157,13 +2470,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "data",
-          "count",
-          "total",
-          "page",
-          "pageCount"
-        ]
+        "required": ["data", "count", "total", "page", "pageCount"]
       },
       "WrapTokenAuditEntity": {
         "type": "object",
@@ -2312,10 +2619,7 @@
             "type": "string"
           },
           "origin": {
-            "enum": [
-              "bridge",
-              "mining"
-            ],
+            "enum": ["bridge", "mining"],
             "type": "string"
           },
           "isNotificationSent": {
@@ -2429,9 +2733,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "BaseTransactionDTO": {
         "type": "object",
@@ -2440,9 +2742,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "paymentId"
-        ]
+        "required": ["paymentId"]
       },
       "CreatingTransactionRequestDTO": {
         "type": "object",
@@ -2454,9 +2754,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "TransactionCreatedDTO": {
         "type": "object",
@@ -2474,11 +2772,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "paymentId",
-          "safeTxHash",
-          "safeNonce"
-        ]
+        "required": ["paymentId", "safeTxHash", "safeNonce"]
       },
       "TransactionCreatedRequestDTO": {
         "type": "object",
@@ -2490,9 +2784,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "ErrorUpdateDTO": {
         "type": "object",
@@ -2507,10 +2799,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "error",
-          "paymentId"
-        ]
+        "required": ["error", "paymentId"]
       },
       "ErrorUpdateRequestDTO": {
         "type": "object",
@@ -2522,9 +2811,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "ExecutingTransactionRequestDTO": {
         "type": "object",
@@ -2536,9 +2823,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "TransactionExecutedDTO": {
         "type": "object",
@@ -2550,9 +2835,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "paymentId"
-        ]
+        "required": ["paymentId"]
       },
       "TransactionExecutedRequestDTO": {
         "type": "object",
@@ -2564,9 +2847,7 @@
             }
           }
         },
-        "required": [
-          "walletTransactions"
-        ]
+        "required": ["walletTransactions"]
       },
       "MintHightTransactionReqDTO": {
         "type": "object",
@@ -2575,9 +2856,60 @@
             "type": "string"
           }
         },
+        "required": ["safeTxHash"]
+      },
+      "UserUnwrappedTransactionDTO": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "SUCCESS", "PROCESSING", "ERROR"]
+          },
+          "destinationAddress": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "amountAfterFee": {
+            "type": "string"
+          },
+          "feeAmount": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "transactionHash": {
+            "type": "string"
+          }
+        },
         "required": [
-          "safeTxHash"
+          "status",
+          "destinationAddress",
+          "paymentId",
+          "amount",
+          "amountAfterFee",
+          "feeAmount",
+          "createdAt",
+          "transactionHash"
         ]
+      },
+      "GetUserUnwrappedTransactionsRespDTO": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserUnwrappedTransactionDTO"
+            }
+          }
+        },
+        "required": ["transactions"]
       },
       "GetManyTokensUnwrappedEntityResponseDto": {
         "type": "object",
@@ -2601,22 +2933,106 @@
             "type": "number"
           }
         },
-        "required": [
-          "data",
-          "count",
-          "total",
-          "page",
-          "pageCount"
-        ]
+        "required": ["data", "count", "total", "page", "pageCount"]
       },
-      "TokensUnwrappedEntity": {
+      "TokensUnwrappedAuditEntity": {
         "type": "object",
         "properties": {
           "id": {
             "type": "number"
           },
-          "subgraphId": {
+          "paymentId": {
+            "type": "string"
+          },
+          "fromStatus": {
+            "type": "string",
+            "enum": [
+              "created",
+              "created_unprocessable",
+              "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
+              "confirmed",
+              "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
+              "init_send_tokens",
+              "sending_tokens",
+              "sending_tokens_unprocessable",
+              "tokens_sent"
+            ]
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "created",
+              "created_unprocessable",
+              "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
+              "confirmed",
+              "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
+              "init_send_tokens",
+              "sending_tokens",
+              "sending_tokens_unprocessable",
+              "tokens_sent"
+            ]
+          },
+          "note": {
+            "type": "object"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/TokensUnwrappedEntity"
+          },
+          "transactionId": {
             "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "transaction",
+          "transactionId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TokensUnwrappedEntity": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "default": []
+          },
+          "id": {
+            "type": "number"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "subgraphId": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "number"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "contractAddress": {
+            "type": "string"
           },
           "from": {
             "type": "string"
@@ -2625,6 +3041,18 @@
             "type": "string"
           },
           "amount": {
+            "type": "string"
+          },
+          "feePercentageBps": {
+            "type": "number"
+          },
+          "feeAmount": {
+            "type": "string"
+          },
+          "amountAfterFee": {
+            "type": "string"
+          },
+          "blockHash": {
             "type": "string"
           },
           "blockNumber": {
@@ -2640,12 +3068,45 @@
           "status": {
             "enum": [
               "created",
+              "created_unprocessable",
               "awaiting_confirmation",
+              "awaiting_confirmation_unprocessable",
               "confirmed",
-              "tokens_burned",
-              "tokens_minted"
+              "confirmed_awaiting_approval",
+              "confirmed_unprocessable",
+              "init_send_tokens",
+              "sending_tokens",
+              "sending_tokens_unprocessable",
+              "tokens_sent"
             ],
             "type": "string"
+          },
+          "isErrorNotificationSent": {
+            "type": "boolean"
+          },
+          "temporaryTransactionId": {
+            "type": "string"
+          },
+          "tariTxTimestamp": {
+            "type": "number"
+          },
+          "tariBlockHeight": {
+            "type": "number"
+          },
+          "tariPaymentReference": {
+            "type": "string"
+          },
+          "audits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokensUnwrappedAuditEntity"
+            }
+          },
+          "approvingUser": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "approvingUserId": {
+            "type": "number"
           },
           "createdAt": {
             "format": "date-time",
@@ -2657,15 +3118,26 @@
           }
         },
         "required": [
+          "error",
           "id",
+          "paymentId",
           "subgraphId",
+          "nonce",
+          "signature",
+          "contractAddress",
           "from",
           "targetTariAddress",
           "amount",
+          "feePercentageBps",
+          "feeAmount",
+          "amountAfterFee",
+          "blockHash",
           "blockNumber",
           "blockTimestamp",
           "transactionHash",
           "status",
+          "isErrorNotificationSent",
+          "audits",
           "createdAt",
           "updatedAt"
         ]
@@ -2679,10 +3151,7 @@
           },
           "wrapTokensServiceStatus": {
             "type": "string",
-            "enum": [
-              "online",
-              "offline"
-            ]
+            "enum": ["online", "offline"]
           },
           "maxBatchSize": {
             "type": "number"
@@ -2691,6 +3160,9 @@
             "type": "number"
           },
           "batchAmountThreshold": {
+            "type": "string"
+          },
+          "unwrapManualApprovalThreshold": {
             "type": "string"
           },
           "createdAt": {
@@ -2708,6 +3180,7 @@
           "maxBatchSize",
           "maxBatchAgeMs",
           "batchAmountThreshold",
+          "unwrapManualApprovalThreshold",
           "createdAt",
           "updatedAt"
         ]
@@ -2717,10 +3190,7 @@
         "properties": {
           "wrapTokensServiceStatus": {
             "type": "string",
-            "enum": [
-              "online",
-              "offline"
-            ]
+            "enum": ["online", "offline"]
           },
           "maxBatchSize": {
             "type": "number",
@@ -2733,13 +3203,17 @@
           },
           "batchAmountThreshold": {
             "type": "string"
+          },
+          "unwrapManualApprovalThreshold": {
+            "type": "string"
           }
         },
         "required": [
           "wrapTokensServiceStatus",
           "maxBatchSize",
           "maxBatchAgeMs",
-          "batchAmountThreshold"
+          "batchAmountThreshold",
+          "unwrapManualApprovalThreshold"
         ]
       },
       "MineToExchangeConfigDTO": {
@@ -2749,9 +3223,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "toAddress"
-        ]
+        "required": ["toAddress"]
       },
       "MineToExchangeConfigRespDTO": {
         "type": "object",
@@ -2763,10 +3235,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "walletAddress",
-          "paymentId"
-        ]
+        "required": ["walletAddress", "paymentId"]
       },
       "MiningTransactionDTO": {
         "type": "object",
@@ -2808,8 +3277,88 @@
             }
           }
         },
+        "required": ["transactions"]
+      },
+      "UpdateTokensUnwrappedStatusDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": ["paymentId"]
+      },
+      "UpdateSendingTokensDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "temporaryTransactionId": {
+            "type": "string"
+          }
+        },
+        "required": ["paymentId", "temporaryTransactionId"]
+      },
+      "UpdateToTokensSentDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "tariTxTimestamp": {
+            "type": "number"
+          },
+          "tariBlockHeight": {
+            "type": "number"
+          },
+          "tariPaymentReference": {
+            "type": "string"
+          }
+        },
         "required": [
-          "transactions"
+          "paymentId",
+          "tariTxTimestamp",
+          "tariBlockHeight",
+          "tariPaymentReference"
+        ]
+      },
+      "TokensUnwrappedSetErrorDTO": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": ["error", "paymentId"]
+      },
+      "PaymentWalletBalanceDTO": {
+        "type": "object",
+        "properties": {
+          "availableBalance": {
+            "type": "string"
+          },
+          "pendingOutgoingBalance": {
+            "type": "string"
+          },
+          "pendingIncomingBalance": {
+            "type": "string"
+          },
+          "timelockedBalance": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "availableBalance",
+          "pendingOutgoingBalance",
+          "pendingIncomingBalance",
+          "timelockedBalance"
         ]
       }
     }

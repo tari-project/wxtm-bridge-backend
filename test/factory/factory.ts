@@ -7,7 +7,9 @@ import { UserEntity } from '../../src/user/user.entity';
 import { WrapTokenTransactionEntity } from '../../src/wrap-token-transaction/wrap-token-transaction.entity';
 import { TokensUnwrappedEntity } from '../../src/tokens-unwrapped/tokens-unwrapped.entity';
 import { WrapTokenAuditEntity } from '../../src/wrap-token-audit/wrap-token-audit.entity';
+import { TokensUnwrappedAuditEntity } from '../../src/tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
 import { SettingsEntity } from '../../src/settings/settings.entity';
+import { PaymentWalletBalanceEntity } from '../../src/payment-wallet-balance/payment-wallet-balance.entity';
 
 export type Factory = typeof factory;
 export let factoryCached: Factory | undefined;
@@ -48,20 +50,34 @@ export const getFactory = async (): Promise<Factory> => {
     factory.define(TokensUnwrappedEntity.name, TokensUnwrappedEntity, {
       subgraphId: factory.sequence(
         'TokensUnwrappedEntity.subgraphId',
-        (n) => n,
+        (n) => `0xsubgraph${n}`,
       ),
+      nonce: factory.sequence('TokensUnwrappedEntity.nonce', (n) => n),
+      signature: 'TokensUnwrapped',
+      contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
       from: factory.sequence('TokensUnwrappedEntity.from', (n) => `0x${n}`),
       targetTariAddress: factory.sequence(
         'TokensUnwrappedEntity.targetTariAddress',
         (n) => `tari${n}`,
       ),
-      amount: factory.sequence(
-        'TokensUnwrappedEntity.amount',
-        (n) => `${n}000000000000000000`,
+      amount: factory.sequence('TokensUnwrappedEntity.amount', (n) => `${n}`),
+      feePercentageBps: 50,
+      feeAmount: factory.sequence(
+        'TokensUnwrappedEntity.feeAmount',
+        (n) => `${n}`,
       ),
+      amountAfterFee: factory.sequence(
+        'TokensUnwrappedEntity.amountAfterFee',
+        (n) => `${n}`,
+      ),
+      blockHash: factory.sequence(
+        'TokensUnwrappedEntity.blockHash',
+        (n) => `0xblock${n}`,
+      ),
+
       blockNumber: factory.sequence(
         'TokensUnwrappedEntity.blockNumber',
-        (n) => n + 1000000,
+        (n) => n,
       ),
       blockTimestamp: factory.sequence(
         'TokensUnwrappedEntity.blockTimestamp',
@@ -80,7 +96,24 @@ export const getFactory = async (): Promise<Factory> => {
       transactionId: factory.assoc(WrapTokenTransactionEntity.name, 'id'),
     });
 
+    factory.define(
+      TokensUnwrappedAuditEntity.name,
+      TokensUnwrappedAuditEntity,
+      {
+        paymentId: factory.sequence(
+          'TokensUnwrappedAuditEntity.paymentId',
+          () => uuidv4(),
+        ),
+        transactionId: factory.assoc(TokensUnwrappedEntity.name, 'id'),
+      },
+    );
+
     factory.define(SettingsEntity.name, SettingsEntity, {});
+    factory.define(
+      PaymentWalletBalanceEntity.name,
+      PaymentWalletBalanceEntity,
+      {},
+    );
 
     factoryCached = factory;
   }

@@ -35,7 +35,7 @@ describe('SubgraphClientService', () => {
     const mockDecodedData = [
       [
         ['0xuser1', 'tariAddress1'], // tuple(address,string)
-        { toString: () => '1000000000000000000' }, // uint256 amount
+        '1000000000000000000', // uint256 amount
       ],
     ];
 
@@ -44,17 +44,17 @@ describe('SubgraphClientService', () => {
       .mockReturnValue(mockDecodedData);
 
     const mockResponse = {
-      pushNotifications: [
+      tokensUnwrappedRecords: [
         {
-          id: '1',
+          id: '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
+          nonce: '42',
           signature: 'TokensUnwrapped',
-          contract: '0xcontract1',
+          contract: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
           timestamp: blockTimestampSeconds.toString(),
-          blockHash: '0xblockhash1',
+          blockHash: '0x9032102',
           blockNumber: '12345678',
           transactionHash: '0xhash1',
           logIndex: '0',
-          seqNumber: '42',
           transactionData: '0xabcdef1234567890',
         },
       ],
@@ -64,24 +64,29 @@ describe('SubgraphClientService', () => {
 
     const subgraphUrl = config().subgraph.url;
 
-    const result = await service.getPushNotifications(10);
+    const result = await service.getTokensUnwrappedRecords(10);
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       subgraphUrl,
-      expect.stringContaining('pushNotifications'),
+      expect.stringContaining('tokensUnwrappedRecords'),
     );
 
     expect(graphqlRequest.request).toHaveBeenCalledWith(
       expect.any(String),
-      expect.stringContaining('seqNumber_gt: 10'),
+      expect.stringContaining('nonce_gt: 10'),
     );
 
     expect(result).toEqual([
       {
-        subgraphId: 42,
+        subgraphId:
+          '0x0b3517c2ea73a13072aaa893aa07f0a1083726a43e58f625d7d2451c9d75cab5-43-1',
+        nonce: 42,
+        signature: 'TokensUnwrapped',
+        contractAddress: '0x4F31d7FC63FdBcfC119F9A0C0549150B00C356e8',
         from: '0xuser1',
         targetTariAddress: 'tariAddress1',
         amount: '1000000000000000000',
+        blockHash: '0x9032102',
         blockNumber: 12345678,
         blockTimestamp: new Date(blockTimestampSeconds * 1000),
         transactionHash: '0xhash1',

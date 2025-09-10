@@ -13,8 +13,12 @@ import { TransactionEvaluationService } from './transaction-evaluation.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationsServiceMock } from '../../test/mocks/notifications.service.mock';
 import { TransactionEvaluationModule } from './transaction-evaluation.module';
+import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
+import { TokensUnwrappedAuditServiceMock } from '../../test/mocks/tokens-unwrapped-audit.service.mock';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token-transaction.const';
+import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
+import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
 
 describe('TransactionEvaluationService', () => {
   let service: TransactionEvaluationService;
@@ -38,6 +42,8 @@ describe('TransactionEvaluationService', () => {
     })
       .overrideProvider(NotificationsService)
       .useValue(NotificationsServiceMock)
+      .overrideProvider(TokensUnwrappedAuditService)
+      .useValue(TokensUnwrappedAuditServiceMock)
       .compile();
 
     service = module.get<TransactionEvaluationService>(
@@ -50,6 +56,7 @@ describe('TransactionEvaluationService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    TokensUnwrappedAuditServiceMock.recordTransactionEvent.mockClear();
     await clearDatabase();
   });
 
@@ -57,7 +64,7 @@ describe('TransactionEvaluationService', () => {
     await module.close();
   });
 
-  describe('evaluateErrors', () => {
+  describe('evaluateWrapTokenErrors', () => {
     it('should update status to CREATING_SAFE_TRANSACTION_UNPROCESSABLE when transaction has TOKENS_RECEIVED status and errors', async () => {
       const transaction = await factory.create<WrapTokenTransactionEntity>(
         WrapTokenTransactionEntity.name,
@@ -68,7 +75,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -84,7 +91,7 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -98,7 +105,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -113,10 +120,10 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledTimes(1);
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -136,7 +143,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -151,10 +158,10 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledTimes(1);
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).toHaveBeenCalledWith(transaction.id);
     });
 
@@ -172,7 +179,7 @@ describe('TransactionEvaluationService', () => {
         },
       );
 
-      await service.evaluateErrors(transaction.id);
+      await service.evaluateWrapTokenErrors(transaction.id);
 
       const updatedTransaction = await getRepository(
         WrapTokenTransactionEntity,
@@ -186,8 +193,79 @@ describe('TransactionEvaluationService', () => {
       );
 
       expect(
-        NotificationsServiceMock.sendTransactionUnprocessableNotification,
+        NotificationsServiceMock.sendWrapTokensTransactionUnprocessableNotification,
       ).not.toHaveBeenCalled();
     });
+  });
+
+  describe('evaluateTokensUnwrappedErrors', () => {
+    it.each([
+      {
+        initialStatus: TokensUnwrappedStatus.CREATED,
+        expectedStatus: TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        expectedStatus:
+          TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.CONFIRMED,
+        expectedStatus: TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        expectedStatus: TokensUnwrappedStatus.CONFIRMED_UNPROCESSABLE,
+      },
+      {
+        initialStatus: TokensUnwrappedStatus.SENDING_TOKENS,
+        expectedStatus: TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
+      },
+    ])(
+      'should update status to $expectedStatus when transaction status is $initialStatus and has an error',
+      async ({ initialStatus, expectedStatus }) => {
+        const transaction = await factory.create<TokensUnwrappedEntity>(
+          TokensUnwrappedEntity.name,
+          {
+            error: [{ code: 'ERR_1', message: 'Error 1' }],
+            isErrorNotificationSent: false,
+            status: initialStatus,
+          },
+        );
+
+        await service.evaluateTokensUnwrappedErrors(transaction.id);
+
+        const updatedTransaction = await getRepository(
+          TokensUnwrappedEntity,
+        ).findOne({ where: { id: transaction.id } });
+
+        expect(updatedTransaction).toEqual(
+          expect.objectContaining({
+            id: transaction.id,
+            status: expectedStatus,
+            isErrorNotificationSent: true,
+          }),
+        );
+
+        expect(
+          NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+        ).toHaveBeenCalledTimes(1);
+        expect(
+          NotificationsServiceMock.sendTokensUnwrappedUnprocessableNotification,
+        ).toHaveBeenCalledWith(transaction.id);
+
+        expect(
+          TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+        ).toHaveBeenCalledTimes(1);
+        expect(
+          TokensUnwrappedAuditServiceMock.recordTransactionEvent,
+        ).toHaveBeenCalledWith({
+          transactionId: transaction.id,
+          paymentId: transaction.paymentId,
+          fromStatus: transaction.status,
+          toStatus: expectedStatus,
+        });
+      },
+    );
   });
 });

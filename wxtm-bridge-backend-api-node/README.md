@@ -9,7 +9,7 @@
 2. **Generate package from root directory**
 
    ```sh
-   npm run api:generate
+   npm run api:generate-node
    ```
 
 3. **Change directory**

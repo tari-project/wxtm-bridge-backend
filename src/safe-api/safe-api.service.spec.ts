@@ -7,7 +7,7 @@ import { SafeApiService } from './safe-api.service';
 import { SafeApiModule } from './safe-api.module';
 import { SafeApiKitMock } from '../../test/mocks/safe-api-kit.mock';
 
-describe('WrapTokenFeesService tests', () => {
+describe('Multisig transaction tests', () => {
   let module: TestingModule;
   let service: SafeApiService;
 

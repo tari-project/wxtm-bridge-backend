@@ -10,7 +10,7 @@ import {
   MineToExchangeConfigRespDTO,
   MiningTransactionDTO,
 } from './mine-to-exchange.dto';
-import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
+import { TokenFeesService } from '../token-fees/token-fees.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import {
@@ -29,7 +29,7 @@ export class MineToExchangeService {
     @InjectRepository(WrapTokenTransactionEntity)
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
     private readonly configService: ConfigService<IConfig, true>,
-    private readonly wrapTokenFeesService: WrapTokenFeesService,
+    private readonly tokenFeesService: TokenFeesService,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
     private readonly aggregateTransactionsService: AggregateTransactionsService,
   ) {}
@@ -104,7 +104,7 @@ export class MineToExchangeService {
     status,
   }: CreateMiningTransactionParams): Promise<WrapTokenTransactionEntity> {
     const { amountAfterFee, feeAmount, feePercentageBps } =
-      this.wrapTokenFeesService.calculateFee({
+      this.tokenFeesService.calculateWrapFee({
         tokenAmount: amount,
       });
 

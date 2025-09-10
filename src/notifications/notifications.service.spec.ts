@@ -88,12 +88,14 @@ describe('NotificationsService', () => {
     });
   });
 
-  describe('sendTransactionUnprocessableNotification', () => {
+  describe('sendWrapTokensTransactionUnprocessableNotification', () => {
     it('should send transaction unprocessable notification', async () => {
       const transactionId = 12345;
 
       const result =
-        await service.sendTransactionUnprocessableNotification(transactionId);
+        await service.sendWrapTokensTransactionUnprocessableNotification(
+          transactionId,
+        );
 
       expect(result).toEqual({ success: true });
       expect(SNSClientMock.send).toHaveBeenCalledTimes(1);
@@ -102,7 +104,30 @@ describe('NotificationsService', () => {
       expect(callArgs.input).toEqual({
         TopicArn: 'test-topic-arn',
         Message: JSON.stringify({
-          message: `Transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+          message: `Wrap transaction unprocessible: https://admin.${domain}/wrap-token-transactions/edit/${transactionId}`,
+          origin: 'Processor',
+        }),
+      });
+    });
+  });
+
+  describe('sendTokensUnwrappedUnprocessableNotification', () => {
+    it('should send unwrap transaction unprocessable notification', async () => {
+      const transactionId = 12345;
+
+      const result =
+        await service.sendTokensUnwrappedUnprocessableNotification(
+          transactionId,
+        );
+
+      expect(result).toEqual({ success: true });
+      expect(SNSClientMock.send).toHaveBeenCalledTimes(1);
+
+      const callArgs = SNSClientMock.send.mock.calls[0][0];
+      expect(callArgs.input).toEqual({
+        TopicArn: 'test-topic-arn',
+        Message: JSON.stringify({
+          message: `Unwrap transaction unprocessible: https://admin.${domain}/tokens-unwrapped/edit/${transactionId}`,
           origin: 'Processor',
         }),
       });

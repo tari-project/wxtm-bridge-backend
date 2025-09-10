@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { ethers } from 'ethers';
 
 import { IConfig } from '../config/config.interface';
-import { WrapTokenFeesService } from '../wrap-token-fees/wrap-token-fees.service';
+import { TokenFeesService } from '../token-fees/token-fees.service';
 import { WrapTokenTransactionEntity } from '../wrap-token-transaction/wrap-token-transaction.entity';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import {
@@ -22,7 +22,7 @@ export class AggregateTransactionsService {
     @InjectRepository(WrapTokenTransactionEntity)
     private readonly wrapTokenTransactionRepository: Repository<WrapTokenTransactionEntity>,
     private readonly configService: ConfigService<IConfig, true>,
-    private readonly wrapTokenFeesService: WrapTokenFeesService,
+    private readonly tokenFeesService: TokenFeesService,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
   ) {}
 
@@ -86,7 +86,7 @@ export class AggregateTransactionsService {
     }
 
     const { amountAfterFee, feeAmount, feePercentageBps } =
-      this.wrapTokenFeesService.calculateFee({ tokenAmount });
+      this.tokenFeesService.calculateWrapFee({ tokenAmount });
 
     const aggregatedTransaction =
       await this.wrapTokenTransactionRepository.manager.transaction(
@@ -160,7 +160,7 @@ export class AggregateTransactionsService {
     ]);
 
     const { amountAfterFee, feeAmount, feePercentageBps } =
-      this.wrapTokenFeesService.calculateFee({ tokenAmount });
+      this.tokenFeesService.calculateWrapFee({ tokenAmount });
 
     const aggregatedTransaction =
       await this.wrapTokenTransactionRepository.manager.transaction(
