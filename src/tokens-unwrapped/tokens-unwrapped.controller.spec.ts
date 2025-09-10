@@ -173,6 +173,7 @@ describe('TokensUnwrappedController', () => {
             createdAt: transaction_1.createdAt.toISOString(),
             status: UserUnwrappedTransactionStatus.PENDING,
             transactionHash: transaction_1.transactionHash,
+            blockTimestamp: transaction_1.blockTimestamp.toISOString(),
           },
           {
             paymentId: transaction_2.paymentId,
@@ -183,6 +184,7 @@ describe('TokensUnwrappedController', () => {
             createdAt: transaction_2.createdAt.toISOString(),
             status: UserUnwrappedTransactionStatus.SUCCESS,
             transactionHash: transaction_2.transactionHash,
+            blockTimestamp: transaction_2.blockTimestamp.toISOString(),
           },
         ]),
       });

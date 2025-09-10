@@ -18,6 +18,7 @@ export class UserUnwrappedTransactionDTO extends PickType(
     'feeAmount',
     'createdAt',
     'transactionHash',
+    'blockTimestamp',
   ],
 ) {
   status: UserUnwrappedTransactionStatus;

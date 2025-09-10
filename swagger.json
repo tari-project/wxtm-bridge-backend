@@ -2886,6 +2886,10 @@
           },
           "transactionHash": {
             "type": "string"
+          },
+          "blockTimestamp": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -2896,7 +2900,8 @@
           "amountAfterFee",
           "feeAmount",
           "createdAt",
-          "transactionHash"
+          "transactionHash",
+          "blockTimestamp"
         ]
       },
       "GetUserUnwrappedTransactionsRespDTO": {
