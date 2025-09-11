@@ -17,3 +17,9 @@ export class PaymentWalletBalanceDTO {
   @IsNotEmpty()
   timelockedBalance: string;
 }
+
+export class PaymentWalletBalanceResponseDTO {
+  walletBalance: string;
+  pendingTransactionsAmount: string;
+  availableWalletBalance: string;
+}

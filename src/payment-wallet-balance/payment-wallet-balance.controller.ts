@@ -1,10 +1,14 @@
-import { Body, Controller, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { PaymentWalletBalanceService } from './payment-wallet-balance.service';
-import { PaymentWalletBalanceDTO } from './payment-wallet-balance.dto';
+import {
+  PaymentWalletBalanceDTO,
+  PaymentWalletBalanceResponseDTO,
+} from './payment-wallet-balance.dto';
 import { SuccessDTO } from '../dto/success.dto';
 import { M2MAuthGuard } from '../m2m-auth/m2m-auth.guard';
+import { AdminGuard } from '../auth/auth.admin.guard';
 
 @ApiBearerAuth()
 @ApiTags('payment-wallet-balance')
@@ -16,5 +20,11 @@ export class PaymentWalletBalanceController {
   @M2MAuthGuard({ description: 'Set payment wallet balance' })
   setBalance(@Body() dto: PaymentWalletBalanceDTO): Promise<SuccessDTO> {
     return this.service.setBalance(dto);
+  }
+
+  @Get()
+  @AdminGuard({ description: 'Get payment wallet balance' })
+  getBalance(): Promise<PaymentWalletBalanceResponseDTO> {
+    return this.service.getBalances();
   }
 }

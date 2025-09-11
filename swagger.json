@@ -2241,6 +2241,32 @@
             "bearer": []
           }
         ]
+      },
+      "get": {
+        "operationId": "getBalance",
+        "summary": "Get payment wallet balance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentWalletBalanceResponseDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": ["payment-wallet-balance"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     }
   },
@@ -3364,6 +3390,25 @@
           "pendingOutgoingBalance",
           "pendingIncomingBalance",
           "timelockedBalance"
+        ]
+      },
+      "PaymentWalletBalanceResponseDTO": {
+        "type": "object",
+        "properties": {
+          "walletBalance": {
+            "type": "string"
+          },
+          "pendingTransactionsAmount": {
+            "type": "string"
+          },
+          "availableWalletBalance": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "walletBalance",
+          "pendingTransactionsAmount",
+          "availableWalletBalance"
         ]
       }
     }
