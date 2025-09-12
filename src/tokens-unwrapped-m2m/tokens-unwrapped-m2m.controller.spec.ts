@@ -26,6 +26,8 @@ import { TransactionEvaluationServiceMock } from '../../test/mocks/transaction-e
 import { TransactionEvaluationService } from '../transaction-evaluation/transaction-evaluation.service';
 import { SettingsEntity } from '../settings/settings.entity';
 import { TokensUnwrappedAuditEntity } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsServiceMock } from '../../test/mocks/notifications.service.mock';
 
 describe('TokensUnwrappedM2MController', () => {
   let app: INestApplication;
@@ -51,6 +53,8 @@ describe('TokensUnwrappedM2MController', () => {
     })
       .overrideProvider(TransactionEvaluationService)
       .useValue(TransactionEvaluationServiceMock)
+      .overrideProvider(NotificationsService)
+      .useValue(NotificationsServiceMock)
       .compile();
 
     app = module.createNestApplication({ bodyParser: true });
@@ -260,6 +264,10 @@ describe('TokensUnwrappedM2MController', () => {
         }),
       );
 
+      expect(
+        NotificationsServiceMock.sendTokensUnwrappedRequiresApprovalNotification,
+      ).not.toHaveBeenCalled();
+
       const auditRecords = await getRepository(
         TokensUnwrappedAuditEntity,
       ).find();
@@ -312,6 +320,10 @@ describe('TokensUnwrappedM2MController', () => {
           status: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
         }),
       );
+
+      expect(
+        NotificationsServiceMock.sendTokensUnwrappedRequiresApprovalNotification,
+      ).toHaveBeenCalledWith(transaction.id);
 
       const auditRecords = await getRepository(
         TokensUnwrappedAuditEntity,

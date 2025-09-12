@@ -133,4 +133,27 @@ describe('NotificationsService', () => {
       });
     });
   });
+
+  describe('sendTokensUnwrappedRequiresApprovalNotification', () => {
+    it('should send unwrap transaction unprocessable notification', async () => {
+      const transactionId = 12345;
+
+      const result =
+        await service.sendTokensUnwrappedRequiresApprovalNotification(
+          transactionId,
+        );
+
+      expect(result).toEqual({ success: true });
+      expect(SNSClientMock.send).toHaveBeenCalledTimes(1);
+
+      const callArgs = SNSClientMock.send.mock.calls[0][0];
+      expect(callArgs.input).toEqual({
+        TopicArn: 'test-topic-arn',
+        Message: JSON.stringify({
+          message: `Unwrap transaction requires approval: https://admin.${domain}/tokens-unwrapped/edit/${transactionId}`,
+          origin: 'Processor',
+        }),
+      });
+    });
+  });
 });
