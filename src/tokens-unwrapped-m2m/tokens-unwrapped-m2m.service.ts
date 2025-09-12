@@ -15,6 +15,7 @@ import { TransactionEvaluationService } from '../transaction-evaluation/transact
 import { TokensUnwrappedAuditService } from '../tokens-unwrapped-audit/tokens-unwrapped-audit.service';
 import { SettingsEntity } from '../settings/settings.entity';
 import { verifyUpdateApplied } from '../helpers/verifyUpdateApplied';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappedEntity> {
@@ -25,6 +26,7 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
     private readonly settingsRepository: Repository<SettingsEntity>,
     private readonly transactionEvaluationService: TransactionEvaluationService,
     private readonly tokensUnwrappedAuditService: TokensUnwrappedAuditService,
+    private readonly notificationsService: NotificationsService,
   ) {
     super(repo);
   }
@@ -107,6 +109,12 @@ export class TokensUnwrappedM2MService extends TypeOrmCrudService<TokensUnwrappe
       },
     );
     verifyUpdateApplied(updateResults);
+
+    if (status === TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL) {
+      await this.notificationsService.sendTokensUnwrappedRequiresApprovalNotification(
+        transaction.id,
+      );
+    }
 
     await this.tokensUnwrappedAuditService.recordTransactionEvent({
       transactionId: transaction.id,

@@ -103,4 +103,21 @@ export class NotificationsService {
       success: true,
     };
   }
+
+  async sendTokensUnwrappedRequiresApprovalNotification(
+    transactionId: number,
+  ): Promise<SuccessDTO> {
+    const domain = this.configService.get('domain', {
+      infer: true,
+    });
+
+    await this.emitNotification({
+      message: `Unwrap transaction requires approval: https://admin.${domain}/tokens-unwrapped/edit/${transactionId}`,
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
 }

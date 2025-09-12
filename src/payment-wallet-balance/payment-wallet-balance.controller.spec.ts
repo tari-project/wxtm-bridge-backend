@@ -2,6 +2,7 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { utils } from 'ethers';
 
 import config from '../config/config';
 import {
@@ -16,11 +17,20 @@ import { PaymentWalletBalanceModule } from './payment-wallet-balance.module';
 import { PaymentWalletBalanceDTO } from './payment-wallet-balance.dto';
 import { M2MAuthModule } from '../m2m-auth/m2m-auth.module';
 import { PaymentWalletBalanceEntity } from './payment-wallet-balance.entity';
+import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
+import { UserEntity } from '../user/user.entity';
+import { getAccessToken } from '../../test/utils/getAccessToken';
+import { Auth0Keys } from '../auth/auth.providers';
+import { Auth0KeysMock } from '../../test/mocks/auth0-keys.mock';
 
 describe('WrapTokenTransactionController', () => {
   let app: INestApplication;
   let factory: Factory;
   const m2mToken = 'test-m2m-auth-token';
+  let adminAccessToken: string;
+  let userAccessToken: string;
+  let admin: UserEntity;
+  let user: UserEntity;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +40,10 @@ describe('WrapTokenTransactionController', () => {
         M2MAuthModule.register({ authToken: m2mToken }),
         PaymentWalletBalanceModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(Auth0Keys)
+      .useValue(Auth0KeysMock)
+      .compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -43,6 +56,16 @@ describe('WrapTokenTransactionController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     await clearDatabase();
+
+    admin = await factory.create<UserEntity>(UserEntity.name, {
+      isAdmin: true,
+    });
+    adminAccessToken = getAccessToken(admin.auth0Id);
+
+    user = await factory.create<UserEntity>(UserEntity.name, {
+      isAdmin: false,
+    });
+    userAccessToken = getAccessToken(user.auth0Id);
   });
 
   afterAll(async () => {
@@ -94,6 +117,124 @@ describe('WrapTokenTransactionController', () => {
         pendingIncomingBalance: '2000',
         pendingOutgoingBalance: '3000',
         timelockedBalance: '4000',
+      });
+    });
+  });
+
+  describe('GET /payment-wallet-balance', () => {
+    it('returns 401 without token', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get(`/payment-wallet-balance`)
+        .set('Content-Type', 'application/json')
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+
+    it('returns 401 for a regular user', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get(`/payment-wallet-balance`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${userAccessToken}`)
+        .expect(401);
+
+      expect(body).toEqual({
+        statusCode: 401,
+        message: 'Unauthorized',
+      });
+    });
+
+    it('calculates and returns balances', async () => {
+      await factory.create<PaymentWalletBalanceEntity>(
+        PaymentWalletBalanceEntity.name,
+        {
+          availableBalance: utils.parseUnits('2', 6).toString(),
+          pendingIncomingBalance: utils.parseUnits('4', 6).toString(),
+        },
+      );
+
+      await factory.createMany('TokensUnwrappedEntity', [
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.CREATED,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.SENDING_TOKENS,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.TOKENS_SENT,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
+        },
+      ]);
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/payment-wallet-balance`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        availableWalletBalance: '1000000',
+        pendingTransactionsAmount: '5000000',
+        walletBalance: '6000000',
+      });
+    });
+
+    it('calculates negative balance', async () => {
+      await factory.create<PaymentWalletBalanceEntity>(
+        PaymentWalletBalanceEntity.name,
+        { availableBalance: '0', pendingIncomingBalance: '0' },
+      );
+
+      await factory.createMany('TokensUnwrappedEntity', [
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.CREATED,
+        },
+        {
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
+          status: TokensUnwrappedStatus.CREATED,
+        },
+      ]);
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/payment-wallet-balance`)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(200);
+
+      expect(body).toEqual({
+        availableWalletBalance: '-2000000',
+        pendingTransactionsAmount: '2000000',
+        walletBalance: '0',
       });
     });
   });
