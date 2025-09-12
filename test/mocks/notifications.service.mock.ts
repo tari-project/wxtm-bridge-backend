@@ -9,4 +9,5 @@ export const NotificationsServiceMock = {
   onEventReceived: jest.fn(),
   sendWrapTokensTransactionUnprocessableNotification: jest.fn(),
   sendTokensUnwrappedUnprocessableNotification: jest.fn(),
+  sendTokensUnwrappedRequiresApprovalNotification: jest.fn(),
 } satisfies Partial<NotificationsServiceMock>;
