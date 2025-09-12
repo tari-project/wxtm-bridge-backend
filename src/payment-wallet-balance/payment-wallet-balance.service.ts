@@ -10,6 +10,7 @@ import {
 import { SuccessDTO } from '../dto/success.dto';
 import { TokensUnwrappedEntity } from '../tokens-unwrapped/tokens-unwrapped.entity';
 import { TokensUnwrappedStatus } from '../tokens-unwrapped/tokens-unwrapped.const';
+import { convertTokenFrom18ToWxtmDecimals } from '../utils/convert-token-from-18-to-wxtm-decimals';
 
 @Injectable()
 export class PaymentWalletBalanceService {
@@ -63,9 +64,11 @@ export class PaymentWalletBalanceService {
       })
       .getRawOne<{ total: string }>();
 
-    return transactionSumResult?.total
-      ? BigInt(transactionSumResult.total)
-      : BigInt(0);
+    const sumResults6Decimals = convertTokenFrom18ToWxtmDecimals({
+      tokenAmount: transactionSumResult?.total ?? '0',
+    });
+
+    return BigInt(sumResults6Decimals);
   }
 
   async getBalances(): Promise<PaymentWalletBalanceResponseDTO> {

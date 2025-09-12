@@ -2,6 +2,7 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { utils } from 'ethers';
 
 import config from '../config/config';
 import {
@@ -149,44 +150,47 @@ describe('WrapTokenTransactionController', () => {
     it('calculates and returns balances', async () => {
       await factory.create<PaymentWalletBalanceEntity>(
         PaymentWalletBalanceEntity.name,
-        { availableBalance: '2000', pendingIncomingBalance: '4000' },
+        {
+          availableBalance: utils.parseUnits('2', 6).toString(),
+          pendingIncomingBalance: utils.parseUnits('4', 6).toString(),
+        },
       );
 
       await factory.createMany('TokensUnwrappedEntity', [
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.CREATED,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.CREATED_UNPROCESSABLE,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.AWAITING_CONFIRMATION,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.AWAITING_CONFIRMATION_UNPROCESSABLE,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.CONFIRMED_AWAITING_APPROVAL,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.INIT_SEND_TOKENS,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.SENDING_TOKENS,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.TOKENS_SENT,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.SENDING_TOKENS_UNPROCESSABLE,
         },
       ]);
@@ -198,9 +202,9 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toEqual({
-        availableWalletBalance: '1000',
-        pendingTransactionsAmount: '5000',
-        walletBalance: '6000',
+        availableWalletBalance: '1000000',
+        pendingTransactionsAmount: '5000000',
+        walletBalance: '6000000',
       });
     });
 
@@ -212,11 +216,11 @@ describe('WrapTokenTransactionController', () => {
 
       await factory.createMany('TokensUnwrappedEntity', [
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.CREATED,
         },
         {
-          amountAfterFee: '1000',
+          amountAfterFee: utils.parseUnits('1', 18).toString(),
           status: TokensUnwrappedStatus.CREATED,
         },
       ]);
@@ -228,8 +232,8 @@ describe('WrapTokenTransactionController', () => {
         .expect(200);
 
       expect(body).toEqual({
-        availableWalletBalance: '-2000',
-        pendingTransactionsAmount: '2000',
+        availableWalletBalance: '-2000000',
+        pendingTransactionsAmount: '2000000',
         walletBalance: '0',
       });
     });
