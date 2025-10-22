@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ethers } from 'ethers';
 
 import { ExceptionsMessages } from '../consts/exceptions-messages';
 import { SuccessDTO } from '../dto/success.dto';
@@ -22,6 +21,7 @@ import { IConfig } from '../config/config.interface';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import { SettingsEntity } from '../settings/settings.entity';
 import { ServiceStatus } from '../settings/settings.const';
+import { ethAddressToCanonical } from '../utils/convert-to-canonical';
 
 @Injectable()
 export class WrapTokenService {
@@ -52,7 +52,7 @@ export class WrapTokenService {
         tokenAmount,
       });
 
-    const canonicalAddress = to ? ethers.utils.getAddress(to) : to;
+    const canonicalAddress = ethAddressToCanonical(to);
     const { paymentId, id, status } =
       await this.wrapTokenTransactionRepository.save({
         from,
