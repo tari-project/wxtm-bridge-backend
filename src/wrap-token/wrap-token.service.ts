@@ -21,6 +21,7 @@ import { IConfig } from '../config/config.interface';
 import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.service';
 import { SettingsEntity } from '../settings/settings.entity';
 import { ServiceStatus } from '../settings/settings.const';
+import { ethAddressToCanonical } from '../utils/convert-to-canonical';
 
 @Injectable()
 export class WrapTokenService {
@@ -51,10 +52,11 @@ export class WrapTokenService {
         tokenAmount,
       });
 
+    const canonicalAddress = ethAddressToCanonical(to);
     const { paymentId, id, status } =
       await this.wrapTokenTransactionRepository.save({
         from,
-        to,
+        to: canonicalAddress,
         tokenAmount,
         feePercentageBps,
         feeAmount,

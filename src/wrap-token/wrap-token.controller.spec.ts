@@ -76,7 +76,7 @@ describe('WrapTokenController', () => {
 
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
-        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         tokenAmount: '1000000000',
       };
 
@@ -127,7 +127,7 @@ describe('WrapTokenController', () => {
 
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
-        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         tokenAmount: '1000000000',
         debug: { height: '100', blockHash: '0x1234567890abcdef' },
       };
@@ -175,7 +175,7 @@ describe('WrapTokenController', () => {
 
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
-        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         tokenAmount,
       };
 
@@ -201,7 +201,7 @@ describe('WrapTokenController', () => {
 
       const dto: CreateWrapTokenReqDTO = {
         from: 'tari_address_123',
-        to: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         tokenAmount: '1000000000',
       };
 

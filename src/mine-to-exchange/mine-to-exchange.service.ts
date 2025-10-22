@@ -20,6 +20,7 @@ import {
 import { CreateMiningTransactionParams } from './mine-to-exchange.interface';
 import { SuccessDTO } from '../dto/success.dto';
 import { AggregateTransactionsService } from '../aggregate-transactions/aggregate-transactions.service';
+import { ethAddressToCanonical } from '../utils/convert-to-canonical';
 
 @Injectable()
 export class MineToExchangeService {
@@ -108,9 +109,10 @@ export class MineToExchangeService {
         tokenAmount: amount,
       });
 
+    const canonicalAddress = ethAddressToCanonical(to);
     const transaction = await this.wrapTokenTransactionRepository.save({
       from,
-      to,
+      to: canonicalAddress,
       tokenAmount: amount,
       feePercentageBps,
       feeAmount,
