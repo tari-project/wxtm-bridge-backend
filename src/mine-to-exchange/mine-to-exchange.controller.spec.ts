@@ -78,7 +78,7 @@ describe('MineToExchangeController', () => {
   describe('POST /mine-to-exchange/config', () => {
     it('returns walletAddress and paymentId', async () => {
       const dto: MineToExchangeConfigDTO = {
-        toAddress: '0xD34dB33F000000000000000000000000DeAdBeEf',
+        toAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
       };
 
       const { body } = await request(app.getHttpServer())
@@ -89,7 +89,7 @@ describe('MineToExchangeController', () => {
 
       expect(body).toEqual({
         walletAddress: '0xTestWalletAddress',
-        paymentId: `eth-mainnet:0xD34dB33F000000000000000000000000DeAdBeEf`,
+        paymentId: `eth-mainnet:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`,
       });
     });
   });
@@ -166,7 +166,7 @@ describe('MineToExchangeController', () => {
 
       const existingTransactionPayload: MiningTransactionDTO = {
         from: 'from-2',
-        paymentId: 'eth-mainnet:0xD34dB33F000000000000000000000000DeAdBeEf',
+        paymentId: 'eth-mainnet:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         amount: '1000000000',
         paymentReference: paymentReference,
         blockHeight: 2,

@@ -52,7 +52,7 @@ export class WrapTokenService {
         tokenAmount,
       });
 
-    const canonicalAddress = ethers.utils.getAddress(to);
+    const canonicalAddress = to ? ethers.utils.getAddress(to) : to;
     const { paymentId, id, status } =
       await this.wrapTokenTransactionRepository.save({
         from,

@@ -108,7 +108,7 @@ export class MineToExchangeService {
         tokenAmount: amount,
       });
 
-    const canonicalAddress = ethers.utils.getAddress(to);
+    const canonicalAddress = to ? ethers.utils.getAddress(to) : to;
     const transaction = await this.wrapTokenTransactionRepository.save({
       from,
       to: canonicalAddress,
