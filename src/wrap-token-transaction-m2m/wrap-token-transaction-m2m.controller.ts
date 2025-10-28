@@ -1,4 +1,4 @@
-import { Body, Controller, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Crud, CrudController } from '@dataui/crud';
 
@@ -116,5 +116,14 @@ export class WrapTokenTransactionM2MController
     @Body() dto: TransactionExecutedRequestDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTransactionExecuted(dto);
+  }
+
+  @Get('total-processed-today')
+  @M2MAuthGuard({
+    description:
+      'Get total token amount sum of all PROCESSED transactions for current day (GMT)',
+  })
+  getTodayProcessedTransactionsSum(): Promise<number> {
+    return this.service.getTodayProcessedTransactionsSum();
   }
 }

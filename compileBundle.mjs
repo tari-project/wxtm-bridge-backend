@@ -21,7 +21,7 @@ await esbuild.build({
   sourcemap: true,
   minify: false,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outdir: 'out/app',
   plugins: [esbuildPluginTsc(), ...uploadSourceMapToSentry()],
   external: [
@@ -40,7 +40,7 @@ await esbuild.build({
   sourcemap: true,
   minify: false,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outdir: 'out/migrations',
   plugins: [esbuildPluginTsc()],
   external: [
@@ -59,7 +59,7 @@ await esbuild.build({
   sourcemap: true,
   minify: false,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outdir: 'out/subgraph',
   plugins: [esbuildPluginTsc()],
   external: [
@@ -78,7 +78,7 @@ await esbuild.build({
   sourcemap: true,
   minify: false,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outdir: 'out/timeout',
   plugins: [esbuildPluginTsc()],
   external: [
@@ -97,7 +97,7 @@ await esbuild.build({
   sourcemap: true,
   minify: false,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outdir: 'out/notifications',
   plugins: [esbuildPluginTsc()],
   external: [
