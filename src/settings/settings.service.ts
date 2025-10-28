@@ -29,6 +29,7 @@ export class SettingsService {
     maxBatchAgeMs,
     batchAmountThreshold,
     unwrapManualApprovalThreshold,
+    wrapDailyLimit,
   }: UpdateSettingReqDTO): Promise<SuccessDTO> {
     const settings = await this.getSettings();
 
@@ -38,6 +39,7 @@ export class SettingsService {
       maxBatchAgeMs,
       batchAmountThreshold,
       unwrapManualApprovalThreshold,
+      wrapDailyLimit,
     });
 
     return { success: true };
