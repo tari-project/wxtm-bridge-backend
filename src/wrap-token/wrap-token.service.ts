@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -22,6 +26,8 @@ import { WrapTokenAuditService } from '../wrap-token-audit/wrap-token-audit.serv
 import { SettingsEntity } from '../settings/settings.entity';
 import { ServiceStatus } from '../settings/settings.const';
 import { ethAddressToCanonical } from '../utils/convert-to-canonical';
+import { WrapTokenTransactionM2MService } from '../wrap-token-transaction-m2m/wrap-token-transaction-m2m.service';
+import { convertTokenFrom18ToWxtmDecimals } from '../utils/convert-token-from-18-to-wxtm-decimals';
 
 @Injectable()
 export class WrapTokenService {
@@ -33,6 +39,7 @@ export class WrapTokenService {
     private readonly tokenFeesService: TokenFeesService,
     private readonly configService: ConfigService<IConfig, true>,
     private readonly wrapTokenAuditService: WrapTokenAuditService,
+    private readonly wrapTokenTransactionM2MService: WrapTokenTransactionM2MService,
   ) {}
 
   async createWrapTokenTransaction({
@@ -45,6 +52,18 @@ export class WrapTokenService {
 
     if (settings.wrapTokensServiceStatus === ServiceStatus.OFFLINE) {
       throw new BadRequestException('Wrap token service is currently offline');
+    }
+
+    const todayProcessedSum =
+      await this.wrapTokenTransactionM2MService.getTodayProcessedTransactionsSum();
+
+    const wrapDailyLimit = convertTokenFrom18ToWxtmDecimals({
+      tokenAmount: settings.wrapDailyLimit,
+    });
+
+    const currentTotal = BigInt(todayProcessedSum) + BigInt(tokenAmount);
+    if (currentTotal > BigInt(wrapDailyLimit)) {
+      throw new ForbiddenException('Daily wrap limit exceeded');
     }
 
     const { amountAfterFee, feeAmount, feePercentageBps } =

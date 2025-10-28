@@ -15,5 +15,6 @@ import { TransactionEvaluationModule } from '../transaction-evaluation/transacti
   ],
   providers: [WrapTokenTransactionM2MService],
   controllers: [WrapTokenTransactionM2MController],
+  exports: [WrapTokenTransactionM2MService],
 })
 export class WrapTokenTransactionM2MModule {}

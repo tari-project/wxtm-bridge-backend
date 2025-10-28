@@ -358,8 +358,10 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
     };
   }
 
-  async getTodayProcessedTransactionsSum(): Promise<number> {
+  async getTodayProcessedTransactionsSum(): Promise<string> {
     const processedStatuses = [
+      WrapTokenTransactionStatus.TOKENS_SENT,
+      WrapTokenTransactionStatus.TOKENS_RECEIVED,
       WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
       WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
       WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION_UNPROCESSABLE,
@@ -386,6 +388,6 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       )
       .getRawOne();
 
-    return parseFloat(result.total_amount_today);
+    return result.total_amount_today;
   }
 }

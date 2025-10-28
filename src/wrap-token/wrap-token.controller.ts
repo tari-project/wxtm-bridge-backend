@@ -7,7 +7,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 
 import { SuccessDTO } from '../dto/success.dto';
 import { WrapTokenService } from './wrap-token.service';
@@ -29,6 +29,7 @@ export class WrapTokenController {
 
   @Post()
   @ApiOperation({ summary: 'Creates wrap token transaction' })
+  @ApiResponse({ status: 403, description: 'Daily wrap limit exceeded' })
   createWrapTokenTransaction(
     @Body() dto: CreateWrapTokenReqDTO,
   ): Promise<CreateWrapTokenRespDTO> {
