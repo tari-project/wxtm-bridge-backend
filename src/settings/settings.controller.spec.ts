@@ -170,6 +170,7 @@ describe('SettingsController', () => {
       maxBatchAgeMs: 3600000,
       batchAmountThreshold: '15000000000000000000000',
       unwrapManualApprovalThreshold: '200000000000000000000000',
+      wrapDailyLimit: '20000000000000000000000000',
     };
 
     it('should update settings for admin user', async () => {
@@ -202,6 +203,7 @@ describe('SettingsController', () => {
       expect(updatedSettings.unwrapManualApprovalThreshold).toBe(
         '200000000000000000000000',
       );
+      expect(updatedSettings.wrapDailyLimit).toBe('20000000000000000000000000');
     });
 
     it('should return 401 for non-admin user', async () => {

@@ -63,6 +63,18 @@ export class UserTransactionDTO extends PickType(WrapTokenTransactionEntity, [
   destinationAddress: string;
 }
 
+export class GetUserTransactionsReqDTO {
+  @IsNotEmpty()
+  @IsString()
+  walletAddress: string;
+}
+
+export class UpdateToTokensSentParamsReqDTO {
+  @IsNotEmpty()
+  @IsString()
+  paymentId: string;
+}
+
 export class GetUserTransactionsRespDTO {
   transactions: UserTransactionDTO[];
 }

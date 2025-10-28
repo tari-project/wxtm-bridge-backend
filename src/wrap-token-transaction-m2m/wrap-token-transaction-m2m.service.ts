@@ -357,4 +357,35 @@ export class WrapTokenTransactionM2MService extends TypeOrmCrudService<WrapToken
       success: true,
     };
   }
+
+  async getTodayProcessedTransactionsSum(): Promise<number> {
+    const processedStatuses = [
+      WrapTokenTransactionStatus.REPLACED_BY_AGGREGATED,
+      WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION,
+      WrapTokenTransactionStatus.CREATING_SAFE_TRANSACTION_UNPROCESSABLE,
+      WrapTokenTransactionStatus.SAFE_TRANSACTION_CREATED,
+      WrapTokenTransactionStatus.EXECUTING_SAFE_TRANSACTION,
+      WrapTokenTransactionStatus.SAFE_TRANSACTION_UNPROCESSABLE,
+      WrapTokenTransactionStatus.SAFE_TRANSACTION_EXECUTED,
+    ];
+
+    const result = await this.repo
+      .createQueryBuilder('wrap_token_transaction')
+      .select(
+        'COALESCE(SUM(wrap_token_transaction.tokenAmount), 0)',
+        'total_amount_today',
+      )
+      .where('wrap_token_transaction.status IN (:...processedStatuses)', {
+        processedStatuses,
+      })
+      .andWhere(
+        "wrap_token_transaction.updatedAt >= date_trunc('day', NOW() AT TIME ZONE 'GMT')",
+      )
+      .andWhere(
+        "wrap_token_transaction.updatedAt < date_trunc('day', NOW() AT TIME ZONE 'GMT') + interval '1 day'",
+      )
+      .getRawOne();
+
+    return parseFloat(result.total_amount_today);
+  }
 }

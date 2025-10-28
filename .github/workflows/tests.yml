@@ -5,7 +5,7 @@ on: [push]
 jobs:
   tests:
     runs-on: ubuntu-22.04
-    container: node:18-buster
+    container: node:22-bookworm
 
     services:
       postgres:
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Cache NPM dependencies
         uses: actions/cache@v3

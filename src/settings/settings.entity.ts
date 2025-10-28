@@ -50,6 +50,14 @@ export class SettingsEntity {
   })
   unwrapManualApprovalThreshold: string;
 
+  @Column({
+    type: 'numeric',
+    precision: 38,
+    scale: 0,
+    default: '10000000000000000000000000', // 10_000_000 tokens
+  })
+  wrapDailyLimit: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

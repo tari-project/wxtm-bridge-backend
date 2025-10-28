@@ -46,6 +46,7 @@ services:
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       NOTIFICATIONS_TOPIC_ARN: ${NOTIFICATIONS_TOPIC_ARN}
       SENTRY_DSN: ${SENTRY_DSN}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
     command: 'npm run start:dev'
     networks:
       - shared-wxtm-network

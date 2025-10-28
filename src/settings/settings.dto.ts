@@ -41,4 +41,8 @@ export class UpdateSettingReqDTO {
     max: '900000000000000000000000',
   })
   unwrapManualApprovalThreshold: string;
+
+  @IsNotEmpty()
+  @IsNumberString()
+  wrapDailyLimit: string;
 }

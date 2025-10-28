@@ -14,10 +14,12 @@ import { WrapTokenService } from './wrap-token.service';
 import {
   CreateWrapTokenReqDTO,
   CreateWrapTokenRespDTO,
+  GetUserTransactionsReqDTO,
   GetUserTransactionsRespDTO,
   GetWrapTokenParamsRespDTO,
   GetWrapTokenServiceStatusRespDTO,
   UpdateToTokensSentReqDTO,
+  UpdateToTokensSentParamsReqDTO,
 } from './wrap-token.dto';
 
 @ApiTags('wrap-token')
@@ -36,7 +38,7 @@ export class WrapTokenController {
   @Get('transactions')
   @ApiOperation({ summary: 'Get all transactions by from address' })
   getUserTransactions(
-    @Query('walletAddress') walletAddress: string,
+    @Query() { walletAddress }: GetUserTransactionsReqDTO,
   ): Promise<GetUserTransactionsRespDTO> {
     return this.service.getUserTransactions(walletAddress);
   }
@@ -64,7 +66,7 @@ export class WrapTokenController {
     required: false,
   })
   updateToTokensSent(
-    @Param('paymentId') paymentId: string,
+    @Param() { paymentId }: UpdateToTokensSentParamsReqDTO,
     @Body() dto?: UpdateToTokensSentReqDTO,
   ): Promise<SuccessDTO> {
     return this.service.updateToTokensSent(paymentId, dto);
