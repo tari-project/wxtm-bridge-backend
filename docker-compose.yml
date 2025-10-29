@@ -59,6 +59,7 @@ services:
     depends_on:
       - test-db
     environment:
+      AWS_REGION: us
       ENVIRONMENT: test
       DATABASE_HOST: test-db
       DATABASE_PORT: 5435

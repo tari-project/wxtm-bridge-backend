@@ -123,7 +123,7 @@ export class WrapTokenTransactionM2MController
     description:
       'Get total token amount sum of all PROCESSED transactions for current day (GMT)',
   })
-  getTodayProcessedTransactionsSum(): Promise<number> {
+  getTodayProcessedTransactionsSum(): Promise<string> {
     return this.service.getTodayProcessedTransactionsSum();
   }
 }

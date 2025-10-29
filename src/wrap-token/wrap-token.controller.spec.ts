@@ -25,6 +25,8 @@ import { WrapTokenTransactionStatus } from '../wrap-token-transaction/wrap-token
 import { WrapTokenAuditEntity } from '../wrap-token-audit/wrap-token-audit.entity';
 import { SettingsEntity } from '../settings/settings.entity';
 import { ServiceStatus } from '../settings/settings.const';
+import { WrapTokenTransactionM2MService } from '../wrap-token-transaction-m2m/wrap-token-transaction-m2m.service';
+import { WrapTokenTransactionM2MServiceMock } from '../../test/mocks/wrap-token-transaction-m2m.service.mock';
 
 describe('WrapTokenController', () => {
   let app: INestApplication;
@@ -49,7 +51,10 @@ describe('WrapTokenController', () => {
         TestDatabaseModule,
         WrapTokenModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(WrapTokenTransactionM2MService)
+      .useValue(WrapTokenTransactionM2MServiceMock)
+      .compile();
 
     app = module.createNestApplication({ bodyParser: true });
     setMiddlewares(app);
@@ -215,6 +220,39 @@ describe('WrapTokenController', () => {
         statusCode: 400,
         message: 'Wrap token service is currently offline',
         error: 'Bad Request',
+      });
+    });
+
+    it('returns 403 when daily wrap limit is exceeded', async () => {
+      const mockWrapDailyLimit = '10000000000000000000000000'; // 10_000_000 (10 million) tokens in 18 decimals
+      const mockTodayProcessedSum = '9000000000000'; // 9_000_000 (9 million) tokens in 6 decimals (WXTm)
+      const requestedTokenAmount = '2000000000000'; // 2_000_000 (2 million) tokens in 6 decimals (WXTm)
+
+      await factory.create<SettingsEntity>(SettingsEntity.name, {
+        wrapTokensServiceStatus: ServiceStatus.ONLINE,
+        wrapDailyLimit: mockWrapDailyLimit,
+      });
+
+      WrapTokenTransactionM2MServiceMock.getTodayProcessedTransactionsSum.mockResolvedValue(
+        mockTodayProcessedSum,
+      );
+
+      const dto: CreateWrapTokenReqDTO = {
+        from: 'tari_address_123',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        tokenAmount: requestedTokenAmount,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .post('/wrap-token')
+        .set('Content-Type', 'application/json')
+        .send(dto)
+        .expect(403); // Expect ForbiddenException
+
+      expect(body).toEqual({
+        statusCode: 403,
+        message: 'Daily wrap limit exceeded',
+        error: 'Forbidden',
       });
     });
   });
