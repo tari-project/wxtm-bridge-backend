@@ -120,4 +120,15 @@ export class NotificationsService {
       success: true,
     };
   }
+
+  async sendDailyLimitExceededNotification(): Promise<SuccessDTO> {
+    await this.emitNotification({
+      message: 'ATTENTION! Daily limit exceeded!',
+      origin: 'Processor',
+    });
+
+    return {
+      success: true,
+    };
+  }
 }

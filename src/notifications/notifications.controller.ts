@@ -22,4 +22,12 @@ export class NotificationsController {
       safeTxHash,
     );
   }
+
+  @Post('daily-limit-exceeded')
+  @M2MAuthGuard({
+    description: 'Send daily limit exceeded notification',
+  })
+  sendDailyLimitExceededNotification(): Promise<SuccessDTO> {
+    return this.notificationsService.sendDailyLimitExceededNotification();
+  }
 }
