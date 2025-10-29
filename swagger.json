@@ -292,6 +292,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Daily wrap limit exceeded"
           }
         },
         "tags": [
@@ -412,289 +415,6 @@
         },
         "tags": [
           "wrap-token"
-        ]
-      }
-    },
-    "/wrap-token-transactions/{id}": {
-      "get": {
-        "operationId": "getOneBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
-        "summary": "Returns wrap token transaction",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "fields",
-            "description": "Selects resource fields. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#select\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": false
-          },
-          {
-            "name": "join",
-            "description": "Adds relational resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#join\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": true
-          },
-          {
-            "name": "cache",
-            "description": "Reset cache (if was enabled). <a href=\"https://github.com/nestjsx/crud/wiki/Requests#cache\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Get one base response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WrapTokenTransactionEntity"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "wrap-token-transactions"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "updateOneBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
-        "summary": "Updates wrap token transaction",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WrapTokenTransactionEntity"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WrapTokenTransactionEntity"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "wrap-token-transactions"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/wrap-token-transactions": {
-      "get": {
-        "operationId": "getManyBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
-        "summary": "Returns wrap token transactions",
-        "parameters": [
-          {
-            "name": "fields",
-            "description": "Selects resource fields. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#select\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": false
-          },
-          {
-            "name": "s",
-            "description": "Adds search condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#search\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "filter",
-            "description": "Adds filter condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#filter\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": true
-          },
-          {
-            "name": "or",
-            "description": "Adds OR condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#or\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": true
-          },
-          {
-            "name": "sort",
-            "description": "Adds sort by field. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#sort\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": true
-          },
-          {
-            "name": "join",
-            "description": "Adds relational resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#join\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "style": "form",
-            "explode": true
-          },
-          {
-            "name": "limit",
-            "description": "Limit amount of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#limit\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "offset",
-            "description": "Offset amount of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#offset\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "page",
-            "description": "Page portion of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#page\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "cache",
-            "description": "Reset cache (if was enabled). <a href=\"https://github.com/nestjsx/crud/wiki/Requests#cache\" target=\"_blank\">Docs</a>",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Get many base response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/GetManyWrapTokenTransactionEntityResponseDto"
-                    },
-                    {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/WrapTokenTransactionEntity"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "wrap-token-transactions"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
         ]
       }
     },
@@ -1010,7 +730,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "number"
+                  "type": "string"
                 }
               }
             }
@@ -1306,6 +1026,289 @@
         },
         "tags": [
           "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/wrap-token-transactions/{id}": {
+      "get": {
+        "operationId": "getOneBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
+        "summary": "Returns wrap token transaction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "fields",
+            "description": "Selects resource fields. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#select\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "join",
+            "description": "Adds relational resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#join\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "cache",
+            "description": "Reset cache (if was enabled). <a href=\"https://github.com/nestjsx/crud/wiki/Requests#cache\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get one base response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "wrap-token-transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateOneBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
+        "summary": "Updates wrap token transaction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "wrap-token-transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/wrap-token-transactions": {
+      "get": {
+        "operationId": "getManyBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
+        "summary": "Returns wrap token transactions",
+        "parameters": [
+          {
+            "name": "fields",
+            "description": "Selects resource fields. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#select\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "s",
+            "description": "Adds search condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#search\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "description": "Adds filter condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#filter\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "or",
+            "description": "Adds OR condition. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#or\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "sort",
+            "description": "Adds sort by field. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#sort\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "join",
+            "description": "Adds relational resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#join\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "limit",
+            "description": "Limit amount of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#limit\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "description": "Offset amount of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#offset\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page portion of resources. <a href=\"https://github.com/nestjsx/crud/wiki/Requests#page\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cache",
+            "description": "Reset cache (if was enabled). <a href=\"https://github.com/nestjsx/crud/wiki/Requests#cache\" target=\"_blank\">Docs</a>",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get many base response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/GetManyWrapTokenTransactionEntityResponseDto"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WrapTokenTransactionEntity"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "wrap-token-transactions"
         ],
         "security": [
           {
@@ -2619,6 +2622,182 @@
           "success"
         ]
       },
+      "WalletTransactionDTO": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "blockHeight": {
+            "type": "number"
+          },
+          "paymentReference": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "timestamp",
+          "blockHeight",
+          "paymentReference",
+          "paymentId"
+        ]
+      },
+      "TokensReceivedRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "BaseTransactionDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId"
+        ]
+      },
+      "CreatingTransactionRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "TransactionCreatedDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "safeAddress": {
+            "type": "string"
+          },
+          "safeTxHash": {
+            "type": "string"
+          },
+          "safeNonce": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "paymentId",
+          "safeTxHash",
+          "safeNonce"
+        ]
+      },
+      "TransactionCreatedRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionCreatedDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "ErrorUpdateDTO": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "paymentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "paymentId"
+        ]
+      },
+      "ErrorUpdateRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorUpdateDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "ExecutingTransactionRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseTransactionDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
+      "TransactionExecutedDTO": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "transactionHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId"
+        ]
+      },
+      "TransactionExecutedRequestDTO": {
+        "type": "object",
+        "properties": {
+          "walletTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionExecutedDTO"
+            }
+          }
+        },
+        "required": [
+          "walletTransactions"
+        ]
+      },
       "GetManyWrapTokenTransactionEntityResponseDto": {
         "type": "object",
         "properties": {
@@ -2874,182 +3053,6 @@
           "aggregatedTransactions",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "WalletTransactionDTO": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "string"
-          },
-          "timestamp": {
-            "type": "number"
-          },
-          "blockHeight": {
-            "type": "number"
-          },
-          "paymentReference": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "amount",
-          "timestamp",
-          "blockHeight",
-          "paymentReference",
-          "paymentId"
-        ]
-      },
-      "TokensReceivedRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WalletTransactionDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
-        ]
-      },
-      "BaseTransactionDTO": {
-        "type": "object",
-        "properties": {
-          "paymentId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "paymentId"
-        ]
-      },
-      "CreatingTransactionRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BaseTransactionDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
-        ]
-      },
-      "TransactionCreatedDTO": {
-        "type": "object",
-        "properties": {
-          "paymentId": {
-            "type": "string"
-          },
-          "safeAddress": {
-            "type": "string"
-          },
-          "safeTxHash": {
-            "type": "string"
-          },
-          "safeNonce": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "paymentId",
-          "safeTxHash",
-          "safeNonce"
-        ]
-      },
-      "TransactionCreatedRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransactionCreatedDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
-        ]
-      },
-      "ErrorUpdateDTO": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "paymentId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "error",
-          "paymentId"
-        ]
-      },
-      "ErrorUpdateRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ErrorUpdateDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
-        ]
-      },
-      "ExecutingTransactionRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BaseTransactionDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
-        ]
-      },
-      "TransactionExecutedDTO": {
-        "type": "object",
-        "properties": {
-          "paymentId": {
-            "type": "string"
-          },
-          "transactionHash": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "paymentId"
-        ]
-      },
-      "TransactionExecutedRequestDTO": {
-        "type": "object",
-        "properties": {
-          "walletTransactions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransactionExecutedDTO"
-            }
-          }
-        },
-        "required": [
-          "walletTransactions"
         ]
       },
       "MintHightTransactionReqDTO": {
