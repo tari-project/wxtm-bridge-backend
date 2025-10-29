@@ -1034,6 +1034,36 @@
         ]
       }
     },
+    "/notifications/daily-limit-exceeded": {
+      "post": {
+        "operationId": "sendDailyLimitExceededNotification",
+        "summary": "Send daily limit exceeded notification",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/wrap-token-transactions/{id}": {
       "get": {
         "operationId": "getOneBaseWrapTokenTransactionControllerWrapTokenTransactionEntity",
